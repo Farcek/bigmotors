@@ -2,7 +2,29 @@
 
 Веб сайтыг ажиллуулах, шинэчлэх, хянах болон доголдлоос сэргээх зааврыг энд хадгална.
 
+## Runtime-ийн шаардлага
+
+Төслийн Node.js runtime нь **24.x** байна. Хөгжүүлэлт, build, CI болон Node.js ашиглах серверийн орчинд энэ үндсэн хувилбарыг баримтална. Шийдвэрийг [ADR 0002](../adr/0002-use-nextjs-and-nodejs-24.md)-д бүртгэсэн.
+
+[ADR 0009](../adr/0009-use-tsdown-for-shared-libraries.md)-ийн дагуу доод хувилбар нь **24.11.0**: `>=24.11.0 <25`.
+
+Яг minor/patch хувилбар, package manager, install/build/start команд болон байршуулалтын тохиргоо хараахан тогтоогүй. Энэ баримт нь Node.js суулгасан эсвэл орчин бэлэн болсны баталгаа биш.
+
+## Build ба type checking
+
+| Хэсэг | Хэрэгсэл |
+| --- | --- |
+| `website` | Next.js |
+| `sysop-app` | Vite |
+| `core`, `sysop-dti`, shared library-ууд | tsdown, ESM + `.d.ts` |
+| Type checking | `tsc --noEmit` |
+
+Сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-libraries.md)-д хөтөлнө. Package бүрийн тохиргоо, build/watch дараалал болон бодит script хараахан үүсээгүй. `tsc --noEmit` нь type checking-ийн сонгосон команд бөгөөд ажиллах `tsconfig` болон dependency-г хэрэгжүүлэлтийн үед бүрдүүлнэ.
+
 ## Агуулга
+
+- Database-ийн ашиглалтын сонголт: PostgreSQL, Drizzle ORM, Drizzle migration workflow. [ADR 0005](../adr/0005-use-postgresql-and-drizzle-migrations.md)-ыг баримтална.
+- Migration-ийн нарийвчилсан зааварт үүсгэх, шалгах, хэрэглэх команд, ажиллуулах орчин, хариуцагч, алдаа гарвал сэргээх алхмыг оруулна. Бодит тохиргоо, команд одоогоор тогтоогүй.
 
 - Хөгжүүлэлт, туршилт, бодит ашиглалтын орчны тохиргоо
 - Локал орчинд ажиллуулах шаардлага, алхмууд
