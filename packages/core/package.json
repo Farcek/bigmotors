@@ -1,0 +1,9 @@
+{
+  "name": "@bigmotors/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.11.0 <25"
+  }
+}

@@ -67,7 +67,9 @@ packages/core
 packages/db
 ```
 
-**Үлдсэн шийдвэр:** Package-ийн бүтэн нэр/exports, workspace dependency protocol, build/dev/watch дараалал, pnpm-ийн хувилбар.
+**Хэрэгжүүлэлтийн тэмдэглэл:** Хэрэглэгчийн manifest үүсгэх хүсэлтээр root болон зургаан package-д минимал `package.json` нэмсэн. Одоогийн package нэршлийг [README](README.md)-д бүртгэсэн. Энэ нь TASK-02-ын үлдсэн саналыг бүхэлд нь баталсан гэсэн үг биш.
+
+**Үлдсэн шийдвэр:** Package exports, workspace dependency protocol, build/dev/watch дараалал, pnpm-ийн хувилбар.
 
 **Миний санал:** Дотоод холбоосыг `workspace:*` болгож, pnpm workspace script-ээр эхлээд shared library-уудыг build хийнэ. Дараа нь library watch болон app dev процессуудыг ажиллуулна. Нэмэлт build cache хэрэгслийг бодит хэрэгцээ гарвал үнэлнэ. [pnpm workspace](https://pnpm.io/workspaces)
 
