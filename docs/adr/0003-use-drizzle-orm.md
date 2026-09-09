@@ -28,8 +28,8 @@
 ## Нээлттэй асуултууд
 
 - PostgreSQL-ийн хувилбар юу байх вэ?
-- Schema болон migration файлууд monorepo-ийн аль хэсэгт байрлах вэ?
-- Website болон admin backend-ийн DB хандалтын зааг ямар байх вэ?
+- [ADR 0014](0014-use-bigmotors-scope-and-db-owned-migrations.md)-ийн дагуу schema, CRUD, migration болон seed-ийг `packages/db` хариуцна. Package доторх файлын зам, API болон ажиллуулах журам нээлттэй; schema-ийн дэлгэрэнгүй загварыг дараа тогтооно.
+- Website болон admin backend-ийн DB хандалтын архитектурын зааг [ADR 0015](0015-isolate-server-side-db-access.md)-аар шийдэгдсэн. Өгөгдөл/үйлдэл тус бүрийн эрхийг дараа тодорхойлно.
 - Drizzle ORM-ийн хувилбар, driver, Drizzle migration workflow-ийн хэрэгслийн хувилбар болон тохиргоо юу байх вэ?
 
 ## Нэмэлт шийдвэрийн түүх

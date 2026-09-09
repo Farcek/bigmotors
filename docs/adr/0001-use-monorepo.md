@@ -25,7 +25,7 @@ Public website, admin backend, admin frontend болон тэдгээрийн д
 | `sysop-dti` | `sysop-server` болон `sysop-app` хооронд мэдээлэл дамжуулах бүтэц (API contract) |
 | `core` | Website болон admin хооронд хуваалцах enum, const value, shared helper, functions |
 
-Энэ жагсаалт нь хэсгүүдийн нэр, үүргийг тогтооно. Root түвшинд байрлуулах эсвэл `apps/`, `packages/` болгон бүлэглэх физик хавтасны бүтэц хараахан шийдэгдээгүй.
+Энэ жагсаалт нь анхны логик хэсгүүдийг тогтоосон. pnpm workspace, физик хавтасны бүтэц болон нэмэлт `packages/db`-ийн үүргийг [ADR 0013](0013-use-pnpm-workspace-layout.md)-д баталсан.
 
 ### sysop-dti-ийн үүрэг
 
@@ -40,10 +40,14 @@ Public website, admin backend, admin frontend болон тэдгээрийн д
 
 ## Нээлттэй асуултууд
 
-- Package manager, monorepo түвшний workspace/build зохион байгуулалт, физик хавтасны бүтэц ямар байх вэ?
-- Website өгөгдлөө ямар сервер эсвэл API-аас авах вэ?
+- pnpm workspace доторх package нэршил, dependency болон build/watch зохион байгуулалт ямар байх вэ?
+- Website болон sysop-server-ийн shared DB package-ийн байршил/үүрэг [ADR 0013](0013-use-pnpm-workspace-layout.md), connection болон эрх тусгаарлах архитектур [ADR 0015](0015-isolate-server-side-db-access.md)-аар шийдэгдсэн. Өгөгдөл/үйлдэл тус бүрийн эрхийг дараа тодорхойлно.
 
 ## Тодруулгын түүх
+
+- 2026-09-09: [ADR 0013](0013-use-pnpm-workspace-layout.md)-аар pnpm workspace болон зургаан хавтасны бүтцийг баталсан. DB кодыг monorepo доторх `packages/db` болгож, ADR 0012-ыг орлуулсан.
+
+- 2026-09-09: [ADR 0012](0012-share-drizzle-db-repository.md)-оор DB бүтэц болон CRUD-ийг тусдаа shared repository-д хөтөлж, website болон sysop-server хамт ашиглахаар баталсан. Monorepo-ийн үндсэн таван хэсэг хэвээр.
 
 - 2026-09-08: `sysop-server`-ийн framework-ийг Express.js гэж [ADR 0010](0010-use-express-for-sysop-server.md)-д баталж, холбогдох нээлттэй асуултыг шийдвэрлэсэн.
 

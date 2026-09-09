@@ -17,6 +17,10 @@ ADR (Architecture Decision Record) нь техникийн чухал шийдв
 | [0009: Shared library-уудыг tsdown-оор build хийх](0009-use-tsdown-for-shared-libraries.md) | 2026-09-08 | Баталсан |
 | [0010: sysop-server-д Express.js ашиглах](0010-use-express-for-sysop-server.md) | 2026-09-08 | Баталсан |
 | [0011: Нийтлэг хэрэгцээнд тогтсон npm санг түлхүү ашиглах](0011-prefer-established-npm-libraries.md) | 2026-09-08 | Баталсан |
+| [0012: DB бүтэц болон CRUD-ийн shared repository](0012-share-drizzle-db-repository.md) | 2026-09-09 | ADR 0013-аар орлуулсан |
+| [0013: pnpm workspace болон хавтасны бүтэц](0013-use-pnpm-workspace-layout.md) | 2026-09-09 | Баталсан |
+| [0014: @bigmotors scope болон DB migration/seed эзэмшил](0014-use-bigmotors-scope-and-db-owned-migrations.md) | 2026-09-09 | Баталсан |
+| [0015: Сервер талын shared DB хандалтыг тусгаарлах](0015-isolate-server-side-db-access.md) | 2026-09-09 | Баталсан |
 
 ## Бүртгэх шийдвэрүүд
 

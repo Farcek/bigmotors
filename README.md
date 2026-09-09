@@ -34,7 +34,16 @@ Validation, helper function болон бусад нийтлэг хэрэгцэ�
 
 ## Архитектур ба технологи
 
-Төсөл нь `website`, `sysop-server`, `sysop-app`, `sysop-dti`, `core` хэсэгтэй monorepo байна. Хэсгүүдийн үүрэг болон шийдээгүй асуудлыг [monorepo шийдвэр](docs/adr/0001-use-monorepo.md)-т тодорхойлсон.
+Төсөл нь pnpm workspace ашигласан monorepo байна. Батлагдсан хавтасны бүтэц болон хэсгүүдийн үүргийг [ADR 0013](docs/adr/0013-use-pnpm-workspace-layout.md)-д тодорхойлсон. Бүх workspace package нь [@bigmotors/* scope](docs/adr/0014-use-bigmotors-scope-and-db-owned-migrations.md)-той байна.
+
+```text
+web/website
+sysop/app
+sysop/dti
+sysop/server
+packages/core
+packages/db
+```
 
 - Public website: Next.js, PWA дэмжлэгтэй
 - Admin frontend (`sysop-app`): [Mantine UI, Vite build](docs/adr/0007-use-mantine-and-vite-for-sysop-app.md)
@@ -46,7 +55,8 @@ Validation, helper function болон бусад нийтлэг хэрэгцэ�
 - Node.js runtime: 24.x, хамгийн багадаа 24.11.0 (`>=24.11.0 <25`)
 - Database: PostgreSQL
 - ORM: Drizzle ORM
-- Migration: Drizzle migration workflow
+- DB бүтэц ба CRUD: `web/website`-ийн сервер тал болон `sysop/server` дундаа ашиглах `packages/db`
+- Migration: Drizzle migration workflow; migration болон seed-ийг `packages/db` хариуцна
 - Үндсэн сангууд: `@napp/error` (error handling), `@napp/dti-core`, `@napp/dti-server`, `@napp/dti-client`
 
 Сангуудын сонголтыг [ADR 0004](docs/adr/0004-use-napp-libraries.md), database болон migration сонголтыг [ADR 0005](docs/adr/0005-use-postgresql-and-drizzle-migrations.md)-д бүртгэсэн.
@@ -55,6 +65,8 @@ Validation, helper function болон бусад нийтлэг хэрэгцэ�
 
 ## Баримт бичиг
 
+- [Tech spec task-ууд](docs.task.md): технологи, архитектур, tooling, техникийн тохиргооны санал, батлах шалгуур болон төлөв
+- [Дараа хэлэлцэх асуудлууд](docs/deferred-decisions.md): бизнесийн боломж, schema загвар, UI дизайн болон ашиглалтын нөхцөл
 - [UI / UX](docs/ui/README.md): дизайн, хэрэглэгчийн урсгал, харагдах байдлын дүрэм
 - [Боломжууд ба хүрээ](docs/features/README.md): шаардлага, багтах болон багтахгүй ажил, хүлээн авах шалгуур
 - [ADR](docs/adr/README.md): архитектурын шийдвэр, үндэслэл, үр дагавар

@@ -31,6 +31,6 @@ ADR 0003-аар Drizzle ORM сонгосон боловч database engine бол
 
 - PostgreSQL, Drizzle ORM болон migration хэрэгслийн яг хувилбар юу байх вэ?
 - PostgreSQL driver, холболтын тохиргоо болон байршуулах орчин ямар байх вэ?
-- Schema, migration файлууд аль package-д байрлах вэ?
+- Schema, migration/seed-ийн эзэмшил `packages/db` болохыг [ADR 0014](0014-use-bigmotors-scope-and-db-owned-migrations.md)-өөр тодруулсан. Package доторх файлын зам, exports болон script-ийн нэр ямар байх вэ?
 - Migration-ийг ямар орчинд, хэн, ямар командаар ажиллуулах вэ?
 - Өгөгдөл хувиргах, нөөцлөх болон сэргээх нарийвчилсан журам ямар байх вэ?
