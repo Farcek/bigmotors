@@ -5,5 +5,5 @@
     "verbatimModuleSyntax": true, "esModuleInterop": true, "types": ["node"],
     "skipLibCheck": true, "noEmit": true
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "tsdown.config.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "tsdown.config.ts", "drizzle.config.ts"]
 }

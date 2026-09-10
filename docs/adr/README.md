@@ -29,6 +29,7 @@ ADR (Architecture Decision Record) нь техникийн чухал шийдв
 | [0021: Sysop DTI суурь initialize](0021-initialize-sysop-dti.md) | 2026-09-10 | Баталсан |
 | [0022: Бүтээгдэхүүний зургийг hard disk дээр хадгалах](0022-store-product-images-on-disk.md) | 2026-09-10 | Баталсан |
 | [0023: Каталогийн нэгтгэсэн schema](0023-approve-catalog-schema.md) | 2026-09-10 | Баталсан |
+| [0024: Migration-ийг тусдаа release алхамд ажиллуулах](0024-run-db-migrations-as-release-step.md) | 2026-09-10 | Баталсан |
 
 ## Бүртгэх шийдвэрүүд
 

@@ -1,7 +1,7 @@
 # Каталогийн батлагдсан schema
 
 - Огноо: 2026-09-10
-- Төлөв: Баталсан; TypeScript/Drizzle schema болон trigger source хэрэгжсэн, migration хийгдээгүй
+- Төлөв: Баталсан; TypeScript/Drizzle schema болон trigger source болон migration хэрэгжсэн; бодит DB-д ажиллуулаагүй
 - Баталсан огноо: 2026-09-10
 - Үндэслэл: Хэрэглэгч нэгтгэсэн 22 хүснэгтийн schema, дагалдах техникийн болон эхний хувилбарын бизнес дүрмийн саналыг баталсан. Файлын анхны нэрийг холбоос хадгалах зорилгоор өөрчлөөгүй. [ADR 0023](../adr/0023-approve-catalog-schema.md).
 - Батлагдсан суурь: [Products](products-schema.md), [11 лавлах + тоноглолын холбоос](reference-tables.md), [Зургийн хадгалалт](product-images.md), [Нийтлэг дүрэм](../features/product-common-rules.md)
@@ -38,7 +38,7 @@
 - Дутуу optional энгийн текстийг `NULL` болгох гэж баталсан; item-ийн whitespace-only утгыг бөглөөгүй гэж үзнэ. VIN/арлын дугаарыг энэ normalization-аар хувиргахгүй, тусгай шалгалтгүй text хэвээр.
 - Бизнес талбарын өөрчлөлт product-ийн төрлийг солихгүй. Анх үүсгэсэн `product_type`-ийг өөрчлөхгүй байх гэж баталсан.
 
-Энэ хэсгийн техникийн сонголтууд 2026-09-10-нд батлагдсан. TypeScript schema, trigger source болон санах ойн PostgreSQL тест хэрэгжсэн. SQL migration үүсгээгүй, бодит DB-д өөрчлөлт оруулаагүй. [Хөгжүүлэх заавар ба хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
+Энэ хэсгийн техникийн сонголтууд 2026-09-10-нд батлагдсан. TypeScript schema, trigger source болон санах ойн PostgreSQL тест хэрэгжсэн. SQL migration болон runner үүссэн, бодит DB-д өөрчлөлт оруулаагүй. [Migration заавар](../operations/db-migrations.md). [Хөгжүүлэх заавар ба хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
 
 ## Vehicles
 
@@ -242,4 +242,4 @@ Used дугуйн ширхэг/багц, mixed-size set, олон салбары
 
 HTML-г шууд итгэж render хийхгүй; хадгалах/харуулах урсгалд аюулгүй HTML sanitization төлөвлөнө. Энэ нь зураг файл өөрчлөх тухай биш. [OWASP HTML sanitization](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html).
 
-PostgreSQL integer/numeric төрөл болон precision-ийн суурийг [албан ёсны тайлбартай](https://www.postgresql.org/docs/current/datatype-numeric.html) тулгасан. `packages/db/src/schema/branches.ts`-ийн өмнө хуулсан scaffold-ийг батлагдсан лавлахын бүтэцтэй тааруулсан. 22 хүснэгтийн Drizzle schema болон `packages/core` тогтмолууд үүссэн; migration, seed үүсгээгүй. Trigger source нь нийтлэх requiredness-ийг commit дээр нэмэлтээр шалгана; shared CRUD/request validator-ийн бүрэн хэрэгжүүлэлт хийгдээгүй.
+PostgreSQL integer/numeric төрөл болон precision-ийн суурийг [албан ёсны тайлбартай](https://www.postgresql.org/docs/current/datatype-numeric.html) тулгасан. `packages/db/src/schema/branches.ts`-ийн өмнө хуулсан scaffold-ийг батлагдсан лавлахын бүтэцтэй тааруулсан. 22 хүснэгтийн Drizzle schema болон `packages/core` тогтмолууд болон эхний migration үүссэн; seed хийгдээгүй, бодит DB-д ажиллуулаагүй. Trigger source нь нийтлэх requiredness-ийг commit дээр нэмэлтээр шалгана; shared CRUD/request validator-ийн бүрэн хэрэгжүүлэлт хийгдээгүй.

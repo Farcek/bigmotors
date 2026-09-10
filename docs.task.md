@@ -104,12 +104,14 @@ packages/db
 
 **2026-09-10-ны техникийн нэмэлт баталгаа:** UUID v4/DB default, timestamptz/update trigger, text + CHECK, composite FK/deferred constraint trigger болон transaction validation-ийн аргыг [ADR 0023](docs/adr/0023-approve-catalog-schema.md)-өөр баталсан. Driver/pool, package API, migration/seed workflow болон бодит implementation нээлттэй; task хэсэгчлэн батлагдсан хэвээр. Бизнес хүснэгт/талбарын баталгааг DB баримтад хөтөлнө.
 
+**2026-09-10-ны migration нэмэлт баталгаа:** Config, migration файл болон `db:generate`/`db:migrate` команд `packages/db` дотор; root товчилсон командтай. Local-д гараар, production-д тусдаа нэг release job-оос ажиллуулна; app startup-д ажиллуулахгүй. [ADR 0024](docs/adr/0024-run-db-migrations-as-release-step.md). Эхний SQL + trigger, snapshot/journal, runner, тест хэрэгжсэн; бодит DB-д ажиллуулаагүй. `pg` factory болон package exports-ийн одоогийн хэрэгжүүлэлт [DB зааварт](docs/operations/db-schema.md) байна.
+
 - Төлөв: Хэсэгчлэн баталсан
 - Хамаарал: TASK-01, TASK-02
 - Баталсан огноо: 2026-09-09 (хэсэгчилсэн)
 - Батлагдсан: PostgreSQL, Drizzle ORM; `packages/db` нь schema, CRUD, migration, seed-ийг хариуцна. Website-ийн сервер тал болон sysop-server дундаа ашиглана. Scope нь `@bigmotors/*`. [ADR 0014](docs/adr/0014-use-bigmotors-scope-and-db-owned-migrations.md)
 
-**Үлдсэн шийдвэр:** Driver/pool, package exports, дотоод файлын зохион байгуулалт, CRUD function-ийн нийтлэг хэлбэр, transaction/error handling, migration/seed script болон ажиллуулах техник.
+**Үлдсэн шийдвэр:** Production pool тохиргоо, CRUD function-ийн нийтлэг хэлбэр, transaction/error handling, seed workflow болон production migration job/role/TLS-ийн бодит provisioning. Migration эзэмшил, generate/migrate command болон тусдаа release алхмын арга батлагдсан; task бүхэлдээ дуусаагүй.
 
 **Миний санал:** `pg` driver болон connection pool ашиглана. DB package connection тохиргоог app-аас авч, transaction context дамжуулж болох CRUD function-ууд экспортлох саналтай. Migration/seed-ийг DB package-ийн script-ээр ажиллуулж, migration-ийг app startup бүрд бус release-ийн тусдаа ажиллагаа болгоно. [node-postgres pooling](https://node-postgres.com/features/pooling)
 

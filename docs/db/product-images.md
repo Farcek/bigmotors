@@ -1,7 +1,7 @@
 # Product images ба disk хадгалалт
 
 - Огноо: 2026-09-10
-- Төлөв: Хадгалах арга, багана, холбоос болон lifecycle баталсан; Drizzle schema хэрэгжсэн. Migration, upload/serve болон файл цэвэрлэх урсгал хийгдээгүй. [Хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
+- Төлөв: Хадгалах арга, багана, холбоос болон lifecycle баталсан; Drizzle schema хэрэгжсэн. Migration файл үүссэн; бодит DB-д ажиллуулах, upload/serve болон файл цэвэрлэх урсгал хийгдээгүй. [Хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
 - Холбоотой баримт: [Products](products-schema.md), [Нийтлэг дүрэм](../features/product-common-rules.md), [ADR 0022](../adr/0022-store-product-images-on-disk.md)
 
 ## Батлагдсан шийдвэр

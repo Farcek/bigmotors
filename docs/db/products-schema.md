@@ -1,7 +1,7 @@
 # Products-ийн логик бүтэц
 
 - Огноо: 2026-09-10
-- Төлөв: Бүтэц баталсан; Drizzle schema болон trigger source хэрэгжсэн, migration хийгдээгүй. [Хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
+- Төлөв: Бүтэц баталсан; Drizzle schema болон trigger source болон migration үүссэн; бодит DB-д ажиллуулаагүй. [Хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
 - Үндэслэл: Хэрэглэгч `products`-ийн талбарын бүтэц, зориулалт, бөглөх дүрмийг эхлээд баталж, зураг болон `content` хадгалалтыг дараа шийдэх саналыг зөвшөөрсөн.
 - Холбоотой баримт: [DB тойм](README.md), [Бүтээгдэхүүний нийтлэг дүрэм](../features/product-common-rules.md)
 
@@ -61,4 +61,4 @@
 - Constraint, index, transaction болон төрөлтэй таарсан ганц дэлгэрэнгүй мөртэй байх арга нэгтгэсэн schema-д батлагдсан; SQL хэрэгжүүлэлт/тест хийгдээгүй.
 - `vehicles`, `parts`, `tires`, зураг болон admin profile-ийн [нэгтгэсэн schema](catalog-schema-proposal.md) батлагдсан. Лавлахын хүснэгт/нийтлэг багана [батлагдсан](reference-tables.md); constraint/index-ийн хэрэгжүүлэлтийг нарийвчилна.
 
-Код, DB schema implementation болон migration үүсгээгүй. Энэ баталгаа `docs.task.md`-ийн техникийн task-уудыг бүхэлд нь дуусгахгүй.
+Дараагийн хэрэгжүүлэлтээр Drizzle schema болон migration үүссэн; [бодит ажиллагааны зааг](../operations/db-migrations.md). Энэ баталгаа `docs.task.md`-ийн техникийн task-уудыг бүхэлд нь дуусгахгүй.

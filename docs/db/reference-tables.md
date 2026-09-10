@@ -1,7 +1,7 @@
 # Лавлах хүснэгтүүдийн бүтэц
 
 - Огноо: 2026-09-10
-- Төлөв: Баталсан; Drizzle schema, constraint/index болон trigger source хэрэгжсэн. Migration, seed болон lifecycle CRUD хийгдээгүй. [Хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
+- Төлөв: Баталсан; Drizzle schema, constraint/index болон trigger source хэрэгжсэн. Migration файл үүссэн; бодит DB-д ажиллуулаагүй. Seed болон lifecycle CRUD хийгдээгүй. [Хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
 - Үндэслэл: Хэрэглэгч 11 лавлах болон тоноглолын 1 холбох хүснэгтийн санал, нийтлэг багана, холбоос, нэрийн давхардлын дүрмийг баталсан.
 - Холбоотой баримт: [DB тойм](README.md), [Автомашины лавлах](vehicle-reference-data.md), [Сэлбэгийн лавлах](part-reference-data.md), [Дугуйн лавлах](tire-reference-data.md)
 
@@ -67,10 +67,10 @@ Admin лавлах нэмэх, нэр засах, идэвхгүй болгох 
 
 ## Баталгаажуулалтын зааг
 
-2026-09-10-ны [нэгтгэсэн schema баталгаагаар](catalog-schema-proposal.md) UUID v4/DB үүсгэлт, timestamp update trigger, нэрийн trim + case-insensitive харьцуулалт, эцгийн хүрээний unique index, тоноглолын composite PK/FK болон RESTRICT delete арга тогтсон. Энэ нь дээрх нээлттэй техникийн сонголтын холбогдох хэсгийг орлоно. Schema/trigger source болон санах ойн тест хэрэгжсэн; migration, бодит PostgreSQL concurrency тест хийгдээгүй. Seed, нарийн Unicode normalization болон admin permission matrix тусдаа хэвээр.
+2026-09-10-ны [нэгтгэсэн schema баталгаагаар](catalog-schema-proposal.md) UUID v4/DB үүсгэлт, timestamp update trigger, нэрийн trim + case-insensitive харьцуулалт, эцгийн хүрээний unique index, тоноглолын composite PK/FK болон RESTRICT delete арга тогтсон. Энэ нь дээрх нээлттэй техникийн сонголтын холбогдох хэсгийг орлоно. Schema/trigger source болон санах ойн тест болон migration хэрэгжсэн; бодит PostgreSQL concurrency тест хийгдээгүй. Seed, нарийн Unicode normalization болон admin permission matrix тусдаа хэвээр.
 
 Нийт 11 лавлах + 1 холбох хүснэгтийн бүтэц батлагдсан. Түлш, хурдны хайрцаг, төлөв, валют, улирал зэрэг enum/const бүлэгт тусдаа admin-managed лавлах хүснэгт үүсгэхгүй; `packages/core`-д хөтөлнө. Энэ нь PostgreSQL enum эсвэл text + CHECK сонголтыг батлаагүй.
 
 Нэмэлт 3 сэлбэгийн лавлах, дугуйн индекс/тэмдэглэгээний арга, seed өгөгдөл, admin permission matrix болон API нь тусдаа шийдвэр. FK delete/update action, индексийн яг хэлбэр, UUID үүсгэлт болон огноо шинэчлэх механизмын хэрэгжүүлэлт нээлттэй.
 
-Drizzle schema, migration, seed болон admin UI үүсгээгүй. Schema-ийн энэ баталгаа `docs.task.md`-ийн техникийн task-уудыг бүхэлд нь баталсан гэсэн үг биш.
+Drizzle schema болон migration дараагийн хэрэгжүүлэлтээр үүссэн; seed болон admin UI хийгдээгүй. Schema-ийн энэ баталгаа `docs.task.md`-ийн техникийн task-уудыг бүхэлд нь баталсан гэсэн үг биш.

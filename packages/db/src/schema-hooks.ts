@@ -1,8 +1,8 @@
 import { sql, type SQL } from "drizzle-orm";
 
 // Source definitions only. Importing this module never changes a database.
-// Drizzle's table metadata cannot represent PostgreSQL triggers; future provisioning
-// must install these after the tables. No migration or automatic installer is provided.
+// Drizzle's table metadata cannot represent PostgreSQL triggers. The initial SQL
+// migration includes these; future changes require a new reviewed custom migration.
 export const schemaHooks: readonly SQL[] = [
   sql.raw(`CREATE FUNCTION bm_set_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN NEW.updated_at := clock_timestamp(); RETURN NEW; END $$`),

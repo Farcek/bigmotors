@@ -24,7 +24,8 @@ Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-l
 
 ## Агуулга
 
-- [DB schema хөгжүүлэх](db-schema.md): 22 хүснэгтийн TypeScript schema, core тогтмолууд, build/typecheck/test, trigger source болон хэрэгжээгүй integration-ийн зааг. Migration үүсгээгүй.
+- [DB schema хөгжүүлэх](db-schema.md): 22 хүснэгтийн TypeScript schema, core тогтмолууд, build/typecheck/test, trigger source болон хэрэгжээгүй integration-ийн зааг.
+- [DB migration ажиллуулах](db-migrations.md): generate/migrate команд, эхний SQL, local тохиргоо, release job, lock/history болон алдаа сэргээх зааг.
 
 - [Зургийн hard disk хадгалалтын шийдвэр](../adr/0022-store-product-images-on-disk.md): persistent disk, DB + файл backup, serve/access-ийн зааг; бодит хавтас болон upload setup хараахан хийгдээгүй.
 - [Sysop server ажиллуулах](sysop-server.md): бодит scaffold, dev/build/start/test, environment, endpoint болон хэрэгжээгүй хэсгийн зааг.
@@ -32,7 +33,7 @@ Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-l
 - [Userly нэвтрэлт ба ACL-ийн ашиглалтын шаардлага](userly-authentication.md): тусдаа client/resource provisioning, runtime config, snapshot cache/recovery, нууц мэдээллийн зааг. Бодит орчны тохиргоо болон deployment хараахан хийгдээгүй.
 - Database-ийн ашиглалтын сонголт: PostgreSQL, Drizzle ORM, Drizzle migration workflow. [ADR 0005](../adr/0005-use-postgresql-and-drizzle-migrations.md)-ыг баримтална.
 - Migration болон seed-ийн файл, логик, командыг `packages/db` хариуцна. [ADR 0014](../adr/0014-use-bigmotors-scope-and-db-owned-migrations.md)-ыг баримтална; deployment дахь ажиллуулах эрх, цаг болон дараалал тусад нь шийдэгдэнэ.
-- Migration-ийн нарийвчилсан зааварт үүсгэх, шалгах, хэрэглэх команд, ажиллуулах орчин, хариуцагч, алдаа гарвал сэргээх алхмыг оруулна. Бодит тохиргоо, команд одоогоор тогтоогүй.
+- Migration команд болон тусдаа release алхмын арга [ADR 0024](../adr/0024-run-db-migrations-as-release-step.md)-өөр тогтсон; production job/credential болон backup/restore-ийн бодит тохиргоо тусдаа.
 
 - Хөгжүүлэлт, туршилт, бодит ашиглалтын орчны тохиргоо
 - Локал орчинд ажиллуулах шаардлага, алхмууд

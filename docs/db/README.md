@@ -8,7 +8,7 @@
 - ORM: **Drizzle ORM**
 - Migration: **Drizzle migration workflow**
 
-ORM сонголтыг [ADR 0003](../adr/0003-use-drizzle-orm.md), database болон migration сонголтыг [ADR 0005](../adr/0005-use-postgresql-and-drizzle-migrations.md)-д бүртгэсэн. Schema, driver, package exports болон build/test-ийн бодит тохиргоо [DB хөгжүүлэх зааварт](../operations/db-schema.md) байна. Migration команд үүсгээгүй.
+ORM сонголтыг [ADR 0003](../adr/0003-use-drizzle-orm.md), database болон migration сонголтыг [ADR 0005](../adr/0005-use-postgresql-and-drizzle-migrations.md)-д бүртгэсэн. Schema, driver, package exports болон build/test-ийн бодит тохиргоо [DB хөгжүүлэх зааварт](../operations/db-schema.md) байна. Migration команд болон эхний SQL үүссэн; [ажиллуулах заавар](../operations/db-migrations.md).
 
 ## DB бүтэц болон CRUD-ийн эзэмшил
 
@@ -16,7 +16,7 @@ Drizzle-д суурилсан **`packages/db` shared package** нь DB schema б
 
 Бүх workspace package-ийн scope нь `@bigmotors/*`. Migration болон seed-ийн файл, логик, командыг мөн `packages/db` хариуцна. [ADR 0014](../adr/0014-use-bigmotors-scope-and-db-owned-migrations.md)-д баталсан.
 
-Package exports, workspace dependency, schema файлын зам болон driver-ийн одоогийн хэрэгжүүлэлтийг [package README](../../packages/db/README.md)-д бүртгэсэн. CRUD, migration/seed болон production pool-ийн нарийвчлал дараагийн ажил. Schema, CRUD, migration болон seed-ийг app бүрд давхар хөтлөхгүй.
+Package exports, workspace dependency, schema файлын зам болон driver-ийн одоогийн хэрэгжүүлэлтийг [package README](../../packages/db/README.md)-д бүртгэсэн. CRUD, seed болон production pool/job-ийн нарийвчлал дараагийн ажил. Schema, CRUD, migration болон seed-ийг app бүрд давхар хөтлөхгүй.
 
 ## Сервер талын хандалтын зааг
 
@@ -38,9 +38,9 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 
 ## Баримтжуулах зүйлс
 
-- [Каталогийн батлагдсан schema](catalog-schema-proposal.md): 22 хүснэгтийн нэгтгэл, багана, холбоос, нийтлэх дүрэм, constraint/index; schema код хэрэгжсэн, migration хийгдээгүй.
+- [Каталогийн батлагдсан schema](catalog-schema-proposal.md): 22 хүснэгтийн нэгтгэл, багана, холбоос, нийтлэх дүрэм, constraint/index; schema код болон migration үүссэн; бодит DB-д ажиллуулаагүй.
 - [DB schema хөгжүүлэх](../operations/db-schema.md): кодын бүтэц, командыг ажиллуулах, trigger source, тест болон үлдсэн integration.
-- [Лавлах хүснэгтүүдийн батлагдсан бүтэц](reference-tables.md): 11 лавлах + `vehicle_feature_links`, нийтлэг багана, холбоос, нэрийн давхардлын дүрэм; migration хэрэгжээгүй.
+- [Лавлах хүснэгтүүдийн батлагдсан бүтэц](reference-tables.md): 11 лавлах + `vehicle_feature_links`, нийтлэг багана, холбоос, нэрийн давхардлын дүрэм; migration файл үүссэн, бодит DB-д ажиллуулаагүй.
 - [Product images ба disk хадгалалт](product-images.md): эх файл hard disk дээр, бүртгэл `product_images` хүснэгтэд; хадгалах арга, багана, эзэмшил болон lifecycle батлагдсан.
 - [Каталогийн DB диаграм (ERD)](catalog-erd.md): бүх 22 хүснэгтийн багана, төрөл, PK/FK/UNIQUE, nullable эсэх болон холбоос.
 - Хүснэгт, талбар, өгөгдлийн төрөл, тайлбар
@@ -51,7 +51,7 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 
 ## Загварчлах үндсэн мэдээлэл
 
-Төлөв: **Каталогийн 22 хүснэгтийн TypeScript/Drizzle schema, core тогтмолууд болон trigger source үүссэн; migration хийгдээгүй**. 2026-09-10-нд [products-ийн 18 талбарын логик бүтэц](products-schema.md), зориулалт, бөглөх нөхцөл болон render fallback батлагдсан. `content` нь HTML `text`, nullable. Зургийн эх файл hard disk дээр, бүртгэл [product_images](product-images.md)-д байна. Лавлахын [11 хүснэгт + тоноглолын холбоос](reference-tables.md) батлагдсан; [нэгтгэсэн schema](catalog-schema-proposal.md)-ийн төрөл тус бүрийн бүтэц, зураг, profile, ID/constraint/index-ийн арга батлагдсан. CRUD, render, upload болон бодит DB integration хэрэгжсэн гэсэн үг биш.
+Төлөв: **Каталогийн 22 хүснэгтийн TypeScript/Drizzle schema, core тогтмолууд болон trigger source болон migration үүссэн; бодит DB-д ажиллуулаагүй**. 2026-09-10-нд [products-ийн 18 талбарын логик бүтэц](products-schema.md), зориулалт, бөглөх нөхцөл болон render fallback батлагдсан. `content` нь HTML `text`, nullable. Зургийн эх файл hard disk дээр, бүртгэл [product_images](product-images.md)-д байна. Лавлахын [11 хүснэгт + тоноглолын холбоос](reference-tables.md) батлагдсан; [нэгтгэсэн schema](catalog-schema-proposal.md)-ийн төрөл тус бүрийн бүтэц, зураг, profile, ID/constraint/index-ийн арга батлагдсан. CRUD, render, upload болон бодит DB integration хэрэгжсэн гэсэн үг биш.
 
 ### Батлагдсан бүртгэлийн нэгж
 
@@ -128,7 +128,7 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 
 Enum/const нь DB лавлахаас тусдаа. 2026-09-10-нд [нийтлэг бүтээгдэхүүний дүрмээр](../features/product-common-rules.md) валют (`MNT`), үнэ харуулах хэлбэр (`show_price`, `inquire`), нийтлэлийн төлөв (`draft`, `published`, `hidden`, `archived`)-ийг гурвууланд дундын утга, дүрэмтэй ашиглахаар баталсан. Текст, зураг, үнэ, нийтлэх/default болон лавлахын lifecycle мөн ижил байна.
 
-Үнийн нэгж, бэлэн байдлын утга болон төрөлд онцлог condition/байрлал/дугуйн enum утгууд [нэгтгэсэн schema-д](catalog-schema-proposal.md#сэлбэгдугуйн-тогтмол-утгууд) батлагдсан. DB хадгалалт text + CHECK; төрөлд онцлог бүлгүүд тусдаа, `packages/core/src/catalog.ts`-д хэрэгжсэн. Migration болон текст хайлтын нэмэлт индексийн сонголт нээлттэй.
+Үнийн нэгж, бэлэн байдлын утга болон төрөлд онцлог condition/байрлал/дугуйн enum утгууд [нэгтгэсэн schema-д](catalog-schema-proposal.md#сэлбэгдугуйн-тогтмол-утгууд) батлагдсан. DB хадгалалт text + CHECK; төрөлд онцлог бүлгүүд тусдаа, `packages/core/src/catalog.ts`-д хэрэгжсэн. Migration команд хэрэгжсэн; production provisioning болон текст хайлтын нэмэлт индексийн сонголт нээлттэй.
 
 ## Хөтлөх зарчим
 

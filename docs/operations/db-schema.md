@@ -1,7 +1,7 @@
 # DB schema хөгжүүлэх
 
 - Огноо: 2026-09-10
-- Төлөв: TypeScript schema, build, typecheck, санах ойн тест хэрэгжсэн; migration болон бодит DB provisioning хийгдээгүй.
+- Төлөв: TypeScript schema, migration, build, typecheck, санах ойн тест хэрэгжсэн; бодит DB provisioning хийгдээгүй.
 - Эх сурвалж: [каталогийн батлагдсан schema](../db/catalog-schema-proposal.md), [ADR 0023](../adr/0023-approve-catalog-schema.md).
 
 ## Бүтэц
@@ -27,7 +27,7 @@ pnpm typecheck:db
 pnpm test:db
 ```
 
-DB командууд эхэлж `@bigmotors/core`-ийг build хийнэ. Тестэнд PostgreSQL service, connection string, `.env` хэрэггүй. PGlite зөвхөн санах ойд ажиллана; Drizzle metadata-аас хүснэгтүүд болон trigger source-ийг туршаад хаана. Test helper нь production schema installer эсвэл migration generator биш.
+Дээрх build/typecheck/test командууд эхэлж `@bigmotors/core`-ийг build хийнэ. Тестэнд PostgreSQL service, connection string, `.env` хэрэггүй. PGlite зөвхөн санах ойд ажиллана; version control-д хадгалсан бодит SQL migration-аар хүснэгт/trigger-үүдийг үүсгэж шалгана. Test helper нь production schema installer биш.
 
 ## Ашиглах зааг
 
@@ -39,11 +39,11 @@ Product ба төрлийн дэлгэрэнгүй мөрийг заавал н�
 
 Category tree-ийн бичилт advisory transaction lock авна; `READ COMMITTED` эсвэл `SERIALIZABLE` ашиглана. `REPEATABLE READ`-ийн хуучин snapshot-аас буруу cycle шалгалт хийхээс хамгаалж бичилтийг буцаана. Serializable conflict/deadlock гарвал бүх transaction-ийг дахин эхлүүлэх бодлогыг CRUD integration-д хийнэ.
 
-## Migration Хийгээгүй
+## Migration
 
-Хэрэглэгчийн хүсэлтээр migration, snapshot, seed болон migrate/push команд үүсгээгүй. Бодит DB schema, өгөгдөл өөрчлөөгүй.
+Дараагийн баталгаагаар `packages/db/drizzle.config.ts`, `migrations/`, `db:generate`, `db:migrate` болон эхний migration/snapshot үүссэн. Root-оос дуудах командтай; app startup-аас тусдаа. Бодит DB schema, өгөгдөл өөрчлөөгүй; seed болон push команд нэмээгүй. [Migration ажиллуулах заавар](db-migrations.md).
 
-Drizzle-ийн table metadata нь PostgreSQL trigger-үүдийг төлөөлөхгүй. Ирээдүйн migration боловсруулахдаа хүснэгт/FK-ийн дараа `schema-hooks.ts` дахь function/trigger-үүдийг тусад нь оруулах шаардлагатай. Ердийн Drizzle table generation эдгээрийг автоматаар нэмнэ гэж үзэхгүй. Source import дангаараа хамгаалалтыг DB дээр идэвхжүүлэхгүй.
+Drizzle-ийн table metadata нь PostgreSQL trigger-үүдийг төлөөлөхгүй. Эхний migration-д function/trigger-үүдийг хамт хадгалсан. Дараагийн өөрчлөлтөд шинэ custom SQL migration шаардлагатай; source import дангаараа DB trigger шинэчлэхгүй.
 
 ## Дараагийн Ажил
 

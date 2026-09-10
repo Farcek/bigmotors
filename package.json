@@ -17,7 +17,9 @@
     "typecheck:core": "pnpm --filter @bigmotors/core typecheck",
     "build:db": "pnpm --filter @bigmotors/db... build",
     "typecheck:db": "pnpm build:core && pnpm --filter @bigmotors/db typecheck",
-    "test:db": "pnpm build:core && pnpm --filter @bigmotors/db test"
+    "test:db": "pnpm build:core && pnpm --filter @bigmotors/db test",
+    "db:generate": "pnpm --filter @bigmotors/db db:generate",
+    "db:migrate": "pnpm --filter @bigmotors/db db:migrate"
   },
   "engines": {
     "node": ">=24.11.0 <25"
