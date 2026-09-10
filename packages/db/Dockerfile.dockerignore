@@ -1,0 +1,21 @@
+# Build from the repository root, but send only the DB workspace and its core dependency.
+**
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!packages/
+!packages/core/
+!packages/core/**
+!packages/db/
+!packages/db/**
+
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/.env.*
+**/.npmrc
+**/*.log
+**/*.tsbuildinfo
+**/*.pem
+**/*.key

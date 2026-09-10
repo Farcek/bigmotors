@@ -4,6 +4,10 @@
   "private": true,
   "packageManager": "pnpm@11.19.0",
   "scripts": {
+    "dev:app": "pnpm --filter @bigmotors/sysop-app dev",
+    "build:app": "pnpm --filter @bigmotors/sysop-app build",
+    "typecheck:app": "pnpm --filter @bigmotors/sysop-app typecheck",
+    "preview:app": "pnpm --filter @bigmotors/sysop-app preview",
     "dev:server": "pnpm --filter @bigmotors/sysop-server dev",
     "build:server": "pnpm --filter @bigmotors/sysop-server build",
     "start:server": "pnpm --filter @bigmotors/sysop-server start",

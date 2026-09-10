@@ -16,27 +16,28 @@ import { testDatabase } from "./support/database.js";
 
 test("migration credentials must be explicit and validation errors do not expose secrets", () => {
   assert.throws(() => migrationConnectionString({ DATABASE_URL: "postgres://do-not-use/other" }), /is required/);
-  assert.throws(() => migrationConnectionString({ MIGRATION_DATABASE_URL: " " }), /is required/);
+  assert.throws(() => migrationConnectionString({ MIGRATION_DATABASE_URL: "postgres://do-not-use/other" }), /is required/);
+  assert.throws(() => migrationConnectionString({ DB_CONNECTION_STRING: " " }), /is required/);
   for (const value of ["secret-invalid-url", "https://example.test/db", "postgres://localhost/"]) {
-    assert.throws(() => migrationConnectionString({ MIGRATION_DATABASE_URL: value }), (error: unknown) => {
+    assert.throws(() => migrationConnectionString({ DB_CONNECTION_STRING: value }), (error: unknown) => {
       assert.ok(error instanceof Error);
       assert.ok(!error.message.includes(value));
       return true;
     });
   }
   const url = "postgresql://migration:example@localhost:5432/bigmotors";
-  assert.equal(migrationConnectionString({ MIGRATION_DATABASE_URL: url }), url);
+  assert.equal(migrationConnectionString({ DB_CONNECTION_STRING: url }), url);
 });
 
 test("standalone CLI refuses missing credentials before connecting", () => {
   const result = spawnSync(process.execPath, ["--import=tsx", "src/migrate.ts"], {
     cwd: fileURLToPath(new URL("../", import.meta.url)),
-    env: { ...process.env, MIGRATION_DATABASE_URL: "", DATABASE_URL: "postgres://secret/unused" },
+    env: { ...process.env, DB_CONNECTION_STRING: "", DATABASE_URL: "postgres://secret/unused" },
     encoding: "utf8",
     timeout: 10_000,
   });
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /MIGRATION_DATABASE_URL is required/);
+  assert.match(result.stderr, /DB_CONNECTION_STRING is required/);
   assert.ok(!result.stderr.includes("secret"));
 });
 

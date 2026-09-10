@@ -27,9 +27,9 @@ try {
 } catch (error) {
   // Driver errors can include connection details; never print the raw error.
   const safeMessages = [
-    "MIGRATION_DATABASE_URL is required",
-    "MIGRATION_DATABASE_URL must be a PostgreSQL URL",
-    "MIGRATION_DATABASE_URL must specify a PostgreSQL host and database",
+    "DB_CONNECTION_STRING is required",
+    "DB_CONNECTION_STRING must be a PostgreSQL URL",
+    "DB_CONNECTION_STRING must specify a PostgreSQL host and database",
     "No migration files found",
     "Another migration process is running",
   ];

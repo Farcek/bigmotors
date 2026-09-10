@@ -17,7 +17,7 @@
 
 Хоёр дахь хувилбарыг сонгосон. `drizzle.config.ts`, `migrations/`, `db:generate`, `db:migrate` нь `packages/db`-ийн эзэмшил; root нь тэдгээрийг дуудах командтай. Website/backend startup migration ажиллуулахгүй. Production-д review хийсэн SQL-ийг тусдаа нэг release job хэрэгжүүлнэ.
 
-Хэрэгжүүлэлтийн нарийвчлал: Drizzle Kit generate, Drizzle ORM migrator, тусдаа `MIGRATION_DATABASE_URL`, dedicated `pg` session, advisory lock. Trigger/function-ийг versioned SQL-д хамт хадгална. Seed workflow болон production pipeline-ийн бодит provisioning энэ баталгаанд орохгүй.
+Хэрэгжүүлэлтийн нарийвчлал: Drizzle Kit generate, Drizzle ORM migrator, migration job-д зориулсан `DB_CONNECTION_STRING`, dedicated `pg` session, advisory lock. Хэрэглэгчийн шинэчилсэн хүсэлтээр хувьсагчийн нэрийг `DB_CONNECTION_STRING` болгож, `packages/db/Dockerfile`-д production one-shot image нэмсэн. Нэр нь нийтлэг боловч migration credential нь app runtime credential-оос тусдаа хэвээр. Trigger/function-ийг versioned SQL-д хамт хадгална. Seed workflow болон production pipeline-ийн бодит provisioning энэ баталгаанд орохгүй.
 
 ## Үр дагавар
 
