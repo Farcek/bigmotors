@@ -21,6 +21,12 @@ ADR (Architecture Decision Record) нь техникийн чухал шийдв
 | [0013: pnpm workspace болон хавтасны бүтэц](0013-use-pnpm-workspace-layout.md) | 2026-09-09 | Баталсан |
 | [0014: @bigmotors scope болон DB migration/seed эзэмшил](0014-use-bigmotors-scope-and-db-owned-migrations.md) | 2026-09-09 | Баталсан |
 | [0015: Сервер талын shared DB хандалтыг тусгаарлах](0015-isolate-server-side-db-access.md) | 2026-09-09 | Баталсан |
+| [0016: Автомашины DB лавлах ба enum/const](0016-separate-vehicle-lookups-and-constants.md) | 2026-09-10 | Баталсан |
+| [0017: Сэлбэгийн DB лавлах ба enum/const](0017-use-part-reference-data.md) | 2026-09-10 | Баталсан |
+| [0018: Дугуйн DB лавлах ба enum/const](0018-use-tire-reference-data.md) | 2026-09-10 | Баталсан |
+| [0019: Userly admin нэвтрэлт ба ACL](0019-use-userly-admin-authentication-and-acl.md) | 2026-09-10 | Баталсан |
+| [0020: Sysop server суурь tooling](0020-initialize-sysop-server-tooling.md) | 2026-09-10 | Баталсан |
+| [0021: Sysop DTI суурь initialize](0021-initialize-sysop-dti.md) | 2026-09-10 | Баталсан |
 
 ## Бүртгэх шийдвэрүүд
 

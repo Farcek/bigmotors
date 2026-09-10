@@ -5,7 +5,7 @@
 - Хамрах хүрээ: Технологи, архитектур, сан, хөгжүүлэлтийн хэрэгсэл болон техникийн тохиргоо
 - Батлагдсан суурь: [ADR бүртгэл](docs/adr/README.md)
 - Бүрэн баталсан: 1 / 12
-- Хэсэгчлэн баталсан: TASK-02, TASK-04
+- Хэсэгчлэн баталсан: TASK-02, TASK-03, TASK-04, TASK-05, TASK-10
 
 ## Хүрээ ба хөтлөх журам
 
@@ -69,7 +69,9 @@ packages/db
 
 **Хэрэгжүүлэлтийн тэмдэглэл:** Хэрэглэгчийн manifest үүсгэх хүсэлтээр root болон зургаан package-д минимал `package.json` нэмсэн. Одоогийн package нэршлийг [README](README.md)-д бүртгэсэн. Энэ нь TASK-02-ын үлдсэн саналыг бүхэлд нь баталсан гэсэн үг биш.
 
-**Үлдсэн шийдвэр:** Package exports, workspace dependency protocol, build/dev/watch дараалал, pnpm-ийн хувилбар.
+**Хэрэгжүүлсэн суурь:** 2026-09-10-ны backend initialize хүрээнд pnpm `11.19.0`, зургаан package хамарсан workspace manifest, root lockfile болон server script-үүд нэмсэн. [ADR 0020](docs/adr/0020-initialize-sysop-server-tooling.md)
+
+**Үлдсэн шийдвэр:** Бусад package exports, workspace dependency protocol болон package хоорондын build/dev/watch дараалал. Server одоогоор бусад workspace package импортлохгүй.
 
 **Миний санал:** Дотоод холбоосыг `workspace:*` болгож, pnpm workspace script-ээр эхлээд shared library-уудыг build хийнэ. Дараа нь library watch болон app dev процессуудыг ажиллуулна. Нэмэлт build cache хэрэгслийг бодит хэрэгцээ гарвал үнэлнэ. [pnpm workspace](https://pnpm.io/workspaces)
 
@@ -81,20 +83,22 @@ packages/db
 
 ## TASK-03: Authentication/session техникийн шийдэл
 
-- Төлөв: Хүлээгдэж буй
-- Хамаарал: TASK-12-ын proxy/cookie орчин
-- Баталсан огноо: Байхгүй
-- Батлагдсан: Шинэ сонголт батлаагүй
+- Төлөв: Хэсэгчлэн баталсан
+- Хамаарал: TASK-05-ын DTI/error contract, TASK-10-ын package хувилбар, TASK-12-ын HTTPS/runtime болон cache орчин
+- Баталсан огноо: 2026-09-10
+- Батлагдсан: Chip CRM-ийн Userly аргачлал: OAuth 2.0 / OIDC Authorization Code + PKCE S256, memory-only access token, 900 секундийн provider TTL, refresh token ашиглахгүй, серверийн token validation, `userly-acl`, DTI action permission mapping, data scope enforcement, validated snapshot cache/fallback/reload-only recovery. [ADR 0019](docs/adr/0019-use-userly-admin-authentication-and-acl.md)
 
-**Үлдсэн шийдвэр:** Auth сан/интеграц, session store, cookie/token дамжуулалт, authorization middleware болон хамгаалалтын техникийн механизм.
+**Үлдсэн шийдвэр:** OAuth/OIDC client болон JWT verification-д ашиглах бодит сан/API; Userly integration-ийн package хувилбар/contract нийцэл; snapshot service-client authentication; runtime config key/schema; refresh/timeout/JWKS cache параметр болон multi-instance cache/invalidation, deployment-wide reload rate-limit coordination. Бизнес permission matrix болон local profile schema нь feature/DB баримтад тусдаа үлдэнэ.
 
-**Миний санал:** Express дээр server-side session, PostgreSQL session store, HttpOnly/Secure cookie бүхий бэлэн шийдлийг үнэлнэ. `express-session` болон нийцэх store-ийг эхний хувилбар болгон авч үзнэ. CSRF, session хүчингүй болгох, rate limiting болон эрх шалгах middleware-ийг энэ түвшинд тодорхойлно. Бэлэн identity provider ашиглах шаардлага байвал холболтын аргыг уялдуулна. [Express session](https://expressjs.com/en/resources/middleware/session/)
+**Баталсан аргачлал:** Userly нь identity/access policy-ийн эзэн; `sysop/app` Bearer token дамжуулж, `sysop/server` token, active authorization context, action permission болон шаардлагатай scope-г шалгана. Config нь runtime орчноос, snapshot нь valid memory/LKG/reload-only default дарааллаар байна. TTL, storage, re-login, logout болон хамгаалалтын заагийг ADR 0019-д тогтоосон. Local cookie session/store ашиглах өмнөх `express-session` санал үйлчлэхгүй.
 
-**Үндэслэл ба сул тал:** Backend дээр session болон эрхийн хяналтыг төвлөрүүлнэ. Store, proxy болон cookie тохиргооны нийцлийг шалгах шаардлагатай.
+**Миний санал:** Үлдсэн сан/API-г эх төслийн батлагдсан protocol boundary болон BigMotors-ийн Node.js 24, TypeScript, Express, Vite, DTI орчинтой нийцүүлэн шалгана. OAuth/JWT протоколыг гараар дахин бичихгүй; бэлэн санг сонгож тусад нь батална.
 
-**Батлах шалгуур:** Auth/session хэрэгсэл, хадгалалт, дамжуулалт болон middleware-ийн техникийн зааг батлагдсан байна.
+**Үндэслэл ба сул тал:** Userly-тэй ижил хэрэглэгч/ACL удирдлага ашиглаж, local password/session/invitation давхардахгүй. Provider availability, snapshot freshness/recovery artifact болон browser reload/expiry үеийн redirect-ийг хариуцна.
 
-**Гарах баримт:** Auth ADR, `docs/operations/` орчны тохиргоо.
+**Батлах шалгуур:** Батлагдсан architecture-г хадгалж, үлдсэн сан/API/config/cache техникийн нарийвчлалыг шийдсэн байна. Хэсэгчилсэн баталгаа нь хэрэгжүүлэлт дууссан гэсэн үг биш.
+
+**Гарах баримт:** [ADR 0019](docs/adr/0019-use-userly-admin-authentication-and-acl.md), [Userly ашиглалтын шаардлага](docs/operations/userly-authentication.md). User management болон үйлдлийн хүрээ [feature баримтад](docs/features/admin-authentication-access.md) байна.
 
 ## TASK-04: DB package-ийн техникийн зохион байгуулалт
 
@@ -115,14 +119,16 @@ packages/db
 
 ## TASK-05: DTI, validation ба API-ийн нийтлэг стандарт
 
-- Төлөв: Хүлээгдэж буй
+- Төлөв: Хэсэгчлэн баталсан
 - Хамаарал: TASK-03; `@napp` сангуудын бодит API/registry мэдээлэл
-- Баталсан огноо: Байхгүй
-- Батлагдсан: Үндсэн `@napp` сангууд болон `sysop/dti`-ийн contract үүрэг өмнөх ADR-уудаар тогтсон; нарийвчилсан холболт батлаагүй
+- Баталсан огноо: 2026-09-10 (DTI initialize хүрээ)
+- Батлагдсан: Chip CRM DTI хэв маягийн `@napp/dti-core` + Zod schema, domain namespace, barrel export болон өмнө баталсан ESM/declaration tooling. [ADR 0021](docs/adr/0021-initialize-sysop-dti.md)
 
-**Үлдсэн шийдвэр:** DTI сангуудын холболт, validation хэрэгсэл, response/error envelope, pagination-ийн нийтлэг хэлбэр, contract өөрчлөлтийн нийцлийн дүрэм.
+**Хэрэгжүүлсэн суурь:** `sysop/dti` manifest, build/watch/typecheck/test, ESM exports болон одоо байгаа `/health`-ийн contract нэмсэн. Backend/client runtime холболт болон бизнес action хийгдээгүй.
 
-**Миний санал:** `@napp/dti-core`-ийг contract, `@napp/dti-server`-ийг backend, `@napp/dti-client`-ийг frontend талд холбох хувилбарыг бодит API-аар шалгана. Энэ зураглалын нийцэл батлагдаагүй. DTI-ийн бэлэн validation-ийг түрүүлж үнэлж, нэмэлт хэрэгцээнд Zod санал болгоно. `@napp/error`-тай уялдуулсан error code, message, field errors, request ID хэлбэр хэрэглэнэ. [Zod](https://zod.dev/)
+**Үлдсэн шийдвэр:** Backend/client DTI холболт, runtime validation/error mapping, response/error envelope, pagination-ийн нийтлэг хэлбэр, contract өөрчлөлтийн нийцлийн дүрэм.
+
+**Миний санал:** Contract талд сонгосон `createAction` + Zod-ийг ашиглан `@napp/dti-server` backend болон `@napp/dti-client` frontend холболтыг бодит API-аар шалгана. Runtime холболтын нийцэл батлагдаагүй. `@napp/error`-тай уялдуулсан error code, message, field errors, request ID хэлбэрийг тусад нь батална.
 
 **Үндэслэл ба сул тал:** Нийтлэг contract-ийг нэг газар хөтөлнө. DTI-ийн бэлэн бүтэцтэй давхар envelope/validation үүсгэхгүй байх шаардлагатай.
 
@@ -200,14 +206,16 @@ packages/db
 
 ## TASK-10: Server build, хувилбарууд, TypeScript, lint/format
 
-- Төлөв: Хүлээгдэж буй
+- Төлөв: Хэсэгчлэн баталсан
 - Хамаарал: TASK-02, TASK-05, TASK-07
-- Баталсан огноо: Байхгүй
-- Батлагдсан: TypeScript, Node.js 24.11.0-аас дээших 24.x, shared library-д tsdown, тусдаа type check өмнө батлагдсан
+- Баталсан огноо: 2026-09-10 (backend initialize хүрээ)
+- Батлагдсан: Өмнөх TypeScript/Node.js 24/shared tsdown суурь дээр server tsdown ESM + tsx watch, strict NodeNext typecheck, pinned server dependency болон pnpm lockfile нэмсэн. [ADR 0020](docs/adr/0020-initialize-sysop-server-tooling.md)
 
-**Үлдсэн шийдвэр:** Express server-ийн builder/dev runtime, dependency хувилбарууд, registry, compiler болон lint/format тохиргоо.
+**Үлдсэн шийдвэр:** Бусад package-ийн compiler/dependency/exports, registry шаардлага, ESLint/Prettier болон repository-wide lint/format тохиргоо. Server-ийн яг хувилбарууд manifest/lockfile-д байна.
 
-**Миний санал:** Server-д tsdown, `platform: 'node'`, ESM output; production-д Node.js, development-д `tsx` watch саналтай. TypeScript strict тохиргоо, ESLint + Prettier, manifest/lockfile-д уялдсан хувилбарууд хэрэглэнэ. `@napp` registry-г орчны тохиргоогоор холбоно. [tsdown platform](https://tsdown.dev/options/platform)
+**Хэрэгжүүлсэн суурь:** Server-д tsdown Node24 ESM, development-д tsx watch, production-д Node.js, TypeScript strict/NodeNext ашиглаж build/typecheck/test шалгасан. `@napp/error` public registry-гээс суусан; бүх `@napp` сангийн registry-г үүгээр баталсан гэж үзэхгүй.
+
+**Үлдсэн санал:** ESLint + Prettier, бусад package-ийн compiler/exports болон шаардлагатай registry-г орчны тохиргоогоор холбоно. [tsdown platform](https://tsdown.dev/options/platform)
 
 **Үндэслэл ба сул тал:** Library/server build ойролцоо болно. ESM resolution, DTI module format болон compiler тохиргооны нийцлийг шалгах шаардлагатай.
 
@@ -216,6 +224,8 @@ packages/db
 **Гарах баримт:** Tooling ADR, `docs/operations/` орчны шаардлага.
 
 ## TASK-11: Тест ба CI хэрэгслүүд
+
+**Хэрэгжүүлэлтийн тэмдэглэл:** Backend initialize хүрээнд `node:test`/`node:assert/strict`, tsx ашигласан 8 тест ажиллаж байна. Энэ нь CI болон бусад module-ийн нийт тестийн хэрэгслийн сонголтыг бүхэлд нь баталсан гэсэн үг биш.
 
 - Төлөв: Хүлээгдэж буй
 - Хамаарал: TASK-02, TASK-05, TASK-10
@@ -251,7 +261,10 @@ packages/db
 
 ## Баталгаажуулалтын түүх
 
+- 2026-09-10: Chip CRM DTI-ээс жишээ авч initialize хийх хүсэлтээр `sysop/dti`-ийн `createAction` + Zod contract болон shared tooling суурийг хэрэгжүүлж, ADR 0021-д бүртгэсэн. TASK-05 хэсэгчлэн батлагдсан; business contract, runtime router/client, envelope болон pagination батлаагүй.
 - 2026-09-09: Хэрэглэгч TASK-01-ийг бүрэн баталсан. Server-only dependency, app-owned connection/factory injection, website/admin-ийн тусдаа DB credentials болон сервер талын эрхийн заагийг [ADR 0015](docs/adr/0015-isolate-server-side-db-access.md)-д бүртгэсэн. Бусад task-ийн төлөв өөрчлөгдөөгүй; хэрэгжүүлэлт хийгдээгүй.
+- 2026-09-10: Хэрэглэгч Chip CRM-ийн admin login, user management, ACL аргачлалыг ижил ашиглахыг хүссэн. Userly auth/session/ACL аргачлалыг ADR 0019-д баталж, TASK-03-ыг хэсэгчлэн баталсан болгосон. Өмнөх local cookie/session-store санал үйлчлэхгүй; сан/API/config-ийн үлдсэн нарийвчлал нээлттэй. Код, Userly provisioning болон бусад task-ийн төлөв өөрчлөгдөөгүй.
+- 2026-09-10: Sysop backend initialize хүсэлтээр server scaffold, pnpm workspace/lockfile, dev/build/start/typecheck/test болон fail-closed API суурь үүсгэсэн. TASK-10-ын server tooling хэсгийг ADR 0020-д баталсан. Auth/ACL integration, DB, DTI business action болон бусад package setup дуусаагүй.
 
 - 2026-09-09: Хэрэглэгчийн заавраар бүртгэлийг зөвхөн tech spec хүрээнд цэгцэлсэн. Task ID, батлагдсан шийдвэр, хэсэгчилсэн төлөвийг хадгалж, техникийн бус нарийвчлалыг [дараа хэлэлцэх бүртгэл](docs/deferred-decisions.md)-д шилжүүлсэн. Хүрээ цэгцэлсэн нь шинэ технологийн санал баталсан гэсэн үг биш.
 

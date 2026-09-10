@@ -1,0 +1,9 @@
+packages:
+  - 'web/*'
+  - 'sysop/*'
+  - 'packages/*'
+
+allowBuilds:
+  esbuild: true
+
+minimumReleaseAgeStrict: true

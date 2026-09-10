@@ -14,6 +14,8 @@ Admin UI-ийн компонент болон theme-ийг Mantine-д тулгу
 
 ## Агуулга
 
+- [Admin login, хэрэглэгч ба ACL](../features/admin-authentication-access.md): Userly redirect/callback, logout, permission-aware UI, ACL runtime/recovery төлөв. Local password/user/role management screen хийхгүй; дэлгэцийн эцсийн дизайн нээлттэй.
+- [Автомашины public каталогийн батлагдсан шаардлага](../features/vehicle-catalog.md): нийтэд харуулах мэдээлэл, хайлт, шүүлт, эрэмбэ болон оруулсан UI зургуудыг ашиглах зааг. Responsive багана автомат байна; эцсийн theme болон дэлгэцийн зохиомж хараахан батлагдаагүй.
 - Сайтын бүтэц, хуудас хоорондын навигаци
 - Каталог үзэх, шүүх, автомашины дэлгэрэнгүй мэдээлэл үзэх, холбоо барих хэрэглэгчийн урсгал
 - Хуудасны бүдүүвч, дэлгэцийн загвар, Figma холбоос

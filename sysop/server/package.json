@@ -2,6 +2,25 @@
   "name": "@bigmotors/sysop-server",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --env-file-if-exists=.env src/main.ts",
+    "build": "tsdown",
+    "start": "node --env-file-if-exists=.env dist/main.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import=tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@napp/error": "1.1.0",
+    "express": "5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "24.13.3",
+    "tsdown": "0.23.0",
+    "tsx": "4.23.13",
+    "typescript": "6.0.3"
+  },
   "engines": {
     "node": ">=24.11.0 <25"
   }

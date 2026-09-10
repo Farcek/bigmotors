@@ -2,6 +2,18 @@
   "name": "@bigmotors/bm-website",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev:server": "pnpm --filter @bigmotors/sysop-server dev",
+    "build:server": "pnpm --filter @bigmotors/sysop-server build",
+    "start:server": "pnpm --filter @bigmotors/sysop-server start",
+    "typecheck:server": "pnpm --filter @bigmotors/sysop-server typecheck",
+    "test:server": "pnpm --filter @bigmotors/sysop-server test",
+    "dev:dti": "pnpm --filter @bigmotors/sysop-dti dev",
+    "build:dti": "pnpm --filter @bigmotors/sysop-dti build",
+    "typecheck:dti": "pnpm --filter @bigmotors/sysop-dti typecheck",
+    "test:dti": "pnpm --filter @bigmotors/sysop-dti test"
+  },
   "engines": {
     "node": ">=24.11.0 <25"
   }

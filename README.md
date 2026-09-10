@@ -56,6 +56,7 @@ packages/db
 - Public website: Next.js, PWA дэмжлэгтэй
 - Admin frontend (`sysop-app`): [Mantine UI, Vite build](docs/adr/0007-use-mantine-and-vite-for-sysop-app.md)
 - Admin backend (`sysop-server`): [Express.js](docs/adr/0010-use-express-for-sysop-server.md)
+- Admin login, user management, ACL: [Userly OAuth/OIDC + PKCE, memory-only access token, `userly-acl`](docs/adr/0019-use-userly-admin-authentication-and-acl.md); Chip CRM-ийн аргачлалтай ижил, local password/role management хийхгүй
 - Icon library (`sysop-app`, `website`): [@tabler/icons-react](docs/adr/0008-use-tabler-icons-react.md)
 - Програмчлалын хэл: бүх кодыг [TypeScript дээр бичнэ](docs/adr/0006-use-typescript-for-all-code.md)
 - Shared library builder (`core`, `sysop-dti` болон бусад shared library): [tsdown, ESM + `.d.ts`](docs/adr/0009-use-tsdown-for-shared-libraries.md)
@@ -69,9 +70,20 @@ packages/db
 
 Сангуудын сонголтыг [ADR 0004](docs/adr/0004-use-napp-libraries.md), database болон migration сонголтыг [ADR 0005](docs/adr/0005-use-postgresql-and-drizzle-migrations.md)-д бүртгэсэн.
 
-Root болон зургаан package-д минимал `package.json` үүсгэсэн. Root нэр нь `@bigmotors/bm-website`; дотоод package-ууд нь `@bigmotors/website`, `@bigmotors/sysop-app`, `@bigmotors/sysop-dti`, `@bigmotors/sysop-server`, `@bigmotors/core`, `@bigmotors/db`. Бүгд `private: true`, эхний хувилбар `0.0.0`, Node.js шаардлага `>=24.11.0 <25` байна. Shared library manifest-ууд ESM (`type: module`) ашиглана.
+Root болон зургаан package-ийн manifest байна. Root нэр нь `@bigmotors/bm-website`; дотоод package-ууд нь `@bigmotors/website`, `@bigmotors/sysop-app`, `@bigmotors/sysop-dti`, `@bigmotors/sysop-server`, `@bigmotors/core`, `@bigmotors/db`. Бүгд `private: true`, эхний хувилбар `0.0.0`, Node.js шаардлага `>=24.11.0 <25` байна. Shared library болон sysop server ESM (`type: module`) ашиглана.
 
-Эх код, dependency, script, package exports болон `pnpm-workspace.yaml` хараахан үүсээгүй; build болон ажиллуулах орчин тохируулагдаагүй.
+`sysop/server`-ийн Express + TypeScript суурь, pnpm `11.19.0` workspace/lockfile болон server dev/build/start/test script-үүд үүссэн. `sysop/dti`-д `createAction` + Zod, ESM/declaration build, watch, typecheck болон contract тестийн суурь нэмсэн. Userly/ACL, DTI router/client, business action болон DB холболт хараахан хэрэгжээгүй. Үлдсэн package-ийн runtime/build setup хийгдээгүй.
+
+DTI хөгжүүлэх командууд: `pnpm build:dti`, `pnpm dev:dti`, `pnpm typecheck:dti`, `pnpm test:dti`. [Sysop DTI заавар](docs/operations/sysop-dti.md).
+
+## Backend ажиллуулах
+
+```powershell
+pnpm install --frozen-lockfile
+pnpm dev:server
+```
+
+Анхны health хаяг [http://127.0.0.1:4000/health](http://127.0.0.1:4000/health). Энэ нь process liveness болохоос Userly/DB readiness биш; `/api/*` одоогоор `503 AUTH_ACL_UNAVAILABLE` буцаана. Build, typecheck, test, environment болон порт солих зааврыг [sysop server ашиглалт](docs/operations/sysop-server.md)-аас харна.
 
 ## Баримт бичиг
 
