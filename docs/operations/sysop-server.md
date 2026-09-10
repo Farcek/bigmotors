@@ -12,7 +12,7 @@
 - Root `pnpm-workspace.yaml` бүх package-г хамарна. Backend нь `@bigmotors/core`, `@bigmotors/db`, `@bigmotors/sysop-dti`-г `workspace:*` dependency болгон ашиглана.
 - Registry package болон native build dependency суулгах network access; нууц credential-г repository-д оруулахгүй.
 - `@napp/di` 1.0.10: `createContainer({ env })` нь `TKN_ENV`, `ConfigSysop`, `diDBCoreProviders()`, `diDBServiceProviders()`-ийг бүртгэнэ. DB provider-ууд resolve хийх хүртэл pool үүсгэхгүй; health/startup нь DB credential шаардахгүй.
-- `@napp/dti-core` 6.1.2, `@napp/dti-server` 6.1.2, `zod` 4.4.3 ашиглана. DTI meta нь container дамжуулна; өнгөний list handler `ColorService` ашиглаж, Date талбаруудыг ISO string болгон хөрвүүлнэ. Userly/ACL integration хараахан дуусаагүй.
+- `@napp/dti-core` 6.1.2, `@napp/dti-server` 6.1.2, `zod` 4.4.3 ашиглана. DTI meta нь container дамжуулна; өнгөний CRUD handler-ууд `ColorService` ашиглаж, Date талбаруудыг ISO string болгон хөрвүүлнэ. Userly/ACL-ийг хэрэглэгчийн шийдвэрээр түр алгассан.
 
 ## Командууд
 
@@ -67,15 +67,18 @@ SSL verification-г унтраахгүй. Энэ нь зөвхөн тухайн 
 | Endpoint | Response | Утга |
 | --- | --- | --- |
 | `GET /health` | `200`, `status: ok` | Зөвхөн process liveness; DB/Userly readiness биш |
-| `/api`, `/api/*` бүх method | `503`, `AUTH_ACL_UNAVAILABLE` | Admin API initialize хийгдээгүй тул fail-closed |
+| `GET /api/colors` | `200` | Жагсаалт; `limit`, `offset`, `isActive` query |
+| `POST /api/colors` | `200` | Өнгө үүсгэж entity буцаана |
+| `PATCH /api/colors/:id` | `200` | Өгсөн талбаруудыг засаж entity буцаана |
+| `DELETE /api/colors/:id` | `200` | Устгасан entity буцаана |
 | Бусад route | `404`, `NOT_FOUND` | JSON алдаа |
 
-`@napp/error` ашиглана; stack/cause/details-ийг HTTP response-д serialization хийхгүй. Суурийн `{ error: { code, message } }` хэлбэр нь эцсийн DTI contract биш; DTI integration үед TASK-05-тай уялдуулна. `x-powered-by` унтраалттай, response `no-store`, `nosniff`; proxy trust анх унтраалттай.
+Өнгөний DTI response нь `{ success: true, data }`, алдаа нь `{ success: false, code, message }`. Validation алдаа `400`, олдоогүй өнгө `404`, нэрийн давхардал болон ашиглагдаж буй өнгийг устгах үед `409`; DB/internal алдаа `500 UNKNOWN_ERROR`. `@napp/error`-ийн 4xx алдааг status/code/message-ээр дамжуулж, stack/cause/details-ийг гаргахгүй. Бүртгэлгүй route зэрэг Express алдаа `{ error: { code, message } }` хэлбэртэй. `x-powered-by` унтраалттай, response `no-store`, `nosniff`; proxy trust анх унтраалттай.
 
-Userly token validation, permission/scope, login endpoint, CORS policy, upload болон бүтээгдэхүүний CRUD **хэрэгжээгүй**. Өнгөний list handler бүртгэлтэй боловч `/api` deny gate-ийн ард байна; DTI auth өөрөө мөн `503` буцаана. Хамгаалалтыг зөвхөн батлагдсан Userly/ACL хэрэгжүүлэлтээр солино; auth bypass болон demo account байхгүй. Startup migration ажиллуулахгүй. DB pool ашиглаж эхлэх integration үед `pool.end()`-ийг shutdown-д холбох шаардлагатай; container-ийн `destroy()` дангаараа `pg.Pool`-ийг хаадаггүй.
+Userly token validation, permission/scope, login endpoint, CORS policy, upload болон бүтээгдэхүүний CRUD **хэрэгжээгүй**. Userly/ACL-ийг хэрэглэгч түр алгассан: `/api` deny gate идэвхгүй, DTI auth нь түр `admin` context буцаана. Энэ нь баталгаажсан хэрэглэгч биш; API token шаардахгүй. **Зөвхөн хөгжүүлэлтэд ашиглана, production болон нийтэд нээлттэй орчинд байршуулахгүй.** Userly/ACL хамгаалалтыг дараа хэрэгжүүлнэ. Startup migration ажиллуулахгүй. `pool.end()`-ийг shutdown-д холбох ажил үлдсэн; container-ийн `destroy()` дангаараа `pg.Pool`-ийг хаадаггүй.
 
 `SIGINT`/`SIGTERM` үед шинэ холболт авахаа зогсоож, хүсэлт дуусахыг 10 секунд хүлээнэ. Хугацаа хэтэрвэл холболтуудыг хааж алдааны exit code-той гарна. Порт ашиглагдаж байвал `EADDRINUSE`-тай зогсоно.
 
 ## Шалгалт
 
-Тестүүд health/404, бүх admin method болон DTI router-ийн fail-closed, safe error response, DI-ээр config validation, DB/service module resolve болон lazy DB үүсгэлтийг хамарна. Тестүүд pool-оо өөрсдөө хаана. Бодит Userly/DB integration болон production load тест хийгдээгүй.
+`test/colors-http.test.ts` нь бодит HTTP хүсэлтээр DTI route, DI module, ColorService болон тусгаарласан PGlite DB-г хамтад нь шалгана. Одоо байгаа migration-уудыг зөвхөн санах ойн DB-д хэрэгжүүлнэ; шинэ migration үүсгэхгүй, local/production DB-д хүрэхгүй. CRUD, ISO timestamp, pagination/filter, validation, 404/409 болон safe 500 response-ийг хамарна. Бусад тестүүд health/404, config validation, DB/service module resolve болон lazy DB үүсгэлтийг шалгана. Тестүүд HTTP server, container, DB/pool-оо хаана. Бодит Userly/PostgreSQL network integration болон production load тест хийгдээгүй.

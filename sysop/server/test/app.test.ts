@@ -6,7 +6,6 @@ import express from "express";
 import { NappError } from "@napp/error";
 import { createApp, errorHandler } from "../src/app.js";
 import { createContainer } from "../src/di.js";
-import { buildAPI } from "../src/api/index.js";
 
 const di = createContainer({ env: {} });
 const server = createServer(createApp(di));
@@ -45,15 +44,15 @@ test("unknown routes return a safe JSON 404", async () => {
   });
 });
 
-test("all admin API methods fail closed even with a fake Bearer token", async () => {
-  for (const path of ["/api", "/api/colors", "/api/vehicles", "/api/users"]) {
+test("unregistered admin routes return 404", async () => {
+  for (const path of ["/api", "/api/vehicles", "/api/users"]) {
     for (const method of ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]) {
       const response = await fetch(`${baseUrl}${path}`, {
         method, headers: { Authorization: "Bearer fake-token" },
       });
-      assert.equal(response.status, 503);
+      assert.equal(response.status, 404);
       assert.deepEqual(await response.json(), {
-        error: { code: "AUTH_ACL_UNAVAILABLE", message: "Admin API is not initialized." },
+        error: { code: "NOT_FOUND", message: "Route not found." },
       });
     }
   }
@@ -90,30 +89,12 @@ test("unexpected errors never serialize stack, cause or internal details", async
   }
 });
 
-test("DTI router itself denies access before resolving database services", async (t) => {
-  const container = createContainer({ env: {} });
-  const app = express();
-  app.use(buildAPI(container));
-  const dtiServer = createServer(app);
-  t.after(async () => {
-    try {
-      await new Promise<void>((resolve, reject) => {
-        dtiServer.close((error) => error ? reject(error) : resolve());
-        dtiServer.closeAllConnections();
-      });
-    } finally { container.destroy(); }
-  });
-  dtiServer.listen(0, "127.0.0.1");
-  await once(dtiServer, "listening");
-  const address = dtiServer.address();
-  assert.ok(address && typeof address !== "string");
-  const response = await fetch(`http://127.0.0.1:${address.port}/colors`, {
-    headers: { Authorization: "Bearer fake-token" },
-  });
-  assert.equal(response.status, 503);
+test("DTI hides missing database configuration behind a safe error", async () => {
+  const response = await fetch(`${baseUrl}/api/colors`);
+  assert.equal(response.status, 500);
   assert.deepEqual(await response.json(), {
     success: false,
-    code: "AUTH_ACL_UNAVAILABLE",
-    message: "Admin API is not initialized.",
+    code: "UNKNOWN_ERROR",
+    message: "request error",
   });
 });

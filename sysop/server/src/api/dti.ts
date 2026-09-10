@@ -1,6 +1,7 @@
 
 import type { Container } from "@napp/di";
 import { DTIError } from "@napp/dti-core";
+import { NappError } from "@napp/error";
 import { createDTIExpressRouter, type DTIExpressRouter } from "@napp/dti-server";
 
 
@@ -49,6 +50,13 @@ export function buildDTI(di: Container) {
             parse: ({ error: rawError, action, req }) => {
                 if (rawError instanceof DTIError) {
                     return rawError;
+                }
+                if (rawError instanceof NappError) {
+                    const status = rawError.status !== undefined && Number.isInteger(rawError.status) ? rawError.status : 500;
+                    return new DTIError(rawError.message, {
+                        code: rawError.code,
+                        status: status >= 400 && status < 500 ? status : 500
+                    });
                 }
 
                 // const mapped = mapUnknownError(rawError);
