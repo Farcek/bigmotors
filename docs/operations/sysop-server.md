@@ -64,6 +64,8 @@ SSL verification-г унтраахгүй. Энэ нь зөвхөн тухайн 
 
 ## Endpoint ба аюулгүй зааг
 
+Өнгө/салбараас гадна [6 энгийн лавлах](db-schema.md#flat-reference-services), [4 эцэгтэй лавлах](db-schema.md#parent-reference-services) CRUD endpoint-тэй. Тус бүр base path дээр GET/POST, `/:id` дээр PATCH/DELETE ашиглана; бүх амжилттай response `200`. `references-http.test.ts`, `parent-references-http.test.ts` нь CRUD, query, validation, FK болон error response-ийг шалгана. Эцэггүй/идэвхгүй лавлахаар шинээр үүсгэхийг хориглоно; category нь эцэггүй үндсэн ангилал байж болно. PATCH-аар эцэг солихгүй.
+
 | Endpoint | Response | Утга |
 | --- | --- | --- |
 | `GET /health` | `200`, `status: ok` | Зөвхөн process liveness; DB/Userly readiness биш |
@@ -71,14 +73,20 @@ SSL verification-г унтраахгүй. Энэ нь зөвхөн тухайн 
 | `POST /api/colors` | `200` | Өнгө үүсгэж entity буцаана |
 | `PATCH /api/colors/:id` | `200` | Өгсөн талбаруудыг засаж entity буцаана |
 | `DELETE /api/colors/:id` | `200` | Устгасан entity буцаана |
+| `GET /api/branches` | `200` | Компанийн салбарын жагсаалт; `limit`, `offset`, `isActive` query |
+| `POST /api/branches` | `200` | Салбар үүсгэж entity буцаана |
+| `PATCH /api/branches/:id` | `200` | Өгсөн талбаруудыг засаж entity буцаана |
+| `DELETE /api/branches/:id` | `200` | Устгасан entity буцаана; бүтээгдэхүүнд ашиглагдаж байвал `409 BRANCH_IN_USE` |
 | Бусад route | `404`, `NOT_FOUND` | JSON алдаа |
 
-Өнгөний DTI response нь `{ success: true, data }`, алдаа нь `{ success: false, code, message }`. Validation алдаа `400`, олдоогүй өнгө `404`, нэрийн давхардал болон ашиглагдаж буй өнгийг устгах үед `409`; DB/internal алдаа `500 UNKNOWN_ERROR`. `@napp/error`-ийн 4xx алдааг status/code/message-ээр дамжуулж, stack/cause/details-ийг гаргахгүй. Бүртгэлгүй route зэрэг Express алдаа `{ error: { code, message } }` хэлбэртэй. `x-powered-by` унтраалттай, response `no-store`, `nosniff`; proxy trust анх унтраалттай.
+Өнгө, салбарын DTI response нь `{ success: true, data }`, алдаа нь `{ success: false, code, message }`. Validation алдаа `400`, олдоогүй бүртгэл `404`, нэрийн давхардал болон ашиглагдаж буй бүртгэлийг устгах үед `409`. Одоогийн mapping нь `NappError`-ийн code/message-ийг хадгална: DB алдаа `500 COLOR_STORAGE_ERROR` эсвэл `500 BRANCH_STORAGE_ERROR`; бусад unknown алдаа `500 UNKNOWN_ERROR`. Stack/cause/details-ийг дамжуулахгүй. Бүртгэлгүй route зэрэг Express алдаа `{ error: { code, message } }` хэлбэртэй. `x-powered-by` унтраалттай, response `no-store`, `nosniff`; proxy trust анх унтраалттай.
 
 Userly token validation, permission/scope, login endpoint, CORS policy, upload болон бүтээгдэхүүний CRUD **хэрэгжээгүй**. Userly/ACL-ийг хэрэглэгч түр алгассан: `/api` deny gate идэвхгүй, DTI auth нь түр `admin` context буцаана. Энэ нь баталгаажсан хэрэглэгч биш; API token шаардахгүй. **Зөвхөн хөгжүүлэлтэд ашиглана, production болон нийтэд нээлттэй орчинд байршуулахгүй.** Userly/ACL хамгаалалтыг дараа хэрэгжүүлнэ. Startup migration ажиллуулахгүй. `pool.end()`-ийг shutdown-д холбох ажил үлдсэн; container-ийн `destroy()` дангаараа `pg.Pool`-ийг хаадаггүй.
 
 `SIGINT`/`SIGTERM` үед шинэ холболт авахаа зогсоож, хүсэлт дуусахыг 10 секунд хүлээнэ. Хугацаа хэтэрвэл холболтуудыг хааж алдааны exit code-той гарна. Порт ашиглагдаж байвал `EADDRINUSE`-тай зогсоно.
 
 ## Шалгалт
+
+`test/branches-http.test.ts` нь `/api/branches`-ийн CRUD, ISO timestamp, pagination/filter, 400/404/409/500 болон машин, сэлбэг, дугуйн салбарын FK хамгаалалтыг DI + бодит `BranchService` + тусгаарласан PGlite-ээр шалгана. Салбарын үйлдэл бүтээгдэхүүний `location_id`-г өөрчлөхгүй.
 
 `test/colors-http.test.ts` нь бодит HTTP хүсэлтээр DTI route, DI module, ColorService болон тусгаарласан PGlite DB-г хамтад нь шалгана. Одоо байгаа migration-уудыг зөвхөн санах ойн DB-д хэрэгжүүлнэ; шинэ migration үүсгэхгүй, local/production DB-д хүрэхгүй. CRUD, ISO timestamp, pagination/filter, validation, 404/409 болон safe 500 response-ийг хамарна. Бусад тестүүд health/404, config validation, DB/service module resolve болон lazy DB үүсгэлтийг шалгана. Тестүүд HTTP server, container, DB/pool-оо хаана. Бодит Userly/PostgreSQL network integration болон production load тест хийгдээгүй.

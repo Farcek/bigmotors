@@ -127,7 +127,7 @@ test("colors HTTP API uses DI and real CRUD against an isolated database", async
   await t.test("storage failures return a sanitized 500", async () => {
     await db.close();
     const result = await request("GET");
-    failure(result, 500, "UNKNOWN_ERROR");
-    assert.deepEqual(result.body, { success: false, code: "UNKNOWN_ERROR", message: "request error" });
+    failure(result, 500, "COLOR_STORAGE_ERROR");
+    assert.deepEqual(result.body, { success: false, code: "COLOR_STORAGE_ERROR", message: "Color storage operation failed." });
   });
 });

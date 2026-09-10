@@ -7,3 +7,7 @@ Repository root-оос `pnpm dev:server` ажиллуулна. Анхны хая
 Ажиллуулах, build, тест болон хэрэгжээгүй хэсгийн заагийг [ашиглалтын заавар](../../docs/operations/sysop-server.md)-аас харна. DI container нь `ConfigSysop`, DB core/service module-уудыг бүртгэнэ. Өнгөний list/create/update/delete handler container-оос `ColorService` авна. Хэрэглэгчийн шийдвэрээр Userly/ACL-ийг түр алгассан: API нэвтрэлт шаардахгүй, зөвхөн хөгжүүлэлтийн орчинд ашиглана; production-д нээхгүй.
 
 `test/colors-http.test.ts` нь HTTP → DTI → DI → ColorService → PGlite урсгалыг шалгана. Root-оос `pnpm test:server` ажиллуулна; бодит DB-д хүрэхгүй, шинэ migration үүсгэхгүй.
+
+`src/api/branches.ts` нь компанийн салбарын list/create/update/delete-г `BranchService`-тэй DI-ээр холбоно. Endpoint нь `/api/branches`, `/api/branches/:id`; бүтээгдэхүүний байршилтай тусдаа. `test/branches-http.test.ts` нь CRUD, pagination/filter, validation, 404/409/500 болон машин/сэлбэг/дугуйн FK хамгаалалтыг HTTP түвшинд шалгана.
+
+Үүнээс гадна [6 энгийн лавлах](../../docs/operations/db-schema.md#flat-reference-services) болон [4 эцэгтэй лавлах](../../docs/operations/db-schema.md#parent-reference-services)-ын service → DTI → API → DI холболт бэлэн. `test/references-http.test.ts`, `test/parent-references-http.test.ts` нь бодит HTTP + PGlite-ээр шалгана; production DB-д хүрэхгүй. Эцэгтэй лавлах үүсгэхэд өвгүүдийн идэвхтэй эсэхийг шалгана, PATCH-аар эцэг солихгүй.

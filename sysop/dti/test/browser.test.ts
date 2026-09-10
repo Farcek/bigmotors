@@ -3,7 +3,6 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { build } from "tsdown";
-import type { Health, Colors, Branches } from "../src/index.js";
 
 test("contracts bundle and validate without Node.js globals", async () => {
   const handle = await build({
@@ -37,7 +36,7 @@ test("contracts bundle and validate without Node.js globals", async () => {
       `${entry.code}\nBigMotorsDti;`,
       {},
       { timeout: 5_000 },
-    ) as { Health: typeof Health; Colors: typeof Colors; Branches: typeof Branches };
+    ) as typeof import("../src/index.js");
     const browserHealth = contracts.Health;
     assert.equal(browserHealth.check.path, "/health");
     assert.equal(browserHealth.result.safeParse({
@@ -49,6 +48,20 @@ test("contracts bundle and validate without Node.js globals", async () => {
     assert.equal(contracts.Branches.createBody.safeParse({ name: "Branch" }).success, true);
     assert.equal(contracts.Branches.listQuery.parse({ isActive: "false" }).isActive, false);
     assert.equal(contracts.Branches.remove.path, "/branches/:id");
+    for (const name of ["VehicleBrands", "VehicleBodyTypes", "VehicleFeatures", "PartBrands", "TireBrands", "Locations"] as const) {
+      const contract = contracts[name];
+      assert.equal(contract.createBody.safeParse({ name: "Reference" }).success, true);
+      assert.equal(contract.createBody.safeParse({ name: "Reference", parentId: "unsupported" }).success, false);
+      assert.equal(contract.listQuery.parse({ isActive: "false" }).isActive, false);
+      assert.equal(contract.updateBody.safeParse({}).success, false);
+    }
+    const id = "d4ea26c2-52a0-4223-8cc1-d649b84281d1";
+    for (const [name, key] of [["VehicleModels", "brandId"], ["VehicleVariants", "modelId"], ["TireModels", "brandId"], ["PartCategories", "parentId"]] as const) {
+      assert.equal(contracts[name].createBody.safeParse({ name: "Reference", [key]: id }).success, true);
+      assert.equal(contracts[name].updateBody.safeParse({ name: "Rename", [key]: id }).success, false);
+    }
+    assert.equal(contracts.PartCategories.listQuery.parse({ rootOnly: "false" }).rootOnly, false);
+    assert.equal(contracts.PartCategories.listQuery.safeParse({ rootOnly: "true", parentId: id }).success, false);
   } finally {
     for (const bundle of handle.bundles) {
       await bundle[Symbol.asyncDispose]();

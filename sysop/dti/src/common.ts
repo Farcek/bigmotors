@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const integer = z.number().int().min(-2_147_483_648).max(2_147_483_647);
 const queryNumber = z.union([z.number(), z.string().regex(/^\d+$/).transform(Number)]);
-const queryBoolean = z.union([z.boolean(), z.enum(["true", "false"]).transform((value) => value === "true")]);
+export const queryBoolean = z.union([z.boolean(), z.enum(["true", "false"]).transform((value) => value === "true")]);
 
 export const idParams = z.object({ id: z.string().uuid() }).strict();
 export const referenceListQuery = z.object({

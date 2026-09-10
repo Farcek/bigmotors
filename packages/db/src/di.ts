@@ -6,6 +6,16 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema/index.js";
 import { ColorService } from "./service/color.js";
 import { BranchService } from "./service/branch.js";
+import { VehicleBrandService } from "./service/vehicle-brand.js";
+import { VehicleBodyTypeService } from "./service/vehicle-body-type.js";
+import { VehicleFeatureService } from "./service/vehicle-feature.js";
+import { PartBrandService } from "./service/part-brand.js";
+import { TireBrandService } from "./service/tire-brand.js";
+import { LocationService } from "./service/location.js";
+import { VehicleModelService } from "./service/vehicle-model.js";
+import { VehicleVariantService } from "./service/vehicle-variant.js";
+import { TireModelService } from "./service/tire-model.js";
+import { PartCategoryService } from "./service/part-category.js";
 
 
 
@@ -36,6 +46,16 @@ export function diDBServiceProviders() {
         providers: [
             asClass(ColorService),
             asClass(BranchService),
+            asClass(VehicleBrandService),
+            asClass(VehicleBodyTypeService),
+            asClass(VehicleFeatureService),
+            asClass(PartBrandService),
+            asClass(TireBrandService),
+            asClass(LocationService),
+            asClass(VehicleModelService),
+            asClass(VehicleVariantService),
+            asClass(TireModelService),
+            asClass(PartCategoryService),
 
         ]
     };

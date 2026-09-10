@@ -69,6 +69,47 @@ Category tree-ийн бичилт advisory transaction lock авна; `READ COMM
 
 `NappError` код: `BRANCH_INVALID_INPUT` (400), `BRANCH_NOT_FOUND` (404), `BRANCH_NAME_CONFLICT` (409), `BRANCH_IN_USE` (409), `BRANCH_STORAGE_ERROR` (500). Давхардал болон ашиглагдсан эсэхийг DB constraint эцэслэн хамгаална. ACL, API route, admin form болон pool lifecycle service-ийн үүрэг биш; caller хариуцна. Энэ service-д шинэ migration шаардлагагүй.
 
+## Flat Reference Services
+
+Өнгө, салбарын загвараар доорх 6 лавлахын тусдаа service, DTI contract, API болон DI бүртгэл нэмсэн. Эдгээр 8 энгийн лавлахаас гадна доорх 4 эцэгтэй лавлах хэрэгжиж, нийт 12 лавлах CRUD-тай болсон; schema, migration, seed өөрчлөөгүй.
+
+| Service | DTI namespace | API base path |
+| --- | --- | --- |
+| [VehicleBrandService](../../packages/db/src/service/vehicle-brand.ts) | `VehicleBrands` | `/api/vehicle-brands` |
+| [VehicleBodyTypeService](../../packages/db/src/service/vehicle-body-type.ts) | `VehicleBodyTypes` | `/api/vehicle-body-types` |
+| [VehicleFeatureService](../../packages/db/src/service/vehicle-feature.ts) | `VehicleFeatures` | `/api/vehicle-features` |
+| [PartBrandService](../../packages/db/src/service/part-brand.ts) | `PartBrands` | `/api/part-brands` |
+| [TireBrandService](../../packages/db/src/service/tire-brand.ts) | `TireBrands` | `/api/tire-brands` |
+| [LocationService](../../packages/db/src/service/location.ts) | `Locations` | `/api/locations` |
+
+Бүгд `BranchService`-тай ижил `list/create/update/delete` method, validation, pagination, эрэмбэ болон partial update дүрэмтэй. `diDBServiceProviders()`-д бүртгэлтэй; `TKN_DB` injection ашиглана. Нэмэлт parent талбар, HEX, search эсвэл tree endpoint байхгүй. List бүх төлөвийг буцааж, `isActive`-аар шүүнэ. API нь GET/POST base path, PATCH/DELETE `/:id`; result огноо ISO string байна.
+
+Error prefix: `VEHICLE_BRAND`, `VEHICLE_BODY_TYPE`, `VEHICLE_FEATURE`, `PART_BRAND`, `TIRE_BRAND`, `LOCATION`. Suffix нь `INVALID_INPUT` (400), `NOT_FOUND` (404), `NAME_CONFLICT`/`IN_USE` (409), `STORAGE_ERROR` (500). Нэрийн давхардал болон устгах хамгаалалтыг одоогийн DB constraint шийднэ. Холбоотой бүтээгдэхүүн, загвар эсвэл тоноглолын холбоос байвал устгахгүй, идэвхгүй болгож болно. `LocationService` компанийн салбарыг өөрчлөхгүй.
+
+`packages/db/test/reference-services.test.ts` нь DI, CRUD, validation болон FK хамгаалалт; `sysop/dti/test/references.test.ts` нь contract; `sysop/server/test/references-http.test.ts` нь HTTP → DI → service → PGlite урсгалыг шалгана.
+
+## Parent Reference Services
+
+2026-09-11: Хэрэглэгчийн баталсан хувилбараар үлдсэн 4 лавлахын service, DTI, API, DI болон HTTP тест хэрэгжсэн.
+
+| Service | Namespace | API base path | Create талбар / list шүүлт |
+| --- | --- | --- | --- |
+| [VehicleModelService](../../packages/db/src/service/vehicle-model.ts) | `VehicleModels` | `/api/vehicle-models` | `brandId` create-д заавал, list-д сонголттой |
+| [VehicleVariantService](../../packages/db/src/service/vehicle-variant.ts) | `VehicleVariants` | `/api/vehicle-variants` | `modelId` create-д заавал, list-д сонголттой |
+| [TireModelService](../../packages/db/src/service/tire-model.ts) | `TireModels` | `/api/tire-models` | `brandId` create-д заавал, list-д сонголттой |
+| [PartCategoryService](../../packages/db/src/service/part-category.ts) | `PartCategories` | `/api/part-categories` | `parentId` сонголттой, default null; list-д `rootOnly` нэмэгдэнэ |
+
+- Бүгд GET/POST base path, PATCH/DELETE `/:id` ашиглана. Бусад нийтлэг талбар, list pagination/эрэмбэ болон ISO огноо өмнөх лавлахуудтай ижил.
+- Create нь эцэг болон дээд эцгүүд байгаа, идэвхтэй эсэхийг шалгана. Variant нь model + brand, category нь бүх өвөг ангиллыг шалгана. Шалгалт болон INSERT нэг transaction-д; эцгийн мөрүүдийг `FOR SHARE`-аар commit хүртэл хамгаална.
+- PATCH нь зөвхөн `name`, `description`, `sortOrder`, `isActive` авна. Эцгийн key-г ижил ID эсвэл `undefined` утгатай ч дамжуулбал буцаана. Үүсгэсэн бүртгэлийн эцэг солих API байхгүй; DB schema өөрчлөгдөөгүй тул энэ нь service/contract түвшний хориг.
+- Идэвхгүй болсон эцэгтэй хуучин бүртгэлийг засаж болно; хүүхдийн `isActive` болон бүтээгдэхүүний холбоосыг автоматаар өөрчлөхгүй. List-ийн `isActive` нь тухайн мөрийн төлөвийг шүүнэ, өвгийн төлөвийг биш.
+- Нэр тухайн эцгийн хүрээнд давхардахгүй; category-ийн эцэггүй үндсэн нэрүүд мөн давхардахгүй. DB unique index үүнийг эцэслэн хамгаална.
+- Category-ийн `parentId` list filter нь шууд хүүхдүүдийг буцаана. `rootOnly=true` зөвхөн үндсэн ангилал; `rootOnly=false` эсвэл орхисон үед root-only хязгаарлалтгүй. `rootOnly=true` + `parentId` нь 400. Query-д `parentId=null` дамжуулахгүй, `rootOnly=true` хэрэглэнэ. Tree endpoint нэмээгүй.
+- Бүтээгдэхүүн эсвэл хүүхэд лавлахтай мөрийг устгахгүй; 409 `*_IN_USE`. Cascade delete хийхгүй. Өөрийгөө/үр удмаа эцэг болгох нь immutable parent болон одоогийн DB category trigger-ээр хамгаалагдана.
+- Error prefix: `VEHICLE_MODEL`, `VEHICLE_VARIANT`, `TIRE_MODEL`, `PART_CATEGORY`. Өмнөх нийтлэг suffix-ээс гадна `PARENT_NOT_FOUND` (400), `PARENT_INACTIVE` (409). DTI оролтын schema зөрчил нь 400 `DTI_BODY_VALIDATE_ERROR`/`DTI_QUERY_VALIDATE_ERROR`.
+
+Service тест: `packages/db/test/parent-reference-services.test.ts`; contract: `sysop/dti/test/parent-references.test.ts`; HTTP: `sysop/server/test/parent-references-http.test.ts`. PGlite нь бодит PostgreSQL-ийн олон холболттой concurrency/deadlock тестийг орлохгүй.
+
 ## Migration
 
 Дараагийн баталгаагаар `packages/db/drizzle.config.ts`, `migrations/`, `db:generate`, `db:migrate` болон эхний migration/snapshot үүссэн. Root-оос дуудах командтай; app startup-аас тусдаа. Бодит DB schema, өгөгдөл өөрчлөөгүй; seed болон push команд нэмээгүй. [Migration ажиллуулах заавар](db-migrations.md).

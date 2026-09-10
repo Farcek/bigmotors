@@ -18,4 +18,4 @@ Root-оос `pnpm build:db`, `pnpm typecheck:db`, `pnpm test:db` ажиллуу�
 
 Root-оос `pnpm db:generate --name=change_name` нь SQL migration үүсгэнэ. `pnpm build:db`-ийн дараа `DB_CONNECTION_STRING`-тай `pnpm db:migrate` нь бодит DB-д хэрэгжүүлнэ. Local `.env` нь энэ package дотор байна. Website/backend startup migration ажиллуулахгүй. [Migration заавар](../../docs/operations/db-migrations.md).
 
-Эхний болон HEX migration local DB-д ажилласан. Өнгөний shared CRUD/validation хэрэгжсэн; бусад CRUD, seed, upload болон app integration дараагийн ажил. Дэлгэрэнгүй [хөгжүүлэх заавар](../../docs/operations/db-schema.md).
+Бүх 12 лавлахын shared CRUD, DTI болон API холболт хэрэгжсэн. [Энгийн лавлахууд](../../docs/operations/db-schema.md#flat-reference-services), [эцэгтэй лавлахууд](../../docs/operations/db-schema.md#parent-reference-services). Бүтээгдэхүүний CRUD, seed, upload болон admin form дараагийн ажил.

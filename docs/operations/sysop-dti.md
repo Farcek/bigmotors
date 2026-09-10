@@ -20,7 +20,7 @@ pnpm dev:dti
 
 `dev:dti` нь өөрчлөлт бүрд library-г дахин build хийнэ; HTTP сервер биш. Build үр дүн нь `dist/index.mjs`, `dist/index.d.mts` болон source map. `dist` болон `node_modules` нь Git-д орохгүй.
 
-Бусад package-аас импортлохын өмнө DTI-г build хийнэ. Consumer-ийн dependency-г `workspace:*`-оор холбох санал TASK-02-т нээлттэй; энэ initialize нь app/server manifest-д DTI dependency эсвэл автомат build дараалал нэмээгүй.
+Бусад package-аас импортлохын өмнө DTI-г build хийнэ. Server нь `workspace:*` dependency ашиглаж, root-ийн server командууд shared package-уудаа эхлээд build хийнэ.
 
 ## Contract бичих бүтэц
 
@@ -37,7 +37,7 @@ Zod schema-аас `z.infer` ашиглан type гаргана. `safeParse` нь
 
 `Health.check`: `healthCheck`, `GET /health`, body байхгүй, query нь хоосон object; result нь `{ status: "ok", service: "@bigmotors/sysop-server" }`. Schema нь нэмэлт key зөвшөөрөхгүй. Энэ нь DB/Userly readiness биш.
 
-Серверийн одоо байгаа `/health` handler-ийг contract-той хараахан холбоогүй тул runtime schema enforcement хийгдээгүй. `/api/*`-ийн fail-closed хамгаалалт өөрчлөгдөөгүй.
+Серверийн одоо байгаа `/health` handler-ийг contract-той хараахан холбоогүй тул runtime schema enforcement хийгдээгүй. Userly/ACL-ийг хөгжүүлэлтийн үед хэрэглэгч түр алгассан; [одоогийн хамгаалалтын зааг](sysop-server.md).
 
 ### Өнгө Ба Салбар
 
@@ -60,7 +60,11 @@ Action name: `colorList`, `colorCreate`, `colorUpdate`, `colorDelete`, мөн `b
 
 Namespace бүр `entity`, `createBody`, `updateBody`, `params`, `listQuery`, `listResult` schema болон `Entity`, `CreateBody`, `UpdateBody`, `Params`, `ListQuery`, `ListResult` төрөлтэй. Input төрөл `z.input`, parsed/result төрөл `z.infer` ашиглана. Ингэснээр query-ийн wire string болон parse хийсний дараах number/boolean-ийг ялгана.
 
-Энэ өөрчлөлт зөвхөн contract: DB service-ийг route-д холбох, огнооны mapping, DTI error mapping, `@napp/dti-client`, Userly/ACL болон admin form дараагийн ажил. Өнгө/салбарын ашиглагдсан мөрийг устгахгүй байх, нэрийн давхардлыг хамгаалах дүрэм нь DB service/constraint дээр хэвээр. Contract package-д DB, Express, token эсвэл нэвтрэх хэрэгжүүлэлт оруулаагүй.
+Өнгө, салбар болон [6 энгийн лавлах](db-schema.md#flat-reference-services)-ын contract нь server service/route-д холбогдсон; огноо болон error mapping хэрэгжсэн. Ашиглагдсан мөрийг устгахгүй байх, нэрийн давхардлын хамгаалалт нь DB service/constraint дээр байна. Contract package-д DB, Express эсвэл auth хэрэгжүүлэлт оруулаагүй. Userly/ACL болон frontend client/form дараагийн ажил.
+
+### Эцэгтэй Лавлахууд
+
+`VehicleModels`, `VehicleVariants`, `TireModels`, `PartCategories` нэмэгдсэн; [service/namespace/path болон батлагдсан дүрэм](db-schema.md#parent-reference-services). Entity ба create нь `brandId`, `modelId` эсвэл `parentId`-тай. Update body нь зөвхөн нийтлэг засагдах талбаруудтай strict schema; эцэг солих key хүлээн авахгүй. Category create-ийн `parentId` default `null`; list-ийн `rootOnly` нь boolean болон `"true"`/`"false"` wire утга авна. `rootOnly=true` ба `parentId` зэрэг өгөхийг хориглоно. Эцэг байгаа/идэвхтэй эсэхийн DB шалгалтыг contract биш service хариуцна. Бүх 12 лавлахын action нэр болон HTTP method/path давхцахгүйг тестээр шалгана.
 
 ## Шалгалт
 

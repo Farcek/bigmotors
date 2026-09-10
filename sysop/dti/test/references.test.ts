@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Branches, Colors } from "../src/index.js";
+import { Branches, Colors, VehicleBrands, VehicleBodyTypes, VehicleFeatures, PartBrands, TireBrands, Locations } from "../src/index.js";
+import { VehicleModels, VehicleVariants, TireModels, PartCategories } from "../src/index.js";
 
 const id = "d4ea26c2-52a0-4223-8cc1-d649b84281d1";
 const branch: Branches.Entity = {
@@ -9,9 +10,18 @@ const branch: Branches.Entity = {
 };
 const color: Colors.Entity = { ...branch, name: "White", hexCode: "#FFFFFF" };
 
-for (const [name, contract, sample] of [["color", Colors, color], ["branch", Branches, branch]] as const) {
+const references = [
+  ["color", "/colors", Colors, color], ["branch", "/branches", Branches, branch],
+  ["vehicleBrand", "/vehicle-brands", VehicleBrands, branch],
+  ["vehicleBodyType", "/vehicle-body-types", VehicleBodyTypes, branch],
+  ["vehicleFeature", "/vehicle-features", VehicleFeatures, branch],
+  ["partBrand", "/part-brands", PartBrands, branch],
+  ["tireBrand", "/tire-brands", TireBrands, branch],
+  ["location", "/locations", Locations, branch],
+] as const;
+
+for (const [name, base, contract, sample] of references) {
   test(`${name} actions describe CRUD routes and service-shaped results`, () => {
-    const base = name === "color" ? "/colors" : "/branches";
     for (const [action, suffix, method, path] of [
       [contract.list, "List", "GET", base],
       [contract.create, "Create", "POST", base],
@@ -106,7 +116,9 @@ test("color HEX is optional on input, nullable on output and not a branch field"
 });
 
 test("all public action names and method/path pairs are unique", () => {
-  const actions = [Colors.list, Colors.create, Colors.update, Colors.remove, Branches.list, Branches.create, Branches.update, Branches.remove];
-  assert.equal(new Set(actions.map((action) => action.name)).size, actions.length);
-  assert.equal(new Set(actions.map((action) => `${action.method} ${action.path}`)).size, actions.length);
+  const actions = references.flatMap(([, , contract]) => [contract.list, contract.create, contract.update, contract.remove]);
+  const parentActions = [VehicleModels, VehicleVariants, TireModels, PartCategories].flatMap((c) => [c.list, c.create, c.update, c.remove]);
+  const allActions = [...actions, ...parentActions];
+  assert.equal(new Set(allActions.map((action) => action.name)).size, allActions.length);
+  assert.equal(new Set(allActions.map((action) => `${action.method} ${action.path}`)).size, allActions.length);
 });
