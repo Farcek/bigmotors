@@ -31,6 +31,8 @@ BigMotors дотор local password login, user invitation, account suspend/remo
 
 ## Дотоод profile
 
+2026-09-10: [Admin profiles schema](../db/catalog-schema-proposal.md#admin-profiles) батлагдсан: id, unique userly_sub, nullable display_name/email, created_at/updated_at. Local metadata, scope mapping болон audit persistence-ийн нэмэлт бүтэц энэ баталгаанд ороогүй. Runtime integration хийгдээгүй.
+
 - Local profile нь Userly account биш; identity cache болон дотоод reference байна. Userly stable `sub`-тай unique холбоно, email-г холбоосын key болгохгүй.
 - Name/email зөвхөн баталгаажсан Userly identity-оос sync хийнэ. BigMotors-owned metadata байвал sync түүнийг дарж өөрчлөхгүй.
 - Permission-тэй backend profile list/get/local metadata update боломжтой байна; яг action/талбарын жагсаалт тусдаа шийдэгдэнэ.

@@ -20,10 +20,13 @@ Package manager нь [ADR 0013](../adr/0013-use-pnpm-workspace-layout.md)-ийн
 | `packages/core`, `sysop/dti`, `packages/db` | tsdown, ESM + `.d.ts` |
 | Type checking | `tsc --noEmit` |
 
-Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-libraries.md)-д хөтөлнө. Server болон DTI-ийн бодит script, strict TypeScript config, dependency үүссэн; бусад package-ийн build/watch болон typecheck setup нээлттэй хэвээр.
+Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-libraries.md)-д хөтөлнө. Server, DTI, core болон DB-ийн бодит script, strict TypeScript config, dependency үүссэн; website болон sysop/app-ийн setup нээлттэй хэвээр.
 
 ## Агуулга
 
+- [DB schema хөгжүүлэх](db-schema.md): 22 хүснэгтийн TypeScript schema, core тогтмолууд, build/typecheck/test, trigger source болон хэрэгжээгүй integration-ийн зааг. Migration үүсгээгүй.
+
+- [Зургийн hard disk хадгалалтын шийдвэр](../adr/0022-store-product-images-on-disk.md): persistent disk, DB + файл backup, serve/access-ийн зааг; бодит хавтас болон upload setup хараахан хийгдээгүй.
 - [Sysop server ажиллуулах](sysop-server.md): бодит scaffold, dev/build/start/test, environment, endpoint болон хэрэгжээгүй хэсгийн зааг.
 - [Sysop DTI хөгжүүлэх](sysop-dti.md): contract бүтэц, ESM/declaration build, watch, validation болон тест.
 - [Userly нэвтрэлт ба ACL-ийн ашиглалтын шаардлага](userly-authentication.md): тусдаа client/resource provisioning, runtime config, snapshot cache/recovery, нууц мэдээллийн зааг. Бодит орчны тохиргоо болон deployment хараахан хийгдээгүй.

@@ -5,7 +5,7 @@
 - Хамрах хүрээ: Технологи, архитектур, сан, хөгжүүлэлтийн хэрэгсэл болон техникийн тохиргоо
 - Батлагдсан суурь: [ADR бүртгэл](docs/adr/README.md)
 - Бүрэн баталсан: 1 / 12
-- Хэсэгчлэн баталсан: TASK-02, TASK-03, TASK-04, TASK-05, TASK-10
+- Хэсэгчлэн баталсан: TASK-02, TASK-03, TASK-04, TASK-05, TASK-06, TASK-10
 
 ## Хүрээ ба хөтлөх журам
 
@@ -102,6 +102,8 @@ packages/db
 
 ## TASK-04: DB package-ийн техникийн зохион байгуулалт
 
+**2026-09-10-ны техникийн нэмэлт баталгаа:** UUID v4/DB default, timestamptz/update trigger, text + CHECK, composite FK/deferred constraint trigger болон transaction validation-ийн аргыг [ADR 0023](docs/adr/0023-approve-catalog-schema.md)-өөр баталсан. Driver/pool, package API, migration/seed workflow болон бодит implementation нээлттэй; task хэсэгчлэн батлагдсан хэвээр. Бизнес хүснэгт/талбарын баталгааг DB баримтад хөтөлнө.
+
 - Төлөв: Хэсэгчлэн баталсан
 - Хамаарал: TASK-01, TASK-02
 - Баталсан огноо: 2026-09-09 (хэсэгчилсэн)
@@ -138,18 +140,18 @@ packages/db
 
 ## TASK-06: Storage ба upload технологи
 
-- Төлөв: Хүлээгдэж буй
+- Төлөв: Хэсэгчлэн баталсан
 - Хамаарал: TASK-03, TASK-12
-- Баталсан огноо: Байхгүй
-- Батлагдсан: Шинэ сонголт батлаагүй
+- Баталсан огноо: 2026-09-10 (disk хадгалалтын хүрээ)
+- Батлагдсан: Эх зургийг серверийн hard disk дээр хадгална. [ADR 0022](docs/adr/0022-store-product-images-on-disk.md). DB бүртгэлийн бүтэц нь [product_images баримтын](docs/db/product-images.md) хүрээ; техникийн task-ийн батлах шалгуур биш.
 
-**Үлдсэн шийдвэр:** Storage төрөл/SDK, upload transport, файл шалгах болон зураг боловсруулах сан, access control-ийн механизм.
+**Үлдсэн шийдвэр:** Upload сан/transport, disk root/config, аюулгүй path/name, upload/serve access control, persistent volume, файл/DB-ийн алдааны цэвэрлэгээ болон backup/restore механизм.
 
-**Миний санал:** S3-compatible object storage, backend-ийн эрхээр хянах upload, зураг боловсруулахад `sharp` ашиглах саналтай. Файл шалгах болон боловсруулах ажиллагааг дахин ашиглах server-side модульд хөтөлнө. Тоон хязгааруудыг тохиргоогоор дамжуулна. [sharp](https://sharp.pixelplumbing.com/)
+**Миний санал:** Backend-ийн эрхээр хянах upload, тохируулдаг persistent disk root, системээс үүсгэсэн хадгалалтын нэр, хамгаалалттай serve болон файл/DB-ийн алдааны цэвэрлэгээ ашиглана. Сангийн сонголт хараахан батлаагүй. Өмнөх S3 болон `sharp` боловсруулалтын санал энэ урсгалд үйлчлэхгүй; эх файл өөрчлөхгүй, формат/browser render шалгахгүй байх батлагдсан дүрмийг хадгална.
 
-**Үндэслэл ба сул тал:** Зургийн хадгалалт app серверийн локал дискнээс хамаарахгүй. Upload тасрах болон боловсруулах алдаанд техникийн цэвэрлэгээ, дахин оролдлогын арга хэрэгтэй.
+**Үндэслэл ба сул тал:** External object storage хэрэггүй. Disk persistence, багтаамж, DB + файл backup болон олон instance-ийн файлын хандалтыг хариуцах шаардлагатай.
 
-**Батлах шалгуур:** Storage API/SDK, upload зам, файл шалгах арга, image processing хэрэгсэл болон серверийн зааг батлагдсан байна.
+**Батлах шалгуур:** Disk config/persistence, upload сан/transport, аюулгүй хадгалах/serve, эрхийн шалгалт болон алдааны цэвэрлэгээний техник батлагдсан байна. Image conversion шаардахгүй.
 
 **Гарах баримт:** Storage ADR, `docs/operations/` холболтын тохиргоо.
 
@@ -261,6 +263,7 @@ packages/db
 
 ## Баталгаажуулалтын түүх
 
+- 2026-09-10: Хэрэглэгч зураг upload хийж hard disk дээр хадгалах, `product_images` хүснэгтэд бүртгэхээр шийдсэн. ADR 0022, DB баримт болон TASK-06-ын хэсэгчилсэн төлөвийг шинэчилсэн. Upload код, disk setup болон migration хийгдээгүй.
 - 2026-09-10: Chip CRM DTI-ээс жишээ авч initialize хийх хүсэлтээр `sysop/dti`-ийн `createAction` + Zod contract болон shared tooling суурийг хэрэгжүүлж, ADR 0021-д бүртгэсэн. TASK-05 хэсэгчлэн батлагдсан; business contract, runtime router/client, envelope болон pagination батлаагүй.
 - 2026-09-09: Хэрэглэгч TASK-01-ийг бүрэн баталсан. Server-only dependency, app-owned connection/factory injection, website/admin-ийн тусдаа DB credentials болон сервер талын эрхийн заагийг [ADR 0015](docs/adr/0015-isolate-server-side-db-access.md)-д бүртгэсэн. Бусад task-ийн төлөв өөрчлөгдөөгүй; хэрэгжүүлэлт хийгдээгүй.
 - 2026-09-10: Хэрэглэгч Chip CRM-ийн admin login, user management, ACL аргачлалыг ижил ашиглахыг хүссэн. Userly auth/session/ACL аргачлалыг ADR 0019-д баталж, TASK-03-ыг хэсэгчлэн баталсан болгосон. Өмнөх local cookie/session-store санал үйлчлэхгүй; сан/API/config-ийн үлдсэн нарийвчлал нээлттэй. Код, Userly provisioning болон бусад task-ийн төлөв өөрчлөгдөөгүй.

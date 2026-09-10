@@ -1,2 +1,2 @@
-export * from "./db";
-export * from "./schema";
+export * from "./db.js";
+export * from "./schema/index.js";

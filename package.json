@@ -12,7 +12,12 @@
     "dev:dti": "pnpm --filter @bigmotors/sysop-dti dev",
     "build:dti": "pnpm --filter @bigmotors/sysop-dti build",
     "typecheck:dti": "pnpm --filter @bigmotors/sysop-dti typecheck",
-    "test:dti": "pnpm --filter @bigmotors/sysop-dti test"
+    "test:dti": "pnpm --filter @bigmotors/sysop-dti test",
+    "build:core": "pnpm --filter @bigmotors/core build",
+    "typecheck:core": "pnpm --filter @bigmotors/core typecheck",
+    "build:db": "pnpm --filter @bigmotors/db... build",
+    "typecheck:db": "pnpm build:core && pnpm --filter @bigmotors/db typecheck",
+    "test:db": "pnpm build:core && pnpm --filter @bigmotors/db test"
   },
   "engines": {
     "node": ">=24.11.0 <25"

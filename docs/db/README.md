@@ -8,7 +8,7 @@
 - ORM: **Drizzle ORM**
 - Migration: **Drizzle migration workflow**
 
-ORM сонголтыг [ADR 0003](../adr/0003-use-drizzle-orm.md), database болон migration сонголтыг [ADR 0005](../adr/0005-use-postgresql-and-drizzle-migrations.md)-д бүртгэсэн. Яг хувилбарууд, driver, schema-ийн бүтэц, файлын байршил болон migration команд хараахан тогтоогүй.
+ORM сонголтыг [ADR 0003](../adr/0003-use-drizzle-orm.md), database болон migration сонголтыг [ADR 0005](../adr/0005-use-postgresql-and-drizzle-migrations.md)-д бүртгэсэн. Schema, driver, package exports болон build/test-ийн бодит тохиргоо [DB хөгжүүлэх зааварт](../operations/db-schema.md) байна. Migration команд үүсгээгүй.
 
 ## DB бүтэц болон CRUD-ийн эзэмшил
 
@@ -16,7 +16,7 @@ Drizzle-д суурилсан **`packages/db` shared package** нь DB schema б
 
 Бүх workspace package-ийн scope нь `@bigmotors/*`. Migration болон seed-ийн файл, логик, командыг мөн `packages/db` хариуцна. [ADR 0014](../adr/0014-use-bigmotors-scope-and-db-owned-migrations.md)-д баталсан.
 
-Package exports, дотоод dependency-ийн бичлэг, DB package доторх файлын зам, driver болон ажиллуулах нарийвчилсан журам TASK-04-т нээлттэй. Schema, CRUD, migration болон seed-ийг app бүрд давхар хөтлөхгүй.
+Package exports, workspace dependency, schema файлын зам болон driver-ийн одоогийн хэрэгжүүлэлтийг [package README](../../packages/db/README.md)-д бүртгэсэн. CRUD, migration/seed болон production pool-ийн нарийвчлал дараагийн ажил. Schema, CRUD, migration болон seed-ийг app бүрд давхар хөтлөхгүй.
 
 ## Сервер талын хандалтын зааг
 
@@ -26,18 +26,22 @@ TASK-01-ийн архитектурыг [ADR 0015](../adr/0015-isolate-server-si
 - `sysop/app`, website-ийн client component, `sysop/dti` болон `packages/core` нь DB runtime кодыг шууд эсвэл дам импортлохгүй. DB код, driver, credentials browser bundle-д орохгүй.
 - App тус бүр өөрийн environment/secrets-ээс connection тохиргоог авч, shared DB factory-д дамжуулна. DB package нь app-ийн environment-ийг өөрөө уншихгүй. Connection үүсгэх, дахин ашиглах, хаах lifecycle-ийг тухайн app удирдана.
 - Website болон admin нь тусдаа PostgreSQL credentials/role ашиглана. DB түвшинд шаардлагатай хамгийн бага read/write эрх олгож, хэрэглэгчийн authorization-ийг сервер талд давхар шалгана. Shared CRUD ашигласан нь автоматаар бүх эрх олгохгүй.
-- Driver/pool, factory signature, transaction болон CRUD API-ийн нарийвчлалыг TASK-04-т шийднэ. Өгөгдөл, үйлдэл тус бүрийн эрх болон нийтэд харагдах талбаруудыг дараа тодорхойлно.
+- Одоогийн factory нь `createDb(pool: Pool)`; `pg` pool-ийг app эзэмшинэ. CRUD API болон production pool-ийн бодлого цаашид нарийвчилна.
 
-Эдгээр нь батлагдсан архитектурын шаардлага; код, DB role болон bundle шалгалт хараахан хэрэгжээгүй.
+Factory болон schema код үүссэн; app integration, DB role болон website/admin bundle-ийн бүрэн шалгалт хийгдээгүй.
 
 ## Admin identity ба ACL
 
 [ADR 0019](../adr/0019-use-userly-admin-authentication-and-acl.md)-өөр Userly authentication, user management болон ACL-ийн эх сурвалж байна. BigMotors DB-д local password, session store, invitation lifecycle, role/permission policy table үүсгэхгүй. Userly runtime config болон authorization snapshot нь admin Settings DB-д хадгалагдахгүй.
 
-Local admin profile нь stable Userly `sub`-тай required/unique холбоостой identity projection байна; email нь identity key биш. Зөвшөөрөгдсөн identity-ийн анхны хандалтаар idempotent create/upsert хийнэ. Profile-ийн яг хүснэгт/талбар, local metadata, scope mapping болон reload security audit persistence-ийн schema-г `packages/db`-д дараа тодорхойлно. Chip CRM-ийн `employees`, owner/assignee, department, retention хүснэгтүүдийг шууд хуулж нэмэхгүй. Дэлгэрэнгүйг [admin feature](../features/admin-authentication-access.md)-ээс харна.
+Local admin profile нь stable Userly `sub`-тай required/unique холбоостой identity projection байна; email нь identity key биш. `admin_profiles` schema үүссэн; зөвшөөрөгдсөн identity-ийн анхны хандалтаар idempotent create/upsert хийх integration хийгдээгүй. Local metadata, scope mapping болон reload security audit persistence тусдаа. Chip CRM-ийн `employees`, owner/assignee, department, retention хүснэгтүүдийг шууд хуулж нэмэхгүй. Дэлгэрэнгүйг [admin feature](../features/admin-authentication-access.md)-ээс харна.
 
 ## Баримтжуулах зүйлс
 
+- [Каталогийн батлагдсан schema](catalog-schema-proposal.md): 22 хүснэгтийн нэгтгэл, багана, холбоос, нийтлэх дүрэм, constraint/index; schema код хэрэгжсэн, migration хийгдээгүй.
+- [DB schema хөгжүүлэх](../operations/db-schema.md): кодын бүтэц, командыг ажиллуулах, trigger source, тест болон үлдсэн integration.
+- [Лавлах хүснэгтүүдийн батлагдсан бүтэц](reference-tables.md): 11 лавлах + `vehicle_feature_links`, нийтлэг багана, холбоос, нэрийн давхардлын дүрэм; migration хэрэгжээгүй.
+- [Product images ба disk хадгалалт](product-images.md): эх файл hard disk дээр, бүртгэл `product_images` хүснэгтэд; хадгалах арга, багана, эзэмшил болон lifecycle батлагдсан.
 - Өгөгдлийн загвар, хүснэгтүүдийн холбоосын зураг (ERD)
 - Хүснэгт, талбар, өгөгдлийн төрөл, тайлбар
 - Анхдагч болон гадаад түлхүүр, заавал бөглөх болон давхцахгүй байх нөхцөл
@@ -47,7 +51,7 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 
 ## Загварчлах үндсэн мэдээлэл
 
-Төлөв: **Хэлэлцэж буй**. Хэрэглэгч schema-ийн хэлэлцүүлгийг эхлүүлж, бүтээгдэхүүний нэг бүртгэл юуг төлөөлөхийг тодруулсан. Хүснэгт, талбар болон constraint-ийн эцсийн бүтэц хараахан батлагдаагүй.
+Төлөв: **Каталогийн 22 хүснэгтийн TypeScript/Drizzle schema, core тогтмолууд болон trigger source үүссэн; migration хийгдээгүй**. 2026-09-10-нд [products-ийн 18 талбарын логик бүтэц](products-schema.md), зориулалт, бөглөх нөхцөл болон render fallback батлагдсан. `content` нь HTML `text`, nullable. Зургийн эх файл hard disk дээр, бүртгэл [product_images](product-images.md)-д байна. Лавлахын [11 хүснэгт + тоноглолын холбоос](reference-tables.md) батлагдсан; [нэгтгэсэн schema](catalog-schema-proposal.md)-ийн төрөл тус бүрийн бүтэц, зураг, profile, ID/constraint/index-ийн арга батлагдсан. CRUD, render, upload болон бодит DB integration хэрэгжсэн гэсэн үг биш.
 
 ### Батлагдсан бүртгэлийн нэгж
 
@@ -67,7 +71,7 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 
 Автомашины **7 DB лавлах, 10 enum/const бүлэг**, лавлах хөтлөх дүрэм болон автомашины 10 тогтмол бүлгийн утга, утгын код 2026-09-10-нд батлагдсан. Валют зөвхөн `MNT` байна. [Лавлах ба тогтмол сонголтын бүртгэл](vehicle-reference-data.md), [ADR 0016](../adr/0016-separate-vehicle-lookups-and-constants.md)-ээс харна. Бүтээгдэхүүний хүснэгтийн бүтцийн үлдсэн шийдвэр, DB лавлахын seed жагсаалт болон сэлбэг/дугуйн enum/const утгууд үүнд хамаарахгүй.
 
-**Батлагдаагүй санал:** Нийтлэг мэдээллийг `products`, төрөл тус бүрийн мэдээллийг `vehicles`, `parts`, `tires` хүснэгтэд хадгалах. Энэ хувилбарт нэг бүтээгдэхүүн `products`-д нэг мөр, зөвхөн өөрийн төрлийн дэлгэрэнгүй хүснэгтэд нэг мөртэй байна. Сэлбэг/дугуйн олон ширхэг нь олон дэлгэрэнгүй мөр гэсэн үг биш.
+**Батлагдсан хэсэг:** Нийтлэг мэдээллийн `products` хүснэгтийн [логик бүтэц](products-schema.md). Төрөл тус бүрийн мэдээллийг `vehicles`, `parts`, `tires` хүснэгтэд хадгалж, нэг бүтээгдэхүүн зөвхөн өөрийн төрлийн дэлгэрэнгүй мөртэй байх арга нэгтгэсэн schema-д батлагдсан. Сэлбэг/дугуйн олон ширхэг нь олон дэлгэрэнгүй мөр гэсэн үг биш.
 
 Автомашинд `stock_quantity` ашиглахгүй байх нь санал хэвээр. VIN/арлын дугаарыг 2026-09-10-нд давхардал зөвшөөрсөн, тусгай шалгалтгүй энгийн text талбар байхаар баталсан; энэ талбарт unique constraint тавихгүй. Өмнөх давхардлыг хязгаарлах санал үйлчлэхгүй. Нэгж автомашины мэдээллийн талбарууд, түүний дотор нийтлэлийн болон борлуулалтын төлөвийг ялгах шаардлагыг [талбарын баримтад](../features/vehicle-fields.md) баталсан. Энэ нь DB хүснэгт, багана болон бусад constraint-ийн бүтцийг баталсан гэсэн үг биш.
 
@@ -79,13 +83,23 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 | --- | --- |
 | `item_title` | Жагсаалтын item дээр харагдах гарчиг |
 | `item_desc` | Жагсаалтын item дээр харагдах тайлбар |
-| `item_image` | Жагсаалтын item дээр харагдах зураг |
+| `item_image_id` | Жагсаалтын item дээр харагдах зургийн холбоос; өмнөх баримтад `item_image` гэж нэрлэсэн |
 
-Эдгээр нь жагсаалтын зориулалттай нэмэлт талбарууд; бүтээгдэхүүний дэлгэрэнгүй гарчиг, тайлбар, үндсэн зурагтай автоматаар нэгтгэхгүй. Нийтлэхэд `item_title`, `item_image` заавал, `item_desc` сонголттой; хоосон утгыг дэлгэрэнгүй мэдээллээс автоматаар орлуулахгүй. Ижил текст эсвэл зургийг сонгож болно. `item_title` хамгийн ихдээ 255, `item_desc` хамгийн ихдээ 512 тэмдэгт байна.
+2026-09-10-ны шинэчилсэн шийдвэр: `item_title`, `item_desc`, `item_image_id` нь ноорог/нийтлэхэд бүгд сонголттой. Render үед хоосон талбар бүрийг харгалзах `title`, `description`, `main_image_id`-аас автоматаар авна. Бөглөсөн item утга давуу эрхтэй; fallback утгыг DB-д хуулж хадгалахгүй. Өмнөх нийтлэхэд заавал/автоматаар орлуулахгүй дүрэм хүчингүй. `item_title` хамгийн ихдээ 255, `item_desc` хамгийн ихдээ 512 тэмдэгт байна.
 
-2026-09-10: Гарчиг/`title` 255, товч `desc`/тайлбар 512 тэмдэгтийн дээд урттай байхаар баталсан. Автомашины үндсэн гарчиг, зургийн metadata болон тайлбарын заагийг [талбарын баримтад](../features/vehicle-fields.md) тодорхойлсон. Дэлгэрэнгүй тайлбарт rich text editor ашиглана; товч `desc`-ийн 512 хязгаарыг түүнд хэрэглэхгүй. Rich text-ийн DB хадгалалтын формат болон баганын төрлийг дараа тогтооно.
+2026-09-10: Гарчиг/`title` 255, товч `desc`/тайлбар 512 тэмдэгтийн дээд урттай байхаар баталсан. `description` ба `content`-ийг тусдаа нийтлэг product талбар болгоно:
 
-`item_*` болон автомашины 33 талбарын ноорог/нийтлэх нөхцөл, default, fallback дүрмийг [бөглөх шаардлагад](../features/vehicle-fields.md) 2026-09-09-нд баталсан. Энэ нь бизнес шаардлагын баталгаа; DB schema, migration өөрчлөөгүй. Нийтлэхэд заавал гэсэн шаардлагыг бүх мөрөнд `NOT NULL` тавихтай шууд адилтгахгүй: ноорогт дутуу мэдээлэл хадгалах боломжийг schema боловсруулахдаа харгалзана.
+| Талбар | Зориулалт | DB schema-д тусгах шаардлага |
+| --- | --- | --- |
+| `description` | Энгийн текст short description, SEO, share | 512 тэмдэгт хүртэл; ноорог/нийтлэхэд сонголттой, nullable |
+| `content` | Дэлгэрэнгүй танилцуулгын хуудасны үндсэн rich text агуулга | Өмнөх V30/P22/T30; HTML `text`, nullable гэж батлагдсан; 512-ын хязгаар хамаарахгүй |
+| `item_title` | Жагсаалтын гарчгийг тусад нь тохируулах | Сонголттой/nullable; хоосон үед render дээр `title` |
+| `item_desc` | Жагсаалтын товч тайлбарыг тусад нь тохируулах | Сонголттой/nullable; хоосон үед render дээр `description`, `content` биш |
+| `item_image_id` | Жагсаалтын зургийг тусад нь тохируулах | Сонголттой/nullable; хоосон үед render дээр `main_image_id`; `product_images.id` рүү холбоно |
+
+Үндсэн гарчиг болон үндсэн зургийн өмнөх нийтлэх шаардлага хэвээр. `item_desc`, `description` хоёул хоосон бол тайлбар харуулахгүй. Render fallback нь браузер зураг харуулж чадахгүй үед өөр зураг сонгох дүрэм биш. Нийтлэг шаардлагын үндсэн эх сурвалж нь [бүтээгдэхүүний нийтлэг дүрэм](../features/product-common-rules.md).
+
+Автомашины 33 талбарын ноорог/нийтлэх нөхцөлийг [бөглөх шаардлагад](../features/vehicle-fields.md) хадгалсан; `item_*`-ийн өмнөх нөхцөлийг дээрх 2026-09-10-ны шийдвэрээр орлуулсан. Энэ нь бүх DB schema эсвэл өмнөх schema саналыг бүхэлд нь баталсан гэсэн үг биш; код, migration өөрчлөөгүй. Нийтлэхэд заавал гэсэн шаардлагыг бүх мөрөнд `NOT NULL` тавихтай шууд адилтгахгүй: ноорогт дутуу мэдээлэл хадгалах боломжийг харгалзана.
 
 ### Дараа нарийвчлах мэдээлэл
 
@@ -108,13 +122,13 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 | Автомашины марк | Машины үйлдвэрлэгч | Тохирох машины марк | Одоогийн хүрээнд ашиглахгүй |
 | Автомашины загвар | Машины загвар | Тохирох машины загвар | Одоогийн хүрээнд ашиглахгүй |
 
-Гурвууланд дундын **1 лавлах нь салбар**. Автомашин, сэлбэг хоёр нэмэлтээр марк, загвар гэсэн **2 лавлах** хамт ашиглана. Давхардлыг хасвал 7 + 2 + 2 = **11 үндсэн логик DB лавлах** батлагдсан; энэ нь эцсийн DB хүснэгтийн тоо биш. Сэлбэгийн нэмэлт 3 лавлах болон дугуйн шийдээгүй индексүүд энэ тоонд ороогүй.
+Гурвууланд дундын **1 лавлах нь салбар**. Автомашин, сэлбэг хоёр нэмэлтээр марк, загвар гэсэн **2 лавлах** хамт ашиглана. Давхардлыг хасвал 7 + 2 + 2 = **11 лавлах хүснэгт**, мөн тоноглолын `vehicle_feature_links` гэсэн **1 холбох хүснэгтийн бүтэц** 2026-09-10-нд [батлагдсан](reference-tables.md). Энэ нь бүх DB хүснэгтийн тоо биш. Сэлбэгийн нэмэлт 3 лавлах болон дугуйн шийдээгүй индексүүд энэ тоонд ороогүй.
 
 Автомашины марк, сэлбэгийн брэнд, дугуйн брэндийг бүх бүтээгдэхүүнд нэг брэнд гэж автоматаар нэгтгэхгүй. Нэгдсэн үйлдвэрлэгчийн бүтэц хэрэгтэй эсэх нь дараагийн тусдаа шийдвэр.
 
 Enum/const нь DB лавлахаас тусдаа. 2026-09-10-нд [нийтлэг бүтээгдэхүүний дүрмээр](../features/product-common-rules.md) валют (`MNT`), үнэ харуулах хэлбэр (`show_price`, `inquire`), нийтлэлийн төлөв (`draft`, `published`, `hidden`, `archived`)-ийг гурвууланд дундын утга, дүрэмтэй ашиглахаар баталсан. Текст, зураг, үнэ, нийтлэх/default болон лавлахын lifecycle мөн ижил байна.
 
-**Үлдсэн санал:** Үнийн нэгж, бэлэн байдлын төлөвийг сэлбэг/дугуйд хамт ашиглаж болох ч бүрэн утга/шилжилт хараахан батлагдаагүй. Нөхцөл, байрлал, дугуйн хийц/улирал зэрэг төрөлд онцлог enum-ийг автоматаар нэгтгэхгүй. DB баганын төрөл, constraint болон schema хэрэгжүүлэлт нээлттэй хэвээр.
+Үнийн нэгж, бэлэн байдлын утга болон төрөлд онцлог condition/байрлал/дугуйн enum утгууд [нэгтгэсэн schema-д](catalog-schema-proposal.md#сэлбэгдугуйн-тогтмол-утгууд) батлагдсан. DB хадгалалт text + CHECK; төрөлд онцлог бүлгүүд тусдаа, `packages/core/src/catalog.ts`-д хэрэгжсэн. Migration болон текст хайлтын нэмэлт индексийн сонголт нээлттэй.
 
 ## Хөтлөх зарчим
 

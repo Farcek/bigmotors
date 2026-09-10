@@ -3,6 +3,15 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": { "types": "./dist/index.d.mts", "import": "./dist/index.mjs" }
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "scripts": { "build": "tsdown", "dev": "tsdown --watch", "typecheck": "tsc --noEmit" },
+  "devDependencies": { "@types/node": "24.13.3", "tsdown": "0.23.0", "typescript": "6.0.3" },
   "engines": {
     "node": ">=24.11.0 <25"
   }
