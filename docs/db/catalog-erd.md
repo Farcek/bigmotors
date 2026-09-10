@@ -1,7 +1,7 @@
 # Каталогийн DB диаграм
 
 - Огноо: 2026-09-10
-- Хамрах хүрээ: одоогийн Drizzle schema-ийн бүх **22 хүснэгт, 203 багана, 31 FK холбоос**.
+- Хамрах хүрээ: одоогийн Drizzle schema-ийн бүх **23 хүснэгт, 214 багана, 34 FK холбоос**.
 - Кодын эх сурвалж: [schema/index.ts](../../packages/db/src/schema/index.ts).
 - Бизнес дүрэм, CHECK, index, trigger-ийн тайлбар: [батлагдсан schema](catalog-schema-proposal.md), [хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
 - Энэ нь кодын бүтцийн зураглал; бодит DB-д migration хэрэгжсэн гэсэн үг биш.
@@ -47,6 +47,7 @@ erDiagram
     colors |o..o{ vehicles : "exterior_color_id"
     colors |o..o{ vehicles : "interior_color_id"
     branches |o..o{ vehicles : "branch_id"
+    locations |o..o{ vehicles : "location_id"
     vehicles ||--o{ vehicle_feature_links : "product_id"
     vehicle_features ||--o{ vehicle_feature_links : "feature_id"
 
@@ -54,6 +55,7 @@ erDiagram
     part_categories |o..o{ parts : "category_id"
     part_brands |o..o{ parts : "brand_id"
     branches |o..o{ parts : "branch_id"
+    locations |o..o{ parts : "location_id"
     parts ||..o{ part_fitments : "product_id"
     vehicle_brands ||..o{ part_fitments : "brand_id"
     vehicle_models ||..o{ part_fitments : "brand_id, model_id"
@@ -64,6 +66,7 @@ erDiagram
     tire_brands |o..o{ tires : "brand_id"
     tire_models |o..o{ tires : "brand_id, model_id"
     branches |o..o{ tires : "branch_id"
+    locations |o..o{ tires : "location_id"
     tires ||..o{ tire_markings : "product_id"
 
     products {
@@ -120,6 +123,7 @@ erDiagram
         text condition "NULL; CHECK"
         integer mileage_km "NULL"
         uuid branch_id FK "NULL"
+        uuid location_id FK "NULL"
         varchar(512) condition_description "NULL"
         text sale_status "NULL; CHECK"
         text arrival_status "NULL; CHECK"
@@ -145,6 +149,7 @@ erDiagram
         varchar(512) package_description "NULL"
         text availability_status "NULL; CHECK"
         uuid branch_id FK "NULL"
+        uuid location_id FK "NULL"
     }
 
     part_fitments {
@@ -202,6 +207,7 @@ erDiagram
         varchar(512) package_description "NULL"
         text availability_status "NULL; CHECK"
         uuid branch_id FK "NULL"
+        uuid location_id FK "NULL"
     }
 
     tire_markings {
@@ -257,6 +263,7 @@ erDiagram
     colors {
         uuid id PK "NN"
         varchar(255) name "NN"
+        varchar(7) hex_code "NULL; #RRGGBB"
         varchar(512) description "NULL"
         integer sort_order "NN; default 0"
         boolean is_active "NN; default true"
@@ -275,6 +282,16 @@ erDiagram
     }
 
     branches {
+        uuid id PK "NN"
+        varchar(255) name "NN"
+        varchar(512) description "NULL"
+        integer sort_order "NN; default 0"
+        boolean is_active "NN; default true"
+        timestamptz created_at "NN"
+        timestamptz updated_at "NN"
+    }
+
+    locations {
         uuid id PK "NN"
         varchar(255) name "NN"
         varchar(512) description "NULL"

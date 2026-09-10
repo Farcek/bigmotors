@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { check, foreignKey, index, integer, pgTable, smallint, text, unique, uuid, varchar } from "drizzle-orm/pg-core";
 import { AVAILABILITY_STATUSES, PART_CONDITIONS, PART_MOUNTING_POSITIONS, PRICE_UNITS } from "@bigmotors/core";
 import { branches } from "./branches.js";
+import { locations } from "./locations.js";
 import { enumCheck, idColumn, nonBlank } from "./common.js";
 import { products } from "./products.js";
 import { partBrands, partCategories, vehicleBrands, vehicleModels } from "./references.js";
@@ -15,6 +16,7 @@ export const parts = pgTable("parts", {
   priceUnit: text("price_unit", { enum: PRICE_UNITS }), packageDescription: varchar("package_description", { length: 512 }),
   availabilityStatus: text("availability_status", { enum: AVAILABILITY_STATUSES }),
   branchId: uuid("branch_id").references(() => branches.id, { onDelete: "restrict" }),
+  locationId: uuid("location_id").references(() => locations.id, { onDelete: "restrict" }),
 }, (t) => [
   foreignKey({ name: "parts_product_type_fk", columns: [t.productId, t.productType], foreignColumns: [products.id, products.productType] }).onDelete("restrict"),
   check("parts_type_check", sql`${t.productType} = 'part'`),
@@ -22,6 +24,7 @@ export const parts = pgTable("parts", {
   enumCheck("parts_price_unit_check", t.priceUnit, PRICE_UNITS), enumCheck("parts_availability_check", t.availabilityStatus, AVAILABILITY_STATUSES),
   nonBlank("parts_sku_nonblank", t.sku), index("parts_category_idx").on(t.categoryId), index("parts_brand_idx").on(t.brandId),
   index("parts_number_idx").on(t.partNumber), index("parts_branch_idx").on(t.branchId),
+  index("parts_location_idx").on(t.locationId),
 ]);
 
 export const partFitments = pgTable("part_fitments", {

@@ -1,7 +1,7 @@
 # DB Migration
 
 - Огноо: 2026-09-10
-- Төлөв: Тохиргоо, команд, эхний SQL migration болон тест хэрэгжсэн. Бодит local/staging/production DB дээр ажиллуулаагүй.
+- Төлөв: Тохиргоо, команд, SQL migration болон тест хэрэгжсэн. Local Compose PostgreSQL 18 дээр эхний болон өнгөний HEX migration ажилласан; staging/production-д ажиллуулаагүй.
 - Шийдвэр: [ADR 0024](../adr/0024-run-db-migrations-as-release-step.md).
 
 ## Байршил
@@ -38,6 +38,24 @@ pnpm db:migrate
 `db:migrate` өмнө `pnpm build:db` шаардлагатай. Runner нь `dist/migrate.mjs`; SQL folder-ийг module-ийн байршлаас олно, ажиллуулсан current directory-оос хамаарахгүй. Root команд нь DB package-ийн команд руу дамжуулна.
 
 Эхний migration **хоосон application schema**-д зориулагдсан. Хүснэгт нь өмнө өөр аргаар үүссэн DB дээр шууд ажиллуулахгүй, journal-д хуурамч applied мөр нэмж тааруулахгүй. Existing DB baseline/өгөгдөл шилжүүлэх шаардлагыг тусад нь төлөвлөнө.
+
+## Docker Compose
+
+[infra/docker-compose.yml](../../infra/docker-compose.yml)-д зөвхөн `bigmotors-db`, `bigmotors-migration` идэвхтэй. Хуулж оруулсан app service-үүд comment хэвээр; дахин идэвхжүүлэхийн өмнө тэдгээрийн тохиргоог тусад нь шинэчилнэ.
+
+Repository root-оос DB-г асааж, migration image-ийг build хийгээд нэг удаа ажиллуулах:
+
+```powershell
+docker compose -f infra/docker-compose.yml up -d --wait bigmotors-db
+docker compose -f infra/docker-compose.yml build bigmotors-migration
+docker compose -f infra/docker-compose.yml run --rm bigmotors-migration
+```
+
+Migration нь DB healthcheck амжилттай болсны дараа ажиллана, дуусаад exit хийнэ, автоматаар restart хийхгүй. Команд нь бодит DB schema-г өөрчилнө; амжилтгүй exit code үед deployment-ийг үргэлжлүүлэхгүй.
+
+Compose-ийн `postgres` user/password болон default URL нь зөвхөн local жишээ. Production-д DB credential-ийг сольж, тусдаа migration эрхтэй `DB_CONNECTION_STRING`-ийг environment-аар өгнө. Compose нь `packages/db/.env`-ийг автоматаар уншихгүй.
+
+PostgreSQL `18-alpine` нь `infra/.docker/bigmotors_pgdata` хавтсыг container-ийн `/var/lib/postgresql` руу mount хийнэ; DB data нь дотроо `18/docker`-т хадгалагдана. Энэ хавтас Git-д орохгүй. Container устгасан ч host дээрх data үлдэнэ; migration хийхийн тулд data устгах шаардлагагүй. PostgreSQL 17 болон өмнөх хувилбарын data-г зөвхөн image tag/mount солих замаар upgrade хийхгүй; `pg_upgrade` эсвэл dump/restore шаардлагатай. [PostgreSQL Docker image-ийн PGDATA заавар](https://github.com/docker-library/docs/blob/master/postgres/README.md#pgdata).
 
 ## Production Docker Image
 
@@ -93,6 +111,10 @@ Drizzle history нь `drizzle.__drizzle_migrations`. Хүлээгдэж буй S
 Тест нь бодит SQL migration-ийг PGlite санах ойн PostgreSQL дээр ажиллуулдаг: бүх schema invariant, анхны trigger-үүд, давтан run, алдааны rollback болон credential-гүй CLI нөхцөлийг шалгана.
 
 2026-09-10: Docker image build/typecheck болон 25 тест тэнцсэн. Эцсийн image-ийг тусгаарласан PostgreSQL 16.15 container дээр туршиж 22 хүснэгт, 203 багана, 31 FK, 29 trigger, нэг migration history мөр үүссэнийг шалгасан. Давтан run, дутуу detail мөртэй product-ийг хориглох, өөр session migration lock барьсан үед exit 1 өгөх, lock суллагдсаны дараа амжилттай ажиллах нөхцөл тэнцсэн. Runtime нь root бус хэрэглэгчтэй; source/test, `.env`, Drizzle Kit/tsx агуулаагүй. Түр DB/network-ийг тестийн дараа устгасан; existing local/staging/production DB өөрчлөөгүй.
+
+2026-09-10: `0001_add_color_hex_code.sql` нь nullable `colors.hex_code varchar(7)` болон HEX формат шалгах CHECK нэмсэн. Local болон Docker build/typecheck, 28 тест тэнцсэн; өмнөх өнгө/машины холбоосыг хадгалсан upgrade, давтан run, зөв/буруу HEX, `NULL` болон Drizzle mapping-ийг шалгасан. Шинэ image-ээр local Compose PostgreSQL 18-д migration амжилттай ажилласан: 22 хүснэгт, 204 багана, 2 migration history мөр. Өмнөх migration файл болон өгөгдлийг устгаж/дахин үүсгээгүй.
+
+2026-09-10: `0002_separate_product_locations.sql` local PostgreSQL 18-д ажилласан: 23 хүснэгт, 214 багана, 3 migration history мөр. Docker build/typecheck, 35 тест тэнцсэн. Өмнөх салбар/өнгө болон гурван төрлийн холбоос хадгалагдах, байршил автоматаар үүсгэхгүй байх, бэлэн машины байршил заавал байх нөхцөлийг шалгасан. Local DB-д шилжилтийн өмнө нийтлэгдсэн бэлэн машин байгаагүй. Өгөгдөлтэй өөр орчинд хуучин `branch_id`-аас байршил таахгүй; нийтлэгдсэн бэлэн машины бодит `location_id`-ийг нөхөх төлөвлөгөө шаардлагатай. [ADR 0025](../adr/0025-separate-branches-and-locations.md).
 
 Бүтээгдэхүүний бүх concurrent transaction, dump/restore болон production deploy job-ийн бүрэн шалгалт хийгдээгүй хэвээр.
 

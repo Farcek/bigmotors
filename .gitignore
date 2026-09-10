@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+infra/.docker/
 *.tsbuildinfo
 .env
 .env.*

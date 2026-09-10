@@ -8,6 +8,20 @@
       "when": 1789042990832,
       "tag": "0000_initial_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789047215930,
+      "tag": "0001_add_color_hex_code",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789048827562,
+      "tag": "0002_separate_product_locations",
+      "breakpoints": true
     }
   ]
 }

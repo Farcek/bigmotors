@@ -1,19 +1,16 @@
-import { AppShell, Group, Text } from "@mantine/core";
-import { IconHome } from "@tabler/icons-react";
+import { AdminLayout } from "./layout/AdminLayout";
 import { HomePage } from "./pages/Home";
+import { ReferencesPage } from "./pages/References";
 
 export default function App() {
+  const currentPath = window.location.pathname;
+  const isReferencesPath = currentPath.startsWith("/references");
+  const activePath = isReferencesPath ? "/references" : "/";
+  const title = isReferencesPath ? "Лавлах" : "Home";
+
   return (
-    <AppShell header={{ height: 56 }} padding="md">
-      <AppShell.Header>
-        <Group h="100%" px="md" gap="xs">
-          <IconHome size={20} aria-hidden="true" />
-          <Text fw={600}>BigMotors Sysop</Text>
-        </Group>
-      </AppShell.Header>
-      <AppShell.Main>
-        <HomePage />
-      </AppShell.Main>
-    </AppShell>
+    <AdminLayout activePath={activePath} title={title}>
+      {isReferencesPath ? <ReferencesPage /> : <HomePage />}
+    </AdminLayout>
   );
 }

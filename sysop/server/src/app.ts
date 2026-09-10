@@ -1,5 +1,7 @@
+import type { Container } from "@napp/di";
 import { NappError } from "@napp/error";
 import express, { type ErrorRequestHandler } from "express";
+import { buildAPI } from "./api/index.js";
 
 export const errorHandler: ErrorRequestHandler = (error: unknown, _req, res, next) => {
   if (res.headersSent) {
@@ -25,7 +27,7 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req, res, nex
   });
 };
 
-export function createApp() {
+export function createApp(di: Container) {
   const app = express();
   app.disable("x-powered-by");
   app.set("trust proxy", false);
@@ -40,12 +42,10 @@ export function createApp() {
   });
 
   // Userly/ACL integration must replace this deny gate before any admin routes.
-  app.use("/api", (_req, _res, next) => {
-    next(new NappError("Admin API is not initialized.", {
-      code: "AUTH_ACL_UNAVAILABLE",
-      status: 503,
-    }));
-  });
+  // app.use("/api", (_req, _res, next) => {
+  //   next(new NappError("Admin API is not initialized.", { code: "AUTH_ACL_UNAVAILABLE", status: 503 }));
+  // });
+  app.use("/api", buildAPI(di));
 
   app.use((_req, _res, next) => {
     next(new NappError("Route not found.", { code: "NOT_FOUND", status: 404 }));

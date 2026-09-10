@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { build } from "tsdown";
-import type { Health } from "../src/index.js";
+import type { Health, Colors, Branches } from "../src/index.js";
 
 test("contracts bundle and validate without Node.js globals", async () => {
   const handle = await build({
@@ -16,7 +16,7 @@ test("contracts bundle and validate without Node.js globals", async () => {
     globalName: "BigMotorsDti",
     deps: {
       alwaysBundle: [/.*/],
-      onlyBundle: ["@napp/dti-core", "zod"],
+      onlyBundle: ["@napp/dti-core", "@napp/di", "zod", "@bigmotors/core"],
       onlyImport: [],
     },
     dts: false,
@@ -33,16 +33,22 @@ test("contracts bundle and validate without Node.js globals", async () => {
     assert.deepEqual(entry.imports, []);
     assert.deepEqual(entry.dynamicImports, []);
 
-    const browserHealth = runInNewContext(
-      `${entry.code}\nBigMotorsDti.Health;`,
+    const contracts = runInNewContext(
+      `${entry.code}\nBigMotorsDti;`,
       {},
       { timeout: 5_000 },
-    ) as typeof Health;
+    ) as { Health: typeof Health; Colors: typeof Colors; Branches: typeof Branches };
+    const browserHealth = contracts.Health;
     assert.equal(browserHealth.check.path, "/health");
     assert.equal(browserHealth.result.safeParse({
       status: "ok", service: "@bigmotors/sysop-server",
     }).success, true);
     assert.equal(browserHealth.result.safeParse({ status: "invalid" }).success, false);
+    assert.equal(contracts.Colors.createBody.safeParse({ name: "White", hexCode: "#FFFFFF" }).success, true);
+    assert.equal(contracts.Colors.createBody.safeParse({ name: "White", hexCode: "#FFF" }).success, false);
+    assert.equal(contracts.Branches.createBody.safeParse({ name: "Branch" }).success, true);
+    assert.equal(contracts.Branches.listQuery.parse({ isActive: "false" }).isActive, false);
+    assert.equal(contracts.Branches.remove.path, "/branches/:id");
   } finally {
     for (const bundle of handle.bundles) {
       await bundle[Symbol.asyncDispose]();

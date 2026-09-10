@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { boolean, check, foreignKey, index, integer, pgTable, primaryKey, smallint, text, uuid, varchar } from "drizzle-orm/pg-core";
 import { DRIVETRAINS, FUEL_TYPES, STEERING_POSITIONS, TRANSMISSIONS, VEHICLE_ARRIVAL_STATUSES, VEHICLE_CONDITIONS, VEHICLE_SALE_STATUSES } from "@bigmotors/core";
 import { branches } from "./branches.js";
+import { locations } from "./locations.js";
 import { enumCheck } from "./common.js";
 import { products } from "./products.js";
 import { colors, vehicleBodyTypes, vehicleBrands, vehicleFeatures, vehicleModels, vehicleVariants } from "./references.js";
@@ -18,6 +19,7 @@ export const vehicles = pgTable("vehicles", {
   interiorColorId: uuid("interior_color_id").references(() => colors.id, { onDelete: "restrict" }),
   seatCount: smallint("seat_count"), condition: text("condition", { enum: VEHICLE_CONDITIONS }), mileageKm: integer("mileage_km"),
   branchId: uuid("branch_id").references(() => branches.id, { onDelete: "restrict" }), conditionDescription: varchar("condition_description", { length: 512 }),
+  locationId: uuid("location_id").references(() => locations.id, { onDelete: "restrict" }),
   saleStatus: text("sale_status", { enum: VEHICLE_SALE_STATUSES }), arrivalStatus: text("arrival_status", { enum: VEHICLE_ARRIVAL_STATUSES }),
   financingAvailable: boolean("financing_available"),
 }, (t) => [
@@ -39,6 +41,7 @@ export const vehicles = pgTable("vehicles", {
   index("vehicles_brand_model_idx").on(t.brandId, t.modelId), index("vehicles_model_idx").on(t.modelId), index("vehicles_variant_idx").on(t.variantId),
   index("vehicles_year_idx").on(t.manufactureYear), index("vehicles_mileage_idx").on(t.mileageKm), index("vehicles_sale_idx").on(t.saleStatus),
   index("vehicles_body_type_idx").on(t.bodyTypeId), index("vehicles_branch_idx").on(t.branchId),
+  index("vehicles_location_idx").on(t.locationId),
   index("vehicles_exterior_color_idx").on(t.exteriorColorId), index("vehicles_interior_color_idx").on(t.interiorColorId),
 ]);
 export const vehicleFeatureLinks = pgTable("vehicle_feature_links", {

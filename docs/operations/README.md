@@ -24,7 +24,7 @@ Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-l
 
 ## Агуулга
 
-- [DB schema хөгжүүлэх](db-schema.md): 22 хүснэгтийн TypeScript schema, core тогтмолууд, build/typecheck/test, trigger source болон хэрэгжээгүй integration-ийн зааг.
+- [DB schema хөгжүүлэх](db-schema.md): 23 хүснэгтийн TypeScript schema, core тогтмолууд, build/typecheck/test, trigger source болон хэрэгжээгүй integration-ийн зааг.
 - [DB migration ажиллуулах](db-migrations.md): generate/migrate команд, эхний SQL, local тохиргоо, production Docker image, `DB_CONNECTION_STRING`, release job, lock/history болон алдаа сэргээх зааг.
 
 - [Зургийн hard disk хадгалалтын шийдвэр](../adr/0022-store-product-images-on-disk.md): persistent disk, DB + файл backup, serve/access-ийн зааг; бодит хавтас болон upload setup хараахан хийгдээгүй.

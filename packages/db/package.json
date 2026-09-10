@@ -6,21 +6,47 @@
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
-    ".": { "types": "./dist/index.d.mts", "import": "./dist/index.mjs" },
-    "./schema": { "types": "./dist/schema/index.d.mts", "import": "./dist/schema/index.mjs" },
-    "./schema-hooks": { "types": "./dist/schema-hooks.d.mts", "import": "./dist/schema-hooks.mjs" }
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./schema": {
+      "types": "./dist/schema/index.d.mts",
+      "import": "./dist/schema/index.mjs"
+    },
+    "./schema-hooks": {
+      "types": "./dist/schema-hooks.d.mts",
+      "import": "./dist/schema-hooks.mjs"
+    }
   },
-  "files": ["dist", "migrations"],
+  "files": [
+    "dist",
+    "migrations"
+  ],
   "scripts": {
-    "build": "tsdown", "dev": "tsdown --watch", "typecheck": "tsc --noEmit",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
     "test": "node --import=tsx --test test/*.test.ts",
     "db:generate": "pnpm --filter @bigmotors/core build && drizzle-kit generate --config=drizzle.config.ts",
     "db:migrate": "node --env-file-if-exists=.env dist/migrate.mjs"
   },
-  "dependencies": { "@bigmotors/core": "workspace:*", "drizzle-orm": "0.45.2", "pg": "8.23.0" },
+  "dependencies": {
+    "@bigmotors/core": "workspace:*",
+    "@napp/di": "1.0.10",
+    "@napp/error": "1.1.0",
+    "drizzle-orm": "0.45.2",
+    "pg": "8.23.0",
+    "zod": "4.4.3"
+  },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.8", "@types/pg": "8.23.1", "@types/node": "24.13.3",
-    "tsdown": "0.23.0", "tsx": "4.23.13", "typescript": "6.0.3", "drizzle-kit": "0.31.10"
+    "@electric-sql/pglite": "0.5.8",
+    "@types/pg": "8.23.1",
+    "@types/node": "24.13.3",
+    "tsdown": "0.23.0",
+    "tsx": "4.23.13",
+    "typescript": "6.0.3",
+    "drizzle-kit": "0.31.10"
   },
   "engines": {
     "node": ">=24.11.0 <25"

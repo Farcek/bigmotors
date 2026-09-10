@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { check, index, pgTable, unique, uniqueIndex, uuid, type AnyPgColumn } from "drizzle-orm/pg-core";
+import { check, index, pgTable, unique, uniqueIndex, uuid, varchar, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { nonBlank, normalizedName, referenceColumns } from "./common.js";
 
 export const vehicleBrands = pgTable("vehicle_brands", referenceColumns(), (t) => [
@@ -22,8 +22,11 @@ export const vehicleVariants = pgTable("vehicle_variants", {
 export const vehicleBodyTypes = pgTable("vehicle_body_types", referenceColumns(), (t) => [
   uniqueIndex("vehicle_body_types_name_unique").on(normalizedName(t.name)), nonBlank("vehicle_body_types_name_nonblank", t.name),
 ]);
-export const colors = pgTable("colors", referenceColumns(), (t) => [
+export const colors = pgTable("colors", {
+  ...referenceColumns(), hexCode: varchar("hex_code", { length: 7 }),
+}, (t) => [
   uniqueIndex("colors_name_unique").on(normalizedName(t.name)), nonBlank("colors_name_nonblank", t.name),
+  check("colors_hex_code_format", sql`${t.hexCode} is null or ${t.hexCode} ~ '^#[0-9A-Fa-f]{6}$'`),
 ]);
 export const vehicleFeatures = pgTable("vehicle_features", referenceColumns(), (t) => [
   uniqueIndex("vehicle_features_name_unique").on(normalizedName(t.name)), nonBlank("vehicle_features_name_nonblank", t.name),

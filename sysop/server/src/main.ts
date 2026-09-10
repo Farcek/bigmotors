@@ -1,9 +1,13 @@
 import { createServer } from "node:http";
 import { createApp } from "./app.js";
-import { readServerConfig } from "./config.js";
+import { ConfigSysop } from "./config.js";
+import { createContainer } from "./di.js";
 
-const config = readServerConfig(process.env);
-const server = createServer(createApp());
+
+const di = createContainer({ env: process.env });
+
+const config = di.resolve(ConfigSysop);
+const server = createServer(createApp(di));
 server.requestTimeout = 30_000;
 server.headersTimeout = 15_000;
 
@@ -33,7 +37,7 @@ function shutdown(signal: string) {
 process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 
-server.listen(config.port, config.host, () => {
-  const host = config.host.includes(":") ? `[${config.host}]` : config.host;
-  console.info(`@bigmotors/sysop-server listening at http://${host}:${config.port}`);
+server.listen(config.PORT, config.HOST, () => {
+  const host = config.HOST.includes(":") ? `[${config.HOST}]` : config.HOST;
+  console.info(`@bigmotors/sysop-server listening at http://${host}:${config.PORT}`);
 });

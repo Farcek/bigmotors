@@ -1,0 +1,55 @@
+import {
+  IconCar,
+  IconDatabase,
+  IconHome,
+  IconPackage,
+  IconSettings,
+  IconWheel,
+} from "@tabler/icons-react";
+import type { TablerIcon } from "@tabler/icons-react";
+
+export type NavigationItem = {
+  label: string;
+  href: string;
+  icon: TablerIcon;
+  disabled?: boolean;
+};
+
+export type NavigationSection = {
+  label: string;
+  items: NavigationItem[];
+};
+
+export const navigationSections = [
+  {
+    label: "Үндсэн",
+    items: [
+      { label: "Home", href: "/", icon: IconHome },
+      { label: "Лавлах", href: "/references", icon: IconDatabase },
+    ],
+  },
+  {
+    label: "Каталог",
+    items: [
+      { label: "Автомашин", href: "/vehicles", icon: IconCar, disabled: true },
+      {
+        label: "Сэлбэг хэрэгсэл",
+        href: "/parts",
+        icon: IconPackage,
+        disabled: true,
+      },
+      { label: "Дугуй", href: "/tires", icon: IconWheel, disabled: true },
+    ],
+  },
+  {
+    label: "Систем",
+    items: [
+      {
+        label: "Тохиргоо",
+        href: "/settings",
+        icon: IconSettings,
+        disabled: true,
+      },
+    ],
+  },
+] as const satisfies readonly NavigationSection[];

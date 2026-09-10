@@ -27,7 +27,7 @@ pnpm dev:dti
 - `src/<domain>.ts`: domain namespace дотор Zod schema, inferred type болон `createAction`.
 - `src/index.ts`: нийтийн barrel export. NodeNext source import-д `.js` өргөтгөл ашиглана.
 - `test/*.test.ts`: action metadata болон зөв/буруу payload шалгах тест.
-- Бизнес enum/const нь `packages/core`-ийн хариуцлага; шаардлагатай үед холбоно. DB schema/type-ийг эндээс импортлохгүй.
+- Бизнес enum/const нь `packages/core`-ийн хариуцлага; `@bigmotors/core` dependency-гаас текстийн хязгаарыг хэрэглэнэ. Root DTI командууд core-ийг эхлээд build хийнэ. DB schema/type-ийг эндээс импортлохгүй.
 
 Үндсэн build нь `platform: neutral`, ESM, ES2022, declaration; dependency-г library дотор давхар bundle хийхгүй. [tsdown dependency зарчим](https://tsdown.dev/options/dependencies). Type checking нь тусдаа `tsc --noEmit`; Node type нь тест/build tooling-д хэрэглэгдэнэ, runtime Node dependency нэмэхгүй.
 
@@ -39,7 +39,28 @@ Zod schema-аас `z.infer` ашиглан type гаргана. `safeParse` нь
 
 Серверийн одоо байгаа `/health` handler-ийг contract-той хараахан холбоогүй тул runtime schema enforcement хийгдээгүй. `/api/*`-ийн fail-closed хамгаалалт өөрчлөгдөөгүй.
 
-Каталогийн CRUD, нийтлэг ID/pagination schema, error envelope, `@napp/dti-server` router, `@napp/dti-client` болон Userly/ACL холболт энэ initialize-д ороогүй. Ашиглаагүй `@napp/error`, `@bigmotors/core`, DB/server dependency нэмээгүй.
+### Өнгө Ба Салбар
+
+2026-09-10: `Colors`, `Branches` namespace бүхий contract нэмсэн; `@bigmotors/sysop-dti`-ээс импортлоно.
+
+| Action | HTTP path | Input | Result |
+| --- | --- | --- | --- |
+| `Colors.list` / `Branches.list` | GET `/colors` / `/branches` | `listQuery` | `Entity[]` |
+| `Colors.create` / `Branches.create` | POST `/colors` / `/branches` | `createBody` | `Entity` |
+| `Colors.update` / `Branches.update` | PATCH `/colors/:id` / `/branches/:id` | `params`, `updateBody` | `Entity` |
+| `Colors.remove` / `Branches.remove` | DELETE `/colors/:id` / `/branches/:id` | `params`, body байхгүй | Устгасан `Entity` |
+
+Action name: `colorList`, `colorCreate`, `colorUpdate`, `colorDelete`, мөн `branch` угтвартай ижил 4 нэр. Эдгээр нь permission code автоматаар баталсан гэсэн үг биш. `/api` зэрэг router mount prefix contract path-д ороогүй. `remove` нь service-ийн `delete(id)`-д харгалзана.
+
+`listQuery` нь `limit` (default 50, 1–100), `offset` (default 0), сонголттой `isActive`-тай. HTTP query-ийн тоон string болон boolean `"true"`/`"false"`, typed client-ийн number/boolean-ийг хоёуланг зөв уншина. Хоосон тоо, null, array/object, буруу boolean зөвшөөрөхгүй. Service-тэй адил list result нь массив, total/page wrapper байхгүй.
+
+Бичих талбарууд: `name` (trim, 1–255), `description` (сонголттой, nullable, 512), `sortOrder` (сонголттой int32), `isActive` (сонголттой boolean). Өнгөнд нэмэлт сонголттой, nullable `hexCode` (`#RRGGBB`) байна. Хоосон тайлбар/HEX нь `null` болно. Patch-д орхисон/`undefined` талбар өмнөхийг хадгална; хоосон patch хориглоно. ID/огноог body-д бичих, үл мэдэгдэх field дамжуулахыг strict schema буцаана. `params.id` нь UUID.
+
+`entity` нь DB-ийн camelCase талбаруудтай боловч `createdAt`, `updatedAt` нь ISO timestamp string. Handler DB `Date`-ийг `.toISOString()` болгон хувиргаж байж result validation-д өгнө. HTTP response envelope-ийг DTI adapter хариуцна; `entity` дотор `{ success, data }` wrapper давхарлахгүй.
+
+Namespace бүр `entity`, `createBody`, `updateBody`, `params`, `listQuery`, `listResult` schema болон `Entity`, `CreateBody`, `UpdateBody`, `Params`, `ListQuery`, `ListResult` төрөлтэй. Input төрөл `z.input`, parsed/result төрөл `z.infer` ашиглана. Ингэснээр query-ийн wire string болон parse хийсний дараах number/boolean-ийг ялгана.
+
+Энэ өөрчлөлт зөвхөн contract: DB service-ийг route-д холбох, огнооны mapping, DTI error mapping, `@napp/dti-client`, Userly/ACL болон admin form дараагийн ажил. Өнгө/салбарын ашиглагдсан мөрийг устгахгүй байх, нэрийн давхардлыг хамгаалах дүрэм нь DB service/constraint дээр хэвээр. Contract package-д DB, Express, token эсвэл нэвтрэх хэрэгжүүлэлт оруулаагүй.
 
 ## Шалгалт
 

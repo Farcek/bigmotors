@@ -41,10 +41,11 @@ test("standalone CLI refuses missing credentials before connecting", () => {
   assert.ok(!result.stderr.includes("secret"));
 });
 
-test("initial migration freezes every required trigger definition", async () => {
-  const initial = await readFile(new URL("../migrations/0000_initial_catalog.sql", import.meta.url), "utf8");
-  for (const hook of schemaHooks) assert.ok(initial.includes(new PgDialect().sqlToQuery(hook).sql));
-  assert.equal(readMigrationFiles(migrationConfig).length, 1);
+test("migration history contains every current trigger definition", () => {
+  const migrations = readMigrationFiles(migrationConfig);
+  const definitions = migrations.flatMap((migration) => migration.sql).join("\n").replaceAll("CREATE OR REPLACE FUNCTION", "CREATE FUNCTION");
+  for (const hook of schemaHooks) assert.ok(definitions.includes(new PgDialect().sqlToQuery(hook).sql));
+  assert.equal(migrations.length, 3);
 });
 
 test("migrating twice does not reapply SQL or duplicate the migration history", async () => {
@@ -53,11 +54,50 @@ test("migrating twice does not reapply SQL or duplicate the migration history", 
     await db.query("INSERT INTO branches (name) VALUES ('Migration test branch')");
     await migrate(drizzle(db), migrationConfig);
     const history = await db.query("SELECT * FROM drizzle.__drizzle_migrations");
-    assert.equal(history.rows.length, 1);
+    assert.equal(history.rows.length, readMigrationFiles(migrationConfig).length);
     const rows = await db.query("SELECT * FROM branches WHERE name='Migration test branch'");
     assert.equal(rows.rows.length, 1);
   } finally {
     await db.close();
+  }
+});
+
+test("additive migrations preserve existing colors, branches and product links without guessing locations", async () => {
+  const folder = await mkdtemp(join(tmpdir(), "bigmotors-color-upgrade-"));
+  const db = new PGlite();
+  try {
+    await mkdir(join(folder, "meta"));
+    const journal = JSON.parse(await readFile(new URL("../migrations/meta/_journal.json", import.meta.url), "utf8"));
+    await writeFile(join(folder, "meta/_journal.json"), JSON.stringify({ ...journal, entries: journal.entries.slice(0, 1) }));
+    await writeFile(join(folder, "0000_initial_catalog.sql"), await readFile(new URL("../migrations/0000_initial_catalog.sql", import.meta.url)));
+    const orm = drizzle(db);
+    await migrate(orm, { ...migrationConfig, migrationsFolder: folder });
+    const { rows: [color] } = await db.query<{ id: string }>("INSERT INTO colors (name) VALUES ('Existing color') RETURNING id");
+    const { rows: [branch] } = await db.query<{ id: string }>("INSERT INTO branches (name) VALUES ('Existing company branch') RETURNING id");
+    await db.exec("BEGIN");
+    const { rows: [product] } = await db.query<{ id: string }>("INSERT INTO products (product_type,title) VALUES ('vehicle','Existing vehicle') RETURNING id");
+    await db.query("INSERT INTO vehicles (product_id, exterior_color_id, interior_color_id, branch_id) VALUES ($1, $2, $2, $3)", [product!.id, color!.id, branch!.id]);
+    for (const [type, table] of [["part", "parts"], ["tire", "tires"]] as const) {
+      const { rows: [item] } = await db.query<{ id: string }>("INSERT INTO products (product_type,title) VALUES ($1,'Existing product') RETURNING id", [type]);
+      await db.query(`INSERT INTO ${table} (product_id, branch_id) VALUES ($1, $2)`, [item!.id, branch!.id]);
+    }
+    await db.exec("COMMIT");
+    await migrate(orm, migrationConfig);
+    const result = await db.query("SELECT c.name, c.hex_code, v.exterior_color_id, v.interior_color_id FROM colors c JOIN vehicles v ON v.exterior_color_id=c.id");
+    assert.deepEqual(result.rows, [{ name: "Existing color", hex_code: null, exterior_color_id: color!.id, interior_color_id: color!.id }]);
+    for (const table of ["vehicles", "parts", "tires"]) {
+      const rows = await db.query(`SELECT branch_id,location_id FROM ${table}`);
+      assert.deepEqual(rows.rows, [{ branch_id: branch!.id, location_id: null }]);
+    }
+    assert.equal((await db.query("SELECT * FROM locations")).rows.length, 0);
+    await db.query("UPDATE colors SET hex_code='#aBc123' WHERE id=$1", [color!.id]);
+    await migrate(orm, migrationConfig);
+    const history = await db.query("SELECT * FROM drizzle.__drizzle_migrations");
+    assert.equal(history.rows.length, readMigrationFiles(migrationConfig).length);
+    assert.equal((await db.query<{ hex_code: string }>("SELECT hex_code FROM colors")).rows[0]?.hex_code, "#aBc123");
+  } finally {
+    await db.close();
+    await rm(folder, { recursive: true, force: true });
   }
 });
 

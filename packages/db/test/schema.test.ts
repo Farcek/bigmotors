@@ -4,7 +4,7 @@ import { after, before, test } from "node:test";
 import type { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { eq } from "drizzle-orm";
-import { products, vehicles } from "../src/schema/index.js";
+import { colors, locations, products, vehicles } from "../src/schema/index.js";
 import { testDatabase, transaction } from "./support/database.js";
 
 let db: PGlite;
@@ -27,7 +27,7 @@ async function image(productId: string): Promise<string> {
 }
 
 async function reference(table: string, name: string = randomUUID()): Promise<string> {
-  const allowed = ["vehicle_brands", "vehicle_body_types", "colors", "part_brands", "part_categories", "tire_brands", "branches", "vehicle_features"];
+  const allowed = ["vehicle_brands", "vehicle_body_types", "colors", "part_brands", "part_categories", "tire_brands", "branches", "locations", "vehicle_features"];
   assert.ok(allowed.includes(table));
   const id = randomUUID();
   await db.query(`INSERT INTO ${table} (id, name) VALUES ($1, $2)`, [id, name]);
@@ -51,9 +51,9 @@ async function publishablePart(): Promise<string> {
   return id;
 }
 
-test("all 22 tables, constraints, indexes and trigger definitions provision together", async () => {
+test("all 23 tables, constraints, indexes and trigger definitions provision together", async () => {
   const result = await db.query<{ tablename: string }>("SELECT tablename FROM pg_tables WHERE schemaname='public'");
-  assert.equal(result.rows.length, 22);
+  assert.equal(result.rows.length, 23);
   assert.ok(result.rows.some((row) => row.tablename === "admin_profiles"));
   const enums = await db.query("SELECT * FROM pg_type WHERE typtype='e'");
   assert.equal(enums.rows.length, 0);
@@ -74,6 +74,29 @@ test("Drizzle inserts a minimal draft transaction and maps defaults and nullable
   assert.equal(row?.itemImageId, null);
   assert.equal(row?.isFeatured, false);
   assert.ok(row?.createdAt instanceof Date);
+});
+
+test("color hex codes are optional, mapped by Drizzle, editable and not unique", async () => {
+  const orm = drizzle(db);
+  const [empty] = await orm.insert(colors).values({ name: randomUUID() }).returning();
+  assert.equal(empty?.hexCode, null);
+  for (const hexCode of ["#FFFFFF", "#000000", "#aBc123", "#aBc123"]) {
+    const [color] = await orm.insert(colors).values({ name: randomUUID(), hexCode }).returning();
+    assert.equal(color?.hexCode, hexCode);
+  }
+  const [updated] = await orm.update(colors).set({ hexCode: "#123ABC" }).where(eq(colors.id, empty!.id)).returning();
+  assert.equal(updated?.hexCode, "#123ABC");
+  const [cleared] = await orm.update(colors).set({ hexCode: null }).where(eq(colors.id, empty!.id)).returning();
+  assert.equal(cleared?.hexCode, null);
+});
+
+test("color hex codes reject malformed values on insert and update", async () => {
+  const id = await reference("colors");
+  for (const value of ["", "#FFF", "FFFFFF", "#GG0000", "#12345", " #12345", "#12345\n", "#123456\n", "#12345678"]) {
+    const code = value.length > 7 ? "22001" : "23514";
+    await rejects("INSERT INTO colors (name, hex_code) VALUES ($1, $2)", [randomUUID(), value], code);
+    await rejects("UPDATE colors SET hex_code=$2 WHERE id=$1", [id, value], code);
+  }
 });
 
 test("a product cannot commit without its matching detail and rollback removes the parent", async () => {
@@ -274,8 +297,40 @@ test("vehicle publishing handles electric, used and in-stock conditional require
   await rejects("UPDATE products SET publication_status='published' WHERE id=$1", [id], "23514");
   const branch = await reference("branches");
   await db.query("UPDATE vehicles SET branch_id=$2 WHERE product_id=$1", [id, branch]);
+  await rejects("UPDATE products SET publication_status='published' WHERE id=$1", [id], "23514");
+  const location = await reference("locations");
+  await db.query("UPDATE vehicles SET branch_id=NULL,location_id=$2 WHERE product_id=$1", [id, location]);
   await db.query("UPDATE products SET publication_status='published' WHERE id=$1", [id]);
+  await rejects("UPDATE vehicles SET location_id=NULL WHERE product_id=$1", [id], "23514");
   await rejects("UPDATE vehicles SET fuel_type='gasoline' WHERE product_id=$1", [id], "23514");
+});
+
+test("locations are distinct from company branches and shared across all product types", async () => {
+  const name = randomUUID();
+  const branch = await reference("branches", name);
+  const orm = drizzle(db);
+  const [location] = await orm.insert(locations).values({ name }).returning();
+  assert.ok(location);
+  assert.equal(location.isActive, true);
+  assert.equal(location.description, null);
+  assert.equal(location.sortOrder, 0);
+  await rejects("INSERT INTO locations (name) VALUES ($1)", [` ${name.toUpperCase()} `], "23505");
+  await rejects("INSERT INTO locations (name) VALUES (' ')", [], "23514");
+  for (const type of ["vehicle", "part", "tire"] as const) {
+    const id = await draft(type);
+    const table = type === "vehicle" ? "vehicles" : type === "part" ? "parts" : "tires";
+    await rejects(`UPDATE ${table} SET location_id=$2 WHERE product_id=$1`, [id, branch], "23503");
+    await db.query(`UPDATE ${table} SET branch_id=$2,location_id=$3 WHERE product_id=$1`, [id, branch, location.id]);
+    const { rows: [row] } = await db.query(`SELECT branch_id,location_id FROM ${table} WHERE product_id=$1`, [id]);
+    assert.deepEqual(row, { branch_id: branch, location_id: location.id });
+  }
+  await assert.rejects(db.query("DELETE FROM locations WHERE id=$1", [location.id]), (error: unknown) => {
+    assert.ok(["23001", "23503"].includes((error as { code: string }).code));
+    return true;
+  });
+  const [inactive] = await orm.update(locations).set({ isActive: false }).where(eq(locations.id, location.id)).returning();
+  assert.equal(inactive?.isActive, false);
+  assert.ok(inactive!.updatedAt.getTime() >= location.updatedAt.getTime());
 });
 
 test("metric new tires can publish while used tires and mismatched model parents cannot", async () => {

@@ -1,4 +1,5 @@
 export * from "./branches.js";
+export * from "./locations.js";
 export * from "./references.js";
 export * from "./products.js";
 export * from "./vehicles.js";

@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { boolean, check, foreignKey, index, integer, numeric, pgTable, text, unique, uuid, varchar } from "drizzle-orm/pg-core";
 import { AVAILABILITY_STATUSES, PRICE_UNITS, TIRE_APPLICATIONS, TIRE_CONDITIONS, TIRE_CONSTRUCTIONS, TIRE_SEASONS, TIRE_STUD_TYPES, TIRE_TREAD_TYPES } from "@bigmotors/core";
 import { branches } from "./branches.js";
+import { locations } from "./locations.js";
 import { enumCheck, idColumn, nonBlank } from "./common.js";
 import { products } from "./products.js";
 import { tireBrands, tireModels } from "./references.js";
@@ -17,6 +18,7 @@ export const tires = pgTable("tires", {
   isRunFlat: boolean("is_run_flat"), studType: text("stud_type", { enum: TIRE_STUD_TYPES }),
   priceUnit: text("price_unit", { enum: PRICE_UNITS }), packageDescription: varchar("package_description", { length: 512 }),
   availabilityStatus: text("availability_status", { enum: AVAILABILITY_STATUSES }), branchId: uuid("branch_id").references(() => branches.id, { onDelete: "restrict" }),
+  locationId: uuid("location_id").references(() => locations.id, { onDelete: "restrict" }),
 }, (t) => [
   foreignKey({ name: "tires_product_type_fk", columns: [t.productId, t.productType], foreignColumns: [products.id, products.productType] }).onDelete("restrict"),
   check("tires_type_check", sql`${t.productType} = 'tire'`),
@@ -32,6 +34,7 @@ export const tires = pgTable("tires", {
   nonBlank("tires_sku_nonblank", t.sku),
   index("tires_brand_model_idx").on(t.brandId, t.modelId), index("tires_model_idx").on(t.modelId),
   index("tires_size_idx").on(t.widthMm, t.aspectRatio, t.rimDiameterInch), index("tires_season_idx").on(t.season), index("tires_branch_idx").on(t.branchId),
+  index("tires_location_idx").on(t.locationId),
 ]);
 export const tireMarkings = pgTable("tire_markings", {
   id: idColumn(), productId: uuid("product_id").notNull().references(() => tires.productId, { onDelete: "restrict" }),

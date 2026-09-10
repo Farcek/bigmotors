@@ -73,7 +73,7 @@ export const schemaHooks: readonly SQL[] = [
             AND sale_status IS NOT NULL AND arrival_status IS NOT NULL
             AND (fuel_type = 'electric' OR (engine_capacity_cc IS NOT NULL AND transmission IS NOT NULL))
             AND (condition <> 'used' OR mileage_km IS NOT NULL)
-            AND (arrival_status <> 'in_stock' OR branch_id IS NOT NULL)
+            AND (arrival_status <> 'in_stock' OR location_id IS NOT NULL)
           INTO valid FROM vehicles WHERE product_id = p.id;
         WHEN 'part' THEN
           SELECT category_id IS NOT NULL AND brand_id IS NOT NULL AND condition IS NOT NULL
@@ -115,7 +115,7 @@ export const schemaHooks: readonly SQL[] = [
     END $$`),
   sql.raw(`CREATE TRIGGER part_categories_tree_guard BEFORE INSERT OR UPDATE OR DELETE ON part_categories
     FOR EACH ROW EXECUTE FUNCTION bm_check_category_tree()`),
-  ...["products", "product_images", "admin_profiles", "branches", "vehicle_brands", "vehicle_models", "vehicle_variants", "vehicle_body_types", "colors", "vehicle_features", "part_categories", "part_brands", "tire_brands", "tire_models"].map((table) =>
+  ...["products", "product_images", "admin_profiles", "branches", "locations", "vehicle_brands", "vehicle_models", "vehicle_variants", "vehicle_body_types", "colors", "vehicle_features", "part_categories", "part_brands", "tire_brands", "tire_models"].map((table) =>
     sql.raw(`CREATE TRIGGER ${table}_updated_at BEFORE UPDATE ON ${table} FOR EACH ROW EXECUTE FUNCTION bm_set_updated_at()`)),
   ...["vehicles", "parts", "tires", "product_images", "vehicle_feature_links", "part_fitments", "part_oem_numbers", "part_specifications", "tire_markings"].map((table) =>
     sql.raw(`CREATE TRIGGER ${table}_touch_product BEFORE INSERT OR UPDATE OR DELETE ON ${table} FOR EACH ROW EXECUTE FUNCTION bm_touch_product()`)),

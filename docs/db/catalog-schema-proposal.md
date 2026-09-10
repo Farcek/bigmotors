@@ -4,7 +4,7 @@
 - Төлөв: Баталсан; TypeScript/Drizzle schema болон trigger source болон migration хэрэгжсэн; бодит DB-д ажиллуулаагүй
 - Баталсан огноо: 2026-09-10
 - Үндэслэл: Хэрэглэгч нэгтгэсэн 22 хүснэгтийн schema, дагалдах техникийн болон эхний хувилбарын бизнес дүрмийн саналыг баталсан. Файлын анхны нэрийг холбоос хадгалах зорилгоор өөрчлөөгүй. [ADR 0023](../adr/0023-approve-catalog-schema.md).
-- Батлагдсан суурь: [Products](products-schema.md), [11 лавлах + тоноглолын холбоос](reference-tables.md), [Зургийн хадгалалт](product-images.md), [Нийтлэг дүрэм](../features/product-common-rules.md)
+- Батлагдсан суурь: [Products](products-schema.md), [12 лавлах + тоноглолын холбоос](reference-tables.md), [Зургийн хадгалалт](product-images.md), [Нийтлэг дүрэм](../features/product-common-rules.md)
 
 ## Батлагдсан шинэчлэл
 
@@ -15,7 +15,7 @@
 | Хүснэгт | Үүрэг | Төлөв |
 | --- | --- | --- |
 | `products` | Гурван төрлийн нийтлэг мэдээлэл | Логик бүтэц батлагдсан; физик нарийвчлалыг доор баталсан |
-| 11 лавлах хүснэгт | Марк, загвар, ангилал, брэнд, өнгө, салбар, тоноглол | [Батлагдсан](reference-tables.md) |
+| 12 лавлах хүснэгт | Марк, загвар, ангилал, брэнд, өнгө, салбар, байршил, тоноглол | [Батлагдсан](reference-tables.md) |
 | `vehicle_feature_links` | Машин ба тоноглолын холбоос | Бүтэц батлагдсан; PK/FK-г энд нарийвчлав |
 | `vehicles` | Нэг бодит автомашин | Баталсан |
 | `parts` | Сэлбэгийн бүтээгдэхүүн | Баталсан |
@@ -27,7 +27,7 @@
 | `product_images` | Disk файлын зам, зургийн metadata | Нэр, хадгалалт, багана, lifecycle баталсан |
 | `admin_profiles` | Userly identity-ийн local projection | Аргачлал, багана баталсан |
 
-Нийт **22 хүснэгт**. CRM, агуулахын үлдэгдэл/хөдөлгөөн, checkout, төлбөр, нийлүүлэлтийн batch, local password/session/role хүснэгт ороогүй. Компанийн бусад агуулгын CMS нь одоогийн каталогийн schema хүрээний гадна.
+Нийт **23 хүснэгт**. [ADR 0025](../adr/0025-separate-branches-and-locations.md)-аар компанийн салбар ба бүтээгдэхүүний байршил тусдаа болсон. CRM, агуулахын үлдэгдэл/хөдөлгөөн, checkout, төлбөр, нийлүүлэлтийн batch, local password/session/role хүснэгт ороогүй. Компанийн бусад агуулгын CMS нь одоогийн каталогийн schema хүрээний гадна.
 
 ## Нийтлэг техникийн шийдвэр
 
@@ -64,7 +64,8 @@
 | `seat_count` | smallint | V16 |
 | `condition` | text | V17; new/used |
 | `mileage_km` | integer | V18 |
-| `branch_id` | uuid | V19 -> branches |
+| `branch_id` | uuid | V19 -> branches; компанийн салбар, сонголттой |
+| `location_id` | uuid | V34 -> locations; бодит байршил, in_stock нийтлэхэд заавал |
 | `condition_description` | varchar(512) | V20 |
 | `sale_status` | text | V24; available/sold |
 | `arrival_status` | text | V25; expected/in_transit/in_stock |
@@ -74,7 +75,7 @@ V29 тоноглол нь `vehicle_feature_links(product_id, feature_id)`-д б�
 
 Батлагдсан тоон дүрэм: үйлдвэрлэсэн/импортын он 1900..тухайн он; импортын он үйлдвэрлэснээс өмнө биш; cc 1..30000; км 0..9999999; суудал 1..100. Тухайн оноос хамаарах шалгалтыг request validation-д, тогтмол хүрээ болон хоёр оны хамаарлыг DB CHECK-д хэрэгжүүлэх гэж баталсан. Бутархай input-ийг DB-д хүрэхээс өмнө буцаана.
 
-Нийтлэх шаардлага өмнөх matrix-аар хэвээр: mark/model/year/body/fuel/drivetrain/steering/exterior color/condition/sale/arrival заавал; ICE/hybrid-д cc/transmission, used-д mileage, in_stock-д branch заавал. Electric-ийн cc хоосон байна.
+Нийтлэх шаардлага өмнөх matrix-аар хэвээр: mark/model/year/body/fuel/drivetrain/steering/exterior color/condition/sale/arrival заавал; ICE/hybrid-д cc/transmission, used-д mileage, in_stock-д location заавал, branch сонголттой. Electric-ийн cc хоосон байна.
 
 ## Parts
 
@@ -91,7 +92,8 @@ V29 тоноглол нь `vehicle_feature_links(product_id, feature_id)`-д б�
 | `price_unit` | text | P16; нэг үнэ ямар нэгжид хамаарах |
 | `package_description` | varchar(512) | P17; савлагааны агуулга, үлдэгдлийн тоо биш |
 | `availability_status` | text | P18 |
-| `branch_id` | uuid | P19 -> branches; эхний хувилбарт нэг салбар |
+| `branch_id` | uuid | P19 -> branches; компанийн нэг салбар, сонголттой |
+| `location_id` | uuid | P26 -> locations; нэг бодит байршил, сонголттой |
 
 Үндсэн/дэд ангиллын ID-г хоёул давхар хадгалахгүй; үндсэн ангиллыг category-ийн parent холбоосоор авна. Зөвхөн үндсэн ангилал сонгосон байж болно.
 
@@ -153,7 +155,8 @@ V29 тоноглол нь `vehicle_feature_links(product_id, feature_id)`-д б�
 | `price_unit` | text | T24 |
 | `package_description` | varchar(512) | T25 |
 | `availability_status` | text | T26 |
-| `branch_id` | uuid | T27 -> branches; эхний хувилбарт нэг салбар |
+| `branch_id` | uuid | T27 -> branches; компанийн нэг салбар, сонголттой |
+| `location_id` | uuid | T34 -> locations; нэг бодит байршил, сонголттой |
 
 SKU бөглөсөн бол `tires` дотор давхцахгүй; parts-тай global uniqueness шаардахгүй байх гэж баталсан. Үйлдвэрлэгчийн код болон хэмжээний тэмдэглэгээ unique биш. Numeric талбарт бөглөсөн утга эерэг, finite байна; ratio 0-ээс их, 100-аас ихгүй байх гэж баталсан. Баганын precision-оос илүү оронтой input-ийг автоматаар тоймлохгүй, validation-аар буцаана.
 
@@ -238,7 +241,7 @@ DB хамгаалалтын шийдвэр: `products(id, product_type)` unique;
 
 Сэлбэг/дугуйн нэг салбар, метр хэмжээтэй дугуй, ижил хэмжээтэй багц, SKU-ийн төрөл тус бүрийн uniqueness болон тусгай нийтлэх шаардлагыг энэ schema-ийн хамт баталсан. Доорх хүрээнээс гадуурх боломж болон хэрэгслийн сонголтыг батлаагүй.
 
-Used дугуйн ширхэг/багц, mixed-size set, олон салбарын хуваарилалт, нэмэлт сэлбэгийн лавлахыг одоогийн 22 хүснэгт бүрэн дэмждэг гэж амлахгүй. Хэрэгтэй бол хүснэгтийн тоо өөрчлөгдөнө. Seed, frontend editor, HTML sanitizer, upload/serve tooling болон production тохиргоо schema-ийн энэ баталгаагаар сонгогдохгүй.
+Used дугуйн ширхэг/багц, mixed-size set, олон салбарын хуваарилалт, нэмэлт сэлбэгийн лавлахыг одоогийн 23 хүснэгт бүрэн дэмждэг гэж амлахгүй. Хэрэгтэй бол хүснэгтийн тоо өөрчлөгдөнө. Seed, frontend editor, HTML sanitizer, upload/serve tooling болон production тохиргоо schema-ийн энэ баталгаагаар сонгогдохгүй.
 
 HTML-г шууд итгэж render хийхгүй; хадгалах/харуулах урсгалд аюулгүй HTML sanitization төлөвлөнө. Энэ нь зураг файл өөрчлөх тухай биш. [OWASP HTML sanitization](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html).
 

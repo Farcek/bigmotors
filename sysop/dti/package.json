@@ -20,6 +20,7 @@
     "test": "node --import=tsx --test test/*.test.ts"
   },
   "dependencies": {
+    "@bigmotors/core": "workspace:*",
     "@napp/dti-core": "6.1.2",
     "zod": "4.4.3"
   },

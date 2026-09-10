@@ -1,5 +1,7 @@
 # 0023: Каталогийн нэгтгэсэн schema-г батлах
 
+2026-09-10: [ADR 0025: Салбар ба бүтээгдэхүүний байршлыг салгах](0025-separate-branches-and-locations.md) нь өмнөх салбар/байршлыг нэгтгэсэн хэсгийг орлоно. Бусад шийдвэр хэвээр.
+
 - Огноо: 2026-09-10
 - Төлөв: Баталсан
 - Холбоотой баримт: [Каталогийн schema](../db/catalog-schema-proposal.md), [Products](../db/products-schema.md), [Лавлах](../db/reference-tables.md), [Зураг](../db/product-images.md), [ADR 0019](0019-use-userly-admin-authentication-and-acl.md)

@@ -9,6 +9,10 @@ importers:
   .: {}
 
   packages/core:
+    dependencies:
+      '@napp/di':
+        specifier: 1.0.10
+        version: 1.0.10
     devDependencies:
       '@types/node':
         specifier: 24.13.3
@@ -25,12 +29,21 @@ importers:
       '@bigmotors/core':
         specifier: workspace:*
         version: link:../core
+      '@napp/di':
+        specifier: 1.0.10
+        version: 1.0.10
+      '@napp/error':
+        specifier: 1.1.0
+        version: 1.1.0
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@electric-sql/pglite@0.5.8)(@types/pg@8.23.1)(pg@8.23.0)
       pg:
         specifier: 8.23.0
         version: 8.23.0
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       '@electric-sql/pglite':
         specifier: 0.5.8
@@ -93,6 +106,9 @@ importers:
 
   sysop/dti:
     dependencies:
+      '@bigmotors/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@napp/dti-core':
         specifier: 6.1.2
         version: 6.1.2(zod@4.4.3)
@@ -115,12 +131,33 @@ importers:
 
   sysop/server:
     dependencies:
+      '@bigmotors/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@bigmotors/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@bigmotors/sysop-dti':
+        specifier: workspace:*
+        version: link:../dti
+      '@napp/di':
+        specifier: 1.0.10
+        version: 1.0.10
+      '@napp/dti-core':
+        specifier: 6.1.2
+        version: 6.1.2(zod@4.4.3)
+      '@napp/dti-server':
+        specifier: 6.1.2
+        version: 6.1.2(@types/express@5.0.6)(express@5.2.1)(zod@4.4.3)
       '@napp/error':
         specifier: 1.1.0
         version: 1.1.0
       express:
         specifier: 5.2.1
         version: 5.2.1
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/express':
         specifier: 5.0.6
@@ -633,9 +670,20 @@ packages:
     peerDependencies:
       react: ^19.2.0
 
+  '@napp/di@1.0.10':
+    resolution: {integrity: sha512-RW5kr895xS4+VHU8OJMmPV5c0yVhYSmEpA7yK6V0yumfaD7zOAd17YMljGrudGNLDtqSc9Ra4sCqKJXARXG0UQ==}
+    engines: {node: '>=22'}
+
   '@napp/dti-core@6.1.2':
     resolution: {integrity: sha512-URdY2+YtmR+S1323MUiq6BTy36SzY92U0RkB2Dquj6kr4+tVBB9WISq31qGQsKb8LGPZvQXy2rEP/oy0dVQhTQ==}
     peerDependencies:
+      zod: ^4.4.3
+
+  '@napp/dti-server@6.1.2':
+    resolution: {integrity: sha512-+WvhJFL+tVwf7Mtk7HaOVsnVfdP/usQ8t8EKb2miF0CKn2tzeSNksLob5ZNkE5d4EjHDJF+NHk2cSpbOBocPPA==}
+    peerDependencies:
+      '@types/express': ^5.0.6
+      express: ^5.2.1
       zod: ^4.4.3
 
   '@napp/error@1.1.0':
@@ -2061,8 +2109,18 @@ snapshots:
     dependencies:
       react: 19.2.8
 
+  '@napp/di@1.0.10': {}
+
   '@napp/dti-core@6.1.2(zod@4.4.3)':
     dependencies:
+      zod: 4.4.3
+
+  '@napp/dti-server@6.1.2(@types/express@5.0.6)(express@5.2.1)(zod@4.4.3)':
+    dependencies:
+      '@napp/dti-core': 6.1.2(zod@4.4.3)
+      '@types/express': 5.0.6
+      content-disposition: 1.1.0
+      express: 5.2.1
       zod: 4.4.3
 
   '@napp/error@1.1.0': {}
