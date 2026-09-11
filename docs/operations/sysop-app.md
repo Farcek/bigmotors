@@ -44,9 +44,11 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 | `/demo/form` | Жишээ нэмэх/засах form (`?id=...`) |
 | Бусад | Layout доторх 404 |
 
-Өнгөний CRUD хэрэгжсэн; бусад лавлах болон бүтээгдэхүүний дэлгэц нэмээгүй. Цаашид шинэ route нэмэхэд component болон `handle.title` бүртгэж, бэлэн болсон үед цэсний холбоосыг идэвхжүүлнэ.
+Өнгө болон [үлдсэн 11 лавлахын CRUD](../features/admin-reference-crud.md#дэлгэцүүд) хэрэгжсэн. Нэмэлт route-ууд `src/pages/references/routes.ts`-д бүртгэлтэй. Бүтээгдэхүүний дэлгэц нэмээгүй. Цаашид шинэ route нэмэхэд component болон `handle.title` бүртгэж, бэлэн болсон үед цэсний холбоосыг идэвхжүүлнэ.
 
 Дотоод navigation-д `Link`/`NavLink` ашиглана. Demo жагсаалтын хайлт/шүүлт/pagination болон өнгөний шүүлт/page URL query-д байна. Өнгөний UI нь `Colors` contract-оор API-д хандана; mutation амжилттай бол жагсаалтыг дахин уншина. Cache болон login/ACL guard нэмээгүй. [Өнгөний CRUD-ийн дэлгэрэнгүй](../features/admin-colors.md).
+
+Бусад лавлах мөн өөрийн DTI contract ашиглана. `definitions.ts` дотор талбар/parent тохиргоо болон typed API adapter байна; `ReferencePage`, `ReferenceForm` нь нийтлэг дүрмийг хэрэгжүүлнэ. Parent сонголт бүрэн ачаалахад list API-г 100 мөрөөр дараалан уншина. API/DB схем өөрчлөхгүй.
 
 ## Demo хөгжүүлэх
 
@@ -59,6 +61,10 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 ## Өнгөний CRUD шалгалт
 
 2026-09-12: App-ийн 22 тест, TypeScript check, Vite build болон colors API-ийн тусгаарласан DB ашиглах HTTP тестүүд тэнцсэн. Playwright/Edge дээр mocked API-тай нэмэх/засах/устгах, validation, duplicate/in-use алдаа, шүүлт, pagination/refresh, хоосон/алдаа/retry төлөвийг шалгасан. 320/390/1440px өргөнд form/list screenshot болон overflow нягталсан; page error гараагүй. Бодит local API-аас зөвхөн унших, form нээхийг давхар шалгасан; одоо байгаа DB-д туршилтын өгөгдөл бичээгүй.
+
+## Бусад лавлахын шалгалт
+
+2026-09-12: App-ийн нийт 38 тест, TypeScript check, Vite build тэнцсэн. Үлдсэн 11 лавлахын backend HTTP шалгалтын 38 тест тусгаарласан DB дээр тэнцсэн. Playwright/Edge дээр лавлах тус бүрийн нэмэх/засах/устгах, validation, идэвхтэй шүүлт болон immutable parent payload-ыг шалгасан. Ангиллын root/parent шүүлт, идэвхгүй ancestor сонголт, pagination/refresh болон хуудсын сүүлийн мөрийг устгах урсгал шалгагдсан. 320/390/1440px form screenshot, хуудасны overflow болон page error-ийг нягталсан. Browser mutation-ууд mocked API ашигласан; бодит local 11 endpoint-оос зөвхөн уншиж, DB-д тест өгөгдөл бичээгүй.
 
 ## Production fallback
 

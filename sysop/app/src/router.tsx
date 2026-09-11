@@ -5,6 +5,7 @@ import { NotFoundPage } from "./pages/NotFound";
 import { ReferencesPage } from "./pages/References";
 import { RouteErrorPage } from "./pages/RouteError";
 import { RouteLoading } from "./pages/RouteLoading";
+import { referenceRoutes } from "./pages/references/routes";
 
 export type PageHandle = { title: string };
 
@@ -16,6 +17,7 @@ export const routes: RouteObject[] = [
     ErrorBoundary: RouteErrorPage,
     HydrateFallback: RouteLoading,
     children: [
+      ...referenceRoutes,
       {
         id: "home",
         index: true,

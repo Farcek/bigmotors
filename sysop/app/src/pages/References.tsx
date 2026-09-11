@@ -38,28 +38,28 @@ const referenceGroups = [
   {
     title: "Автомашин",
     items: [
-      { label: "Автомашины марк", icon: IconCar },
-      { label: "Автомашины загвар", icon: IconListDetails },
-      { label: "Хувилбар", icon: IconListDetails },
-      { label: "Кузовын төрөл", icon: IconDatabase },
+      { label: "Автомашины марк", icon: IconCar, href: "/references/vehicle-brands" },
+      { label: "Автомашины загвар", icon: IconListDetails, href: "/references/vehicle-models" },
+      { label: "Хувилбар", icon: IconListDetails, href: "/references/vehicle-variants" },
+      { label: "Кузовын төрөл", icon: IconDatabase, href: "/references/vehicle-body-types" },
       { label: "Өнгө", icon: IconPalette, href: "/references/colors" },
-      { label: "Салбар", icon: IconMapPin, note: "Дундын" },
-      { label: "Бүтээгдэхүүний байршил", icon: IconMapPin, note: "Дундын" },
-      { label: "Тоноглол", icon: IconSparkles },
+      { label: "Салбар", icon: IconMapPin, note: "Дундын", href: "/references/branches" },
+      { label: "Бүтээгдэхүүний байршил", icon: IconMapPin, note: "Дундын", href: "/references/locations" },
+      { label: "Тоноглол", icon: IconSparkles, href: "/references/vehicle-features" },
     ],
   },
   {
     title: "Сэлбэг",
     items: [
-      { label: "Сэлбэгийн ангилал", icon: IconCategory },
-      { label: "Сэлбэгийн брэнд", icon: IconPackage },
+      { label: "Сэлбэгийн ангилал", icon: IconCategory, href: "/references/part-categories" },
+      { label: "Сэлбэгийн брэнд", icon: IconPackage, href: "/references/part-brands" },
     ],
   },
   {
     title: "Дугуй",
     items: [
-      { label: "Дугуйн брэнд", icon: IconWheel },
-      { label: "Дугуйн загвар", icon: IconListDetails },
+      { label: "Дугуйн брэнд", icon: IconWheel, href: "/references/tire-brands" },
+      { label: "Дугуйн загвар", icon: IconListDetails, href: "/references/tire-models" },
     ],
   },
 ] as const satisfies readonly ReferenceGroup[];

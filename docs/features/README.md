@@ -10,6 +10,7 @@
 
 - [Admin UI demo](admin-ui-demo.md): `/demo`, `/demo/list`, `/demo/form` тусгаарласан жишээ; бодит API/DB-д хүрэхгүй.
 - [Admin өнгөний CRUD](admin-colors.md): `/references/colors`, бодит DTI API-д холбогдсон жагсаалт, нэмэх/засах form болон устгах баталгаажуулалт.
+- [Admin бусад лавлахын CRUD](admin-reference-crud.md): үлдсэн 11 лавлах, харьяалах сонголт, ангиллын шатлал болон colors-той ижил удирдлага.
 
 - [Бүтээгдэхүүний нийтлэг дүрэм](product-common-rules.md): автомашин, сэлбэг, дугуйн текст, зураг, үнэ, нийтлэх, лавлах болон каталогийн нийтлэг зарчим; 2026-09-10-нд ижил хэрэглэхээр батлагдсан.
 - [Admin нэвтрэлт, хэрэглэгч ба ACL](admin-authentication-access.md): Chip CRM-тэй ижил Userly login, user management, local profile болон ACL аргачлал; 2026-09-10-нд батлагдсан. Каталогийн permission/scope matrix нээлттэй.
