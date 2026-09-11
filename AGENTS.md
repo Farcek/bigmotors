@@ -38,6 +38,7 @@ BigMotors LLC-ийн автомашин, сэлбэг хэрэгсэл, дугу
 
 - `sysop/app`-ийн UI дээр ажиллахын өмнө [батлагдсан UI kit дүрэм](docs/ui/admin-ui-kit.md)-ийг уншиж мөрдөнө. [ADR 0027](docs/adr/0027-use-app-local-admin-ui-kit.md) нь shared UI-ийн эзэмшил, байршлыг тогтооно.
 - Шинэ дэлгэц болон засварт demo-ийн жишиг, нийтлэг theme/token, form/list бүтэц, төлөв болон хүртээмжийн дүрмийг хэрэглэнэ.
+- Custom CSS аль болох бичихгүй. Тухайн UI сангийн бэлэн component, layout, props болон theme/token-ийг эхэлж ашиглана. Admin дээр [custom CSS-ийн дүрэм](docs/ui/admin-ui-kit.md#custom-css)-ийг мөрдөнө; public website-д энэ зарчим үйлчлэх боловч Mantine ашиглахыг шаардахгүй.
 - Admin form нь [ADR 0028](docs/adr/0028-use-mantine-form-without-query-cache.md)-ийн дагуу `@mantine/form`-ийн `useForm` ашиглана. TanStack Query, орлуулах cache сан болон өөрсдийн cache давхарга нэмэхгүй. Public website-ийн UI kit/cache шийдвэр тусдаа.
 
 ## Диаграм

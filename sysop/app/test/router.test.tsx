@@ -26,6 +26,7 @@ test("only implemented URLs resolve to pages; unknown and prefix URLs resolve to
     ["/demo/missing", "not-found"],
     ["/references-other", "not-found"],
     ["/references/colors", "colors"],
+    ["/references/vehicle-hierarchy", "vehicle-hierarchy"],
     ["/vehicles", "not-found"],
     ["/missing", "not-found"],
   ]) {
@@ -60,7 +61,8 @@ test("references supports direct entry and displays its title and active menu", 
   t.after(() => router.dispose());
   const html = render(router);
   assert.match(html, /<h1[^>]*>Лавлах<\/h1>/);
-  assert.match(html, /Автомашины марк/);
+  assert.match(html, /Марк \/ Загвар \/ Хувилбар/);
+  assert.match(html, /href="\/references\/vehicle-hierarchy"/);
   assert.match(html, /<a[^>]*aria-current="page"[^>]*href="\/references"/);
   assert.equal(html.match(/aria-current="page"/g)?.length, 1);
 });

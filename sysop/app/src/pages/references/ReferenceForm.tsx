@@ -17,26 +17,29 @@ type Props = {
   onSavingChange: (saving: boolean) => void;
   onSave: (payload: unknown) => Promise<void>;
   onCancel: () => void;
+  fixedParent?: ReferenceOption;
+  contextFields?: { label: string; value: string }[];
 };
 
-export function ReferenceForm({ definition: def, row, options, optionsLoading, optionsError, reloadOptions, saving, onSavingChange, onSave, onCancel }: Props) {
+export function ReferenceForm({ definition: def, row, options, optionsLoading, optionsError, reloadOptions, saving, onSavingChange, onSave, onCancel, fixedParent, contextFields }: Props) {
   const [error, setError] = useState("");
   const lock = useRef(false);
   const form = useForm({
     mode: "controlled",
-    initialValues: initialValues(def, row),
+    initialValues: { ...initialValues(def, row), ...(!row && fixedParent ? { parent: fixedParent.value } : {}) },
     validateInputOnBlur: true,
     validate: (values) => {
       const errors = validateForm(def, values, Boolean(row));
-      if (!row && values.parent && !options.some((option) => option.value === values.parent && !option.disabled)) {
+      if (!row && values.parent && !(fixedParent ? [fixedParent] : options).some((option) => option.value === values.parent && !option.disabled)) {
         errors.parent = "Идэвхтэй лавлах сонгоно уу.";
       }
       return errors;
     },
   });
   const selected = form.values.parent;
-  const choices = selected && !options.some((option) => option.value === selected)
-    ? [...options, { value: selected, label: `Лавлах: ${selected}`, disabled: true }] : options;
+  const availableOptions = fixedParent ? [fixedParent] : options;
+  const choices = selected && !availableOptions.some((option) => option.value === selected)
+    ? [...availableOptions, { value: selected, label: `Лавлах: ${selected}`, disabled: true }] : availableOptions;
   const blocked = Boolean(!row && def.parent && (optionsLoading || optionsError));
 
   return (
@@ -57,14 +60,15 @@ export function ReferenceForm({ definition: def, row, options, optionsLoading, o
     }, (errors) => form.getInputNode(Object.keys(errors)[0])?.focus())}>
       <Stack gap="lg">
         {error && <Alert color="red" role="alert">{error}</Alert>}
+        {contextFields?.map((field) => <TextInput key={field.label} label={field.label} value={field.value} readOnly />)}
         {def.parent && <>
           {optionsError && <Alert color="red" role="alert">{optionsError}</Alert>}
           <Group align="flex-end" wrap="nowrap" gap="xs">
             <Select label={def.parent.label} required={!def.parent.optional} searchable clearable={Boolean(def.parent.optional)}
               placeholder={optionsLoading ? "Ачаалж байна" : def.parent.optional ? "Үндсэн ангилал" : "Сонгох"}
-              nothingFoundMessage="Лавлах олдсонгүй" data={choices} disabled={saving || Boolean(row) || optionsLoading}
+              nothingFoundMessage="Лавлах олдсонгүй" data={choices} disabled={saving || Boolean(row) || Boolean(fixedParent) || optionsLoading}
               style={{ flex: 1, minWidth: 0 }} comboboxProps={{ withinPortal: false }} {...form.getInputProps("parent")} />
-            {!row && <Button variant="default" px="xs" title="Сонголт шинэчлэх" aria-label="Сонголт шинэчлэх" disabled={saving || optionsLoading} onClick={reloadOptions}><IconRefresh size={18} /></Button>}
+            {!row && !fixedParent && <Button variant="default" px="xs" title="Сонголт шинэчлэх" aria-label="Сонголт шинэчлэх" disabled={saving || optionsLoading} onClick={reloadOptions}><IconRefresh size={18} /></Button>}
           </Group>
         </>}
         <TextInput label="Нэр" required maxLength={CATALOG_LIMITS.title} disabled={saving} {...form.getInputProps("name")} />

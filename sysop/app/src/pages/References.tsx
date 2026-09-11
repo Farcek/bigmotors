@@ -38,9 +38,7 @@ const referenceGroups = [
   {
     title: "Автомашин",
     items: [
-      { label: "Автомашины марк", icon: IconCar, href: "/references/vehicle-brands" },
-      { label: "Автомашины загвар", icon: IconListDetails, href: "/references/vehicle-models" },
-      { label: "Хувилбар", icon: IconListDetails, href: "/references/vehicle-variants" },
+      { label: "Марк / Загвар / Хувилбар", icon: IconCar, href: "/references/vehicle-hierarchy" },
       { label: "Кузовын төрөл", icon: IconDatabase, href: "/references/vehicle-body-types" },
       { label: "Өнгө", icon: IconPalette, href: "/references/colors" },
       { label: "Салбар", icon: IconMapPin, note: "Дундын", href: "/references/branches" },

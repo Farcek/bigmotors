@@ -39,6 +39,7 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 | `/` | Нүүр |
 | `/references` | Лавлахын нүүр |
 | `/references/colors` | Өнгөний CRUD, нэмэх/засах modal |
+| `/references/vehicle-hierarchy` | Марк → загвар → хувилбар, гурван баганатай удирдлага |
 | `/demo` | UI demo тойм |
 | `/demo/list` | Жишээ жагсаалт |
 | `/demo/form` | Жишээ нэмэх/засах form (`?id=...`) |
@@ -49,6 +50,8 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 Дотоод navigation-д `Link`/`NavLink` ашиглана. Demo жагсаалтын хайлт/шүүлт/pagination болон өнгөний шүүлт/page URL query-д байна. Өнгөний UI нь `Colors` contract-оор API-д хандана; mutation амжилттай бол жагсаалтыг дахин уншина. Cache болон login/ACL guard нэмээгүй. [Өнгөний CRUD-ийн дэлгэрэнгүй](../features/admin-colors.md).
 
 Бусад лавлах мөн өөрийн DTI contract ашиглана. `definitions.ts` дотор талбар/parent тохиргоо болон typed API adapter байна; `ReferencePage`, `ReferenceForm` нь нийтлэг дүрмийг хэрэгжүүлнэ. Parent сонголт бүрэн ачаалахад list API-г 100 мөрөөр дараалан уншина. API/DB схем өөрчлөхгүй.
+
+`src/pages/references/vehicle-hierarchy/` дотор автомашины [гурван баганатай лавлах](../features/admin-vehicle-hierarchy.md) байрлана. `ReferenceForm`-ийн fixed parent/context боломжийг дахин ашиглана. Хуучин гурван URL хэвээр; лавлахын нүүрээс шинэ нэгтгэсэн хуудсанд орно.
 
 ## Demo хөгжүүлэх
 

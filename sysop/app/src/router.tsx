@@ -17,6 +17,12 @@ export const routes: RouteObject[] = [
     ErrorBoundary: RouteErrorPage,
     HydrateFallback: RouteLoading,
     children: [
+      {
+        id: "vehicle-hierarchy",
+        path: "references/vehicle-hierarchy",
+        lazy: async () => ({ Component: (await import("./pages/references/vehicle-hierarchy/VehicleHierarchyPage")).VehicleHierarchyPage }),
+        handle: { title: "Марк / Загвар / Хувилбар" } satisfies PageHandle,
+      },
       ...referenceRoutes,
       {
         id: "home",

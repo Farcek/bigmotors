@@ -72,11 +72,11 @@ export function listState(def: ReferenceDefinition, params: URLSearchParams) {
   return { page, status, parent, rootOnly, query };
 }
 
-export async function listAll(def: ReferenceDefinition, signal: AbortSignal) {
+export async function listAll(def: ReferenceDefinition, signal: AbortSignal, filters: { brandId?: string; modelId?: string } = {}) {
   const rows: ReferenceRow[] = [];
   for (let offset = 0; ; offset += 100) {
     signal.throwIfAborted();
-    const batch = await def.list({ limit: 100, offset }, signal);
+    const batch = await def.list({ ...filters, limit: 100, offset }, signal);
     rows.push(...batch);
     if (batch.length < 100) return rows;
   }
