@@ -11,6 +11,10 @@ pnpm dev:app
 
 Одоогийн Vite config нь `127.0.0.1:64403`. Порт завгүй бол Vite өөр порт сонгож болох тул терминалд хэвлэсэн хаягийг харна. Server-ийг өөр терминалаас `pnpm dev:server` ажиллуулна.
 
+Root-ийн app dev/build/typecheck/test script нь хамааралтай workspace package-уудыг эхэлж build хийнэ. API client-ийн анхны base URL `/api`; Vite үүнийг `http://127.0.0.1:64402` руу proxy хийнэ. Шаардлагатай бол app-ийн `VITE_API_BASE_URL` build-time env-ээр өөрчилж болно. Өөр origin ашиглавал backend-ийн CORS тохиргоог тусад нь хангана.
+
+Backend-ийн `sysop/server/.env` дэх `DATABASE_URL` нь runtime DB холболт. Local Compose DB-ийн host порт `64401`; migration-ийн `DB_CONNECTION_STRING`-ээс тусдаа. Env өөрчилсний дараа backend-ийг дахин асаана. Нууц утгыг repository-д commit хийхгүй.
+
 ```powershell
 pnpm typecheck:app
 pnpm test:app
@@ -34,14 +38,15 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 | --- | --- |
 | `/` | Нүүр |
 | `/references` | Лавлахын нүүр |
+| `/references/colors` | Өнгөний CRUD, нэмэх/засах modal |
 | `/demo` | UI demo тойм |
 | `/demo/list` | Жишээ жагсаалт |
 | `/demo/form` | Жишээ нэмэх/засах form (`?id=...`) |
 | Бусад | Layout доторх 404 |
 
-Лавлахын CRUD болон бүтээгдэхүүний дэлгэц нэмээгүй. `/references/colors` зэрэг хэрэгжээгүй URL нь 404 харуулна. Цаашид шинэ route нэмэхэд component болон `handle.title` бүртгэж, бэлэн болсон үед цэсний холбоосыг идэвхжүүлнэ.
+Өнгөний CRUD хэрэгжсэн; бусад лавлах болон бүтээгдэхүүний дэлгэц нэмээгүй. Цаашид шинэ route нэмэхэд component болон `handle.title` бүртгэж, бэлэн болсон үед цэсний холбоосыг идэвхжүүлнэ.
 
-Дотоод navigation-д `Link`/`NavLink` ашиглана. Demo жагсаалтын хайлт/шүүлт/pagination URL query-д байна. Бодит каталогийн API data, filter control болон cache integration байхгүй. Login/ACL guard нэмээгүй.
+Дотоод navigation-д `Link`/`NavLink` ашиглана. Demo жагсаалтын хайлт/шүүлт/pagination болон өнгөний шүүлт/page URL query-д байна. Өнгөний UI нь `Colors` contract-оор API-д хандана; mutation амжилттай бол жагсаалтыг дахин уншина. Cache болон login/ACL guard нэмээгүй. [Өнгөний CRUD-ийн дэлгэрэнгүй](../features/admin-colors.md).
 
 ## Demo хөгжүүлэх
 
@@ -50,6 +55,10 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 `test/demo.test.tsx` нь нийлмэл шүүлт, эрэмбэ, pagination, unknown query, хоосон төлөв болон demo route-уудын шууд render-ийг шалгана. [UI demo-ийн хүрээ ба шалгуур](../features/admin-ui-demo.md).
 
 2026-09-12: Demo нэмсний дараа app-ийн нийт 15 тест, TypeScript check болон Vite build тэнцсэн. Playwright/Edge дээр хайлт, шүүлт, эрэмбэ, pagination, query refresh, хоосон төлөв, form validation/reset, нэмэх/засах/устгах/болих, refresh-ээр жишээ өгөгдөл сэргээх болон үл мэдэгдэх edit ID-г шалгасан. 320/390/768/1440px өргөнд шалгаж, desktop/mobile screenshot нягталсан. Page error болон `/api/` хүсэлт гараагүй.
+
+## Өнгөний CRUD шалгалт
+
+2026-09-12: App-ийн 22 тест, TypeScript check, Vite build болон colors API-ийн тусгаарласан DB ашиглах HTTP тестүүд тэнцсэн. Playwright/Edge дээр mocked API-тай нэмэх/засах/устгах, validation, duplicate/in-use алдаа, шүүлт, pagination/refresh, хоосон/алдаа/retry төлөвийг шалгасан. 320/390/1440px өргөнд form/list screenshot болон overflow нягталсан; page error гараагүй. Бодит local API-аас зөвхөн унших, form нээхийг давхар шалгасан; одоо байгаа DB-д туршилтын өгөгдөл бичээгүй.
 
 ## Production fallback
 

@@ -29,6 +29,12 @@ export const routes: RouteObject[] = [
         handle: { title: "Лавлах" } satisfies PageHandle,
       },
       {
+        id: "colors",
+        path: "references/colors",
+        lazy: async () => ({ Component: (await import("./pages/colors/ColorsPage")).ColorsPage }),
+        handle: { title: "Өнгө" } satisfies PageHandle,
+      },
+      {
         id: "demo",
         path: "demo",
         lazy: async () => ({ Component: (await import("./pages/demo/DemoLayout")).DemoLayout }),

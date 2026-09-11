@@ -26,7 +26,8 @@ body {
 }
 
 .demo-content { min-width: 0; }
-.demo-body {
+.demo-body,
+.page-body {
   width: 100%;
   min-width: 0;
   padding: 24px;
@@ -59,8 +60,14 @@ body {
   .demo-list-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 36em) {
-  .demo-body { padding: 16px; }
+  .demo-body, .page-body { padding: 16px; }
   .demo-list-toolbar { grid-template-columns: minmax(0, 1fr); }
   .demo-form-actions { align-items: stretch; }
   .demo-form-actions > * { flex-grow: 1; }
+}
+
+.reference-link { width: 100%; padding-inline: 6px; border-radius: 4px; }
+.reference-link:hover { background: var(--mantine-color-blue-0); }
+@media (max-width: 36em) {
+  .color-form-actions > * { flex-grow: 1; }
 }

@@ -14,8 +14,13 @@
     "node": ">=24.11.0 <25"
   },
   "dependencies": {
+    "@bigmotors/core": "workspace:*",
+    "@bigmotors/sysop-dti": "workspace:*",
     "@mantine/core": "^9.6.0",
+    "@mantine/form": "9.6.0",
     "@mantine/hooks": "^9.6.0",
+    "@napp/dti-client": "6.1.2",
+    "@napp/dti-core": "6.1.2",
     "@tabler/icons-react": "^3.46.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

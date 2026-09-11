@@ -25,7 +25,7 @@ test("only implemented URLs resolve to pages; unknown and prefix URLs resolve to
     ["/demo/form?id=demo-001", "demo-form"],
     ["/demo/missing", "not-found"],
     ["/references-other", "not-found"],
-    ["/references/colors", "not-found"],
+    ["/references/colors", "colors"],
     ["/vehicles", "not-found"],
     ["/missing", "not-found"],
   ]) {

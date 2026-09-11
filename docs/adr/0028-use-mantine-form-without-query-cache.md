@@ -31,3 +31,7 @@ Admin-ийн form болон cache-ийн хэрэгслийг тусад нь �
 - Өгөгдөл унших loading/error, хуучирсан хүсэлтийн хариу шинэ төлөвийг дарахаас хамгаалах болон шаардлагатай дахин уншилтыг тухайн integration хариуцна.
 - DTI-ийн Zod contract хэвээр. Form mode, schema resolver болон UI-to-payload хөрвүүлэлтийн нарийвчлалыг хэрэгжүүлэлтийн үед тогтооно; API validation-ийг сулруулахгүй.
 - Энэ удаад технологийн шийдвэрийг бүртгэсэн. `@mantine/form` суулгах, demo form шилжүүлэх болон API integration хийх кодын өөрчлөлт ороогүй.
+
+## Хэрэгжилтийн тэмдэглэл
+
+2026-09-12: [Өнгөний CRUD](../features/admin-colors.md)-д `@mantine/form` суулгаж, `useForm` болон DTI client холбоосыг хэрэгжүүлсэн. Энэ жижиг form controlled mode ашиглаж, DTI schema-аар validate/parse хийнэ. Cache нэмээгүй; demo form шилжүүлэх ажил энэ өөрчлөлтөд ороогүй.

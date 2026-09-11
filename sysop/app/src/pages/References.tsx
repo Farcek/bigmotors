@@ -6,6 +6,7 @@ import {
   Stack,
   Text,
   ThemeIcon,
+  UnstyledButton,
 } from "@mantine/core";
 import {
   IconCar,
@@ -19,11 +20,13 @@ import {
   IconWheel,
 } from "@tabler/icons-react";
 import type { TablerIcon } from "@tabler/icons-react";
+import { Link } from "react-router";
 
 type ReferenceItem = {
   label: string;
   icon: TablerIcon;
   note?: string;
+  href?: string;
 };
 
 type ReferenceGroup = {
@@ -39,7 +42,7 @@ const referenceGroups = [
       { label: "Автомашины загвар", icon: IconListDetails },
       { label: "Хувилбар", icon: IconListDetails },
       { label: "Кузовын төрөл", icon: IconDatabase },
-      { label: "Өнгө", icon: IconPalette },
+      { label: "Өнгө", icon: IconPalette, href: "/references/colors" },
       { label: "Салбар", icon: IconMapPin, note: "Дундын" },
       { label: "Бүтээгдэхүүний байршил", icon: IconMapPin, note: "Дундын" },
       { label: "Тоноглол", icon: IconSparkles },
@@ -81,7 +84,7 @@ export function ReferencesPage() {
 }
 
 function ReferenceRow({ item }: { item: ReferenceItem }) {
-  return (
+  const content = (
     <Group className="reference-row" gap="sm" wrap="nowrap">
       <ThemeIcon variant="light" size="sm" color="gray">
         <item.icon size={16} stroke={1.8} />
@@ -96,4 +99,7 @@ function ReferenceRow({ item }: { item: ReferenceItem }) {
       ) : null}
     </Group>
   );
+  return item.href
+    ? <UnstyledButton component={Link} to={item.href} className="reference-link">{content}</UnstyledButton>
+    : content;
 }
