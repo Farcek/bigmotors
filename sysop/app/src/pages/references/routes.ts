@@ -20,6 +20,6 @@ export const referenceRoutes: RouteObject[] = [
   lazy: async () => {
     const { ReferencePage } = await import("./ReferencePage");
     const { referenceDefinitions } = await import("./definitions");
-    return { Component: () => createElement(ReferencePage, { key: slug, definition: referenceDefinitions[slug] }) };
+    return { Component: () => createElement(ReferencePage, { key: slug, definition: referenceDefinitions[slug], categoryTree: slug === "part-categories" }) };
   },
 }));

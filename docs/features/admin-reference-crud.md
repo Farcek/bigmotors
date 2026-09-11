@@ -20,7 +20,7 @@
 | `/references/vehicle-body-types` | Кузовын төрөл | Байхгүй |
 | `/references/vehicle-features` | Тоноглол | Байхгүй |
 | `/references/part-brands` | Сэлбэгийн брэнд | Байхгүй |
-| `/references/part-categories` | Сэлбэгийн ангилал | `parentId`, сонголттой; `null` нь үндсэн ангилал |
+| `/references/part-categories` | [Сэлбэгийн ангилал, tree view](admin-part-category-tree.md) | `parentId`, сонголттой; `null` нь үндсэн ангилал |
 | `/references/tire-brands` | Дугуйн брэнд | Байхгүй |
 | `/references/tire-models` | Дугуйн загвар | `brandId`, заавал |
 

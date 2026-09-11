@@ -18,15 +18,16 @@ type Props = {
   onSave: (payload: unknown) => Promise<void>;
   onCancel: () => void;
   fixedParent?: ReferenceOption;
+  initialParent?: string | null;
   contextFields?: { label: string; value: string }[];
 };
 
-export function ReferenceForm({ definition: def, row, options, optionsLoading, optionsError, reloadOptions, saving, onSavingChange, onSave, onCancel, fixedParent, contextFields }: Props) {
+export function ReferenceForm({ definition: def, row, options, optionsLoading, optionsError, reloadOptions, saving, onSavingChange, onSave, onCancel, fixedParent, initialParent, contextFields }: Props) {
   const [error, setError] = useState("");
   const lock = useRef(false);
   const form = useForm({
     mode: "controlled",
-    initialValues: { ...initialValues(def, row), ...(!row && fixedParent ? { parent: fixedParent.value } : {}) },
+    initialValues: { ...initialValues(def, row), ...(!row && initialParent !== undefined ? { parent: initialParent } : {}), ...(!row && fixedParent ? { parent: fixedParent.value } : {}) },
     validateInputOnBlur: true,
     validate: (values) => {
       const errors = validateForm(def, values, Boolean(row));
