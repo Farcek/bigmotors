@@ -20,9 +20,11 @@ Package manager нь [ADR 0013](../adr/0013-use-pnpm-workspace-layout.md)-ийн
 | `packages/core`, `sysop/dti`, `packages/db` | tsdown, ESM + `.d.ts` |
 | Type checking | `tsc --noEmit` |
 
-Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-libraries.md)-д хөтөлнө. Server, DTI, core болон DB-ийн бодит script, strict TypeScript config, dependency үүссэн; website болон sysop/app-ийн setup нээлттэй хэвээр.
+Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-libraries.md)-д хөтөлнө. Server, DTI, core болон DB-ийн бодит script, strict TypeScript config, dependency үүссэн. Sysop app-ийн Vite/Mantine болон routing суурь үүссэн; website setup нээлттэй хэвээр.
 
 ## Агуулга
+
+- [Sysop app ажиллуулах](sysop-app.md): Vite dev/build/test, React Router бүтэц, URL болон production fallback-ийн шаардлага.
 
 - [DB schema хөгжүүлэх](db-schema.md): 23 хүснэгтийн TypeScript schema, core тогтмолууд, build/typecheck/test, trigger source болон хэрэгжээгүй integration-ийн зааг.
 - [DB migration ажиллуулах](db-migrations.md): generate/migrate команд, эхний SQL, local тохиргоо, production Docker image, `DB_CONNECTION_STRING`, release job, lock/history болон алдаа сэргээх зааг.

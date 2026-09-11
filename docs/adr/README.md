@@ -32,6 +32,9 @@ ADR (Architecture Decision Record) нь техникийн чухал шийдв
 | [0022: Бүтээгдэхүүний зургийг hard disk дээр хадгалах](0022-store-product-images-on-disk.md) | 2026-09-10 | Баталсан |
 | [0023: Каталогийн нэгтгэсэн schema](0023-approve-catalog-schema.md) | 2026-09-10 | Баталсан |
 | [0024: Migration-ийг тусдаа release алхамд ажиллуулах](0024-run-db-migrations-as-release-step.md) | 2026-09-10 | Баталсан |
+| [0026: Sysop app-д React Router Data Mode ашиглах](0026-use-react-router-data-mode.md) | 2026-09-12 | Баталсан |
+| [0027: Admin UI kit-ийг app дотор нэгтгэх](0027-use-app-local-admin-ui-kit.md) | 2026-09-12 | Баталсан |
+| [0028: Mantine useForm, нэмэлт cache-гүй admin](0028-use-mantine-form-without-query-cache.md) | 2026-09-12 | Баталсан |
 
 ## Бүртгэх шийдвэрүүд
 

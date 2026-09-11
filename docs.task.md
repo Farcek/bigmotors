@@ -5,7 +5,7 @@
 - Хамрах хүрээ: Технологи, архитектур, сан, хөгжүүлэлтийн хэрэгсэл болон техникийн тохиргоо
 - Батлагдсан суурь: [ADR бүртгэл](docs/adr/README.md)
 - Бүрэн баталсан: 1 / 12
-- Хэсэгчлэн баталсан: TASK-02, TASK-03, TASK-04, TASK-05, TASK-06, TASK-10
+- Хэсэгчлэн баталсан: TASK-02, TASK-03, TASK-04, TASK-05, TASK-06, TASK-07, TASK-10
 
 ## Хүрээ ба хөтлөх журам
 
@@ -159,16 +159,20 @@ packages/db
 
 ## TASK-07: Frontend хэрэгслүүд
 
-- Төлөв: Хүлээгдэж буй
+- Төлөв: Хэсэгчлэн баталсан
 - Хамаарал: TASK-05
-- Баталсан огноо: Байхгүй
-- Батлагдсан: Website нь Next.js; admin нь Mantine/Vite; хоёул Tabler icons ашиглах суурь шийдвэртэй
+- Баталсан огноо: 2026-09-12 (routing, admin UI kit, useForm болон нэмэлт cache-гүй зарчим)
+- Батлагдсан: Website нь Next.js; admin нь Mantine/Vite; хоёул Tabler icons ашиглах суурь шийдвэртэй. Admin routing нь React Router Data Mode: createBrowserRouter, RouterProvider, nested Outlet, NavLink, 404/error boundary. [ADR 0026](docs/adr/0026-use-react-router-data-mode.md)
 
-**Үлдсэн шийдвэр:** Styling арга, routing, form state, server-state/cache хэрэгсэл болон client-side state зохион байгуулалт.
+**Нэмэлт баталсан:** Admin нь Mantine theme/token ашиглаж, давтагдсан нийлмэл UI-г `sysop/app/src/ui/` дотор нэгтгэнэ. Давхар UI сан, Mantine компонент бүрийн wrapper болон тусдаа `packages/uikit` үүсгэхгүй. [ADR 0027](docs/adr/0027-use-app-local-admin-ui-kit.md). Харагдах байдлын дүрмийг [docs/ui](docs/ui/admin-ui-kit.md)-д хөтөлнө.
 
-**Миний санал:** Website-д CSS Modules/CSS variables, admin-д React Router, `@mantine/form`, TanStack Query ашиглана. Query-ийн request function нь DTI client-ийг дуудна. UI-ийн энгийн төлөвт React state хэрэглэж, global state санг хэрэгцээгээр үнэлнэ. [React Router](https://reactrouter.com/start/declarative/installation), [Mantine form](https://mantine.dev/form/schema-validation/), [TanStack Query](https://tanstack.com/query/latest/docs/framework/react/overview)
+**Form/cache баталсан:** `@mantine/form`-ийн `useForm` ашиглана. TanStack Query болон өөр cache сан/давхарга хэрэглэхгүй; API өгөгдлийг шаардлагатай үед дахин уншина. [ADR 0028](docs/adr/0028-use-mantine-form-without-query-cache.md). Өмнөх TanStack Query, staleTime болон invalidation санал хэрэгжихгүй.
 
-**Үндэслэл ба сул тал:** Form, routing, server state тус бүр зориулалтын хэрэгслээр шийдэгдэнэ. DTI client, router болон Query-ийн интеграцыг шалгах хэрэгтэй.
+**Үлдсэн шийдвэр:** Website styling, CSS файлын зохион байгуулалтын нарийвчлал, form validation/mode integration болон global client-side state хэрэгцээ. Эдгээрийг form/cache сонголтоор бүхэлд нь батлагдсан гэж үзэхгүй.
+
+**Үлдсэн санал:** Website-д CSS Modules/CSS variables ашиглаж, энгийн UI төлөвт React state, global state санг бодит хэрэгцээгээр үнэлнэ. Admin-ийн form болон cache-ийн дээрх батлагдсан шийдвэрийг дагана.
+
+**Үндэслэл ба сул тал:** Form болон routing зориулалтын хэрэгсэлтэй; cache-ийн нэмэлт dependency байхгүй. API өгөгдлийн loading/error, хуучирсан хүсэлтийн хариу болон mutation-ийн дараах дахин уншилтыг integration хариуцна.
 
 **Батлах шалгуур:** Сангууд болон тэдгээрийн хариуцлага, styling арга, state эзэмшил батлагдсан байна. Theme, өнгө, layout болон дэлгэцийн загвар шаардлагагүй.
 

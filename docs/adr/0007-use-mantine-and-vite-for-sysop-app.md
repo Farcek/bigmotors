@@ -29,4 +29,4 @@ Admin frontend болох `sysop-app`-ийн UI сан болон build хэрэ
 ## Нээлттэй асуултууд
 
 - Mantine болон Vite-ийн яг хувилбар, шаардлагатай `@mantine` package-ууд юу байх вэ?
-- Admin-ийн routing болон theme-ийн нарийвчилсан тохиргоо ямар байх вэ?
+- Admin routing нь 2026-09-12-нд [ADR 0026](0026-use-react-router-data-mode.md)-аар тогтсон. Theme-ийн нарийвчилсан тохиргоо нээлттэй.

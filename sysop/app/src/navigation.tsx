@@ -2,6 +2,7 @@ import {
   IconCar,
   IconDatabase,
   IconHome,
+  IconLayoutDashboard,
   IconPackage,
   IconSettings,
   IconWheel,
@@ -44,6 +45,7 @@ export const navigationSections = [
   {
     label: "Систем",
     items: [
+      { label: "UI Demo", href: "/demo", icon: IconLayoutDashboard },
       {
         label: "Тохиргоо",
         href: "/settings",

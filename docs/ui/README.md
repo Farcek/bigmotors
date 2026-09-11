@@ -6,13 +6,15 @@ BigMotors LLC веб сайтын харагдах байдал, хэрэглэ�
 
 `sysop-app`-ийн UI library нь **Mantine** (`@mantine` сангууд), build хэрэгсэл нь **Vite** байна. Сонголтыг [ADR 0007](../adr/0007-use-mantine-and-vite-for-sysop-app.md)-д бүртгэсэн.
 
-Admin UI-ийн компонент болон theme-ийг Mantine-д тулгуурлан тодорхойлно. Яг package-ууд, хувилбар, өнгө, үсгийн хэв болон дэлгэцийн загвар хараахан тогтоогүй. Энэ сонголт нь public website-ийн UI санг тогтоохгүй.
+Admin UI-ийн Mantine/Vite суурь болон demo хэрэгжсэн. 2026-09-12-нд [UI kit ашиглах дүрэм](admin-ui-kit.md)-ийг баталсан. Dependency-ийн бодит хувилбар `sysop/app/package.json`-д байна; эцсийн брэндийн palette/font нээлттэй. Энэ сонголт нь public website-ийн UI санг тогтоохгүй.
 
 ## Icon library
 
 `sysop-app` болон `website` хоёул **`@tabler/icons-react`** ашиглана. Сонголтыг [ADR 0008](../adr/0008-use-tabler-icons-react.md)-д бүртгэсэн. Icon-ийн хэмжээ, өнгө болон хэрэглээний нарийвчилсан дүрмийг UI загвартай хамт тодорхойлно.
 
 ## Агуулга
+
+- [Admin UI kit ашиглах дүрэм](admin-ui-kit.md): Mantine/Tabler, theme/token, body box, form/list, үйлдэл/төлөв, хүртээмж болон shared компонентын зааг. Баталсан: 2026-09-12.
 
 - [Admin login, хэрэглэгч ба ACL](../features/admin-authentication-access.md): Userly redirect/callback, logout, permission-aware UI, ACL runtime/recovery төлөв. Local password/user/role management screen хийхгүй; дэлгэцийн эцсийн дизайн нээлттэй.
 - [Автомашины public каталогийн батлагдсан шаардлага](../features/vehicle-catalog.md): нийтэд харуулах мэдээлэл, хайлт, шүүлт, эрэмбэ болон оруулсан UI зургуудыг ашиглах зааг. Responsive багана автомат байна; эцсийн theme болон дэлгэцийн зохиомж хараахан батлагдаагүй.

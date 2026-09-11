@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --import=tsx --test test/*.test.tsx"
   },
   "engines": {
     "node": ">=24.11.0 <25"
@@ -17,13 +18,15 @@
     "@mantine/hooks": "^9.6.0",
     "@tabler/icons-react": "^3.46.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-router": "8.3.1"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "tsx": "4.23.13",
     "typescript": "6.0.3",
     "vite": "^8.2.2"
   }

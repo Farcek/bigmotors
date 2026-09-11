@@ -34,6 +34,12 @@ BigMotors LLC-ийн автомашин, сэлбэг хэрэгсэл, дугу
 - Шинэ баримт нэмэхэд тухайн хавтасны README-д холбоос нэмнэ.
 - Шаардлага, загвар, схем эсвэл ажиллагаа өөрчлөгдвөл холбогдох баримтыг хамт шинэчилнэ.
 
+## Admin UI kit
+
+- `sysop/app`-ийн UI дээр ажиллахын өмнө [батлагдсан UI kit дүрэм](docs/ui/admin-ui-kit.md)-ийг уншиж мөрдөнө. [ADR 0027](docs/adr/0027-use-app-local-admin-ui-kit.md) нь shared UI-ийн эзэмшил, байршлыг тогтооно.
+- Шинэ дэлгэц болон засварт demo-ийн жишиг, нийтлэг theme/token, form/list бүтэц, төлөв болон хүртээмжийн дүрмийг хэрэглэнэ.
+- Admin form нь [ADR 0028](docs/adr/0028-use-mantine-form-without-query-cache.md)-ийн дагуу `@mantine/form`-ийн `useForm` ашиглана. TanStack Query, орлуулах cache сан болон өөрсдийн cache давхарга нэмэхгүй. Public website-ийн UI kit/cache шийдвэр тусдаа.
+
 ## Диаграм
 
 Диаграм ойлголтыг хялбарчлах үед Mermaid ашиглана.

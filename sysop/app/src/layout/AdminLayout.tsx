@@ -3,23 +3,28 @@ import {
   Burger,
   Divider,
   Group,
+  Loader,
   NavLink,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import type { ReactNode } from "react";
+import { useEffect } from "react";
+import { NavLink as RouterNavLink, Outlet, useMatches, useNavigation } from "react-router";
 import { navigationSections } from "../navigation";
+import type { PageHandle } from "../router";
 
-type AdminLayoutProps = {
-  activePath: string;
-  title: string;
-  children: ReactNode;
-};
-
-export function AdminLayout({ activePath, title, children }: AdminLayoutProps) {
+export function AdminLayout() {
   const [opened, { close, toggle }] = useDisclosure();
+  const matches = useMatches();
+  const navigationState = useNavigation();
+  const handle = matches.at(-1)?.handle as PageHandle | undefined;
+  const title = handle?.title ?? "BigMotors Sysop";
+
+  useEffect(() => {
+    document.title = `${title} | BigMotors Sysop`;
+  }, [title]);
 
   const navigation = navigationSections.map((section) => (
     <Stack key={section.label} gap={6}>
@@ -45,9 +50,10 @@ export function AdminLayout({ activePath, title, children }: AdminLayoutProps) {
           ) : (
             <NavLink
               key={item.href}
-              href={item.href}
+              component={RouterNavLink}
+              to={item.href}
+              end={item.href === "/"}
               label={item.label}
-              active={item.href === activePath}
               leftSection={<item.icon size={18} stroke={1.8} />}
               noWrap
               onClick={close}
@@ -77,6 +83,8 @@ export function AdminLayout({ activePath, title, children }: AdminLayoutProps) {
               hiddenFrom="sm"
               size="sm"
               aria-label="Цэс"
+              aria-expanded={opened}
+              aria-controls="admin-navigation"
             />
             <Text fw={700} size="lg" lh={1}>
               BigMotors Sysop
@@ -88,7 +96,7 @@ export function AdminLayout({ activePath, title, children }: AdminLayoutProps) {
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar p="md">
+      <AppShell.Navbar id="admin-navigation" p="md" aria-label="Үндсэн цэс">
         <AppShell.Section grow>
           <Stack gap="lg">{navigation}</Stack>
         </AppShell.Section>
@@ -102,10 +110,11 @@ export function AdminLayout({ activePath, title, children }: AdminLayoutProps) {
 
       <AppShell.Main className="app-main">
         <Stack gap="lg">
-          <Title order={1} size="h2">
-            {title}
-          </Title>
-          {children}
+          <Group gap="sm">
+            <Title order={1} size="h2">{title}</Title>
+            {navigationState.state !== "idle" && <Loader size="sm" role="status" aria-label="Хуудас ачаалж байна" />}
+          </Group>
+          <Outlet />
         </Stack>
       </AppShell.Main>
     </AppShell>

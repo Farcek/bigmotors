@@ -7,6 +7,7 @@
     "dev:app": "pnpm --filter @bigmotors/sysop-app dev",
     "build:app": "pnpm --filter @bigmotors/sysop-app build",
     "typecheck:app": "pnpm --filter @bigmotors/sysop-app typecheck",
+    "test:app": "pnpm --filter @bigmotors/sysop-app test",
     "preview:app": "pnpm --filter @bigmotors/sysop-app preview",
     "dev:server": "pnpm --filter \"@bigmotors/sysop-server^...\" build && pnpm --filter @bigmotors/sysop-server dev",
     "build:server": "pnpm --filter @bigmotors/sysop-server... build",
