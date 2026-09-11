@@ -4,7 +4,7 @@ import { MantineProvider } from "@mantine/core";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { ReferenceForm } from "../src/pages/references/ReferenceForm";
-import { HierarchyColumn } from "../src/pages/references/vehicle-hierarchy/HierarchyColumn";
+import { HierarchyColumn } from "../src/pages/references/hierarchy/HierarchyColumn";
 import { listAll, type ReferenceRow } from "../src/pages/references/model";
 import { canCreate, levels, selectBrand, selectModel, selection } from "../src/pages/references/vehicle-hierarchy/model";
 import { routes } from "../src/router";
@@ -16,7 +16,7 @@ const brand: ReferenceRow = { id: brandId, name: "QA Brand", description: null, 
 const model = { ...brand, id: modelId, name: "QA Model", brandId };
 
 test("rows expose a single menu trigger independently of row selection", () => {
-  const html = renderToStaticMarkup(<MantineProvider env="test"><HierarchyColumn level="brand" title="Марк" context="Бүх марк"
+  const html = renderToStaticMarkup(<MantineProvider env="test"><HierarchyColumn selectionPrompt="Марк сонгоно уу" title="Марк" context="Бүх марк"
     rows={[brand]} loading={false} error="" disabled={false} addDisabled={false} onRefresh={() => {}} onAdd={() => {}}
     onSelect={() => {}} onEdit={() => {}} onDelete={() => {}} /></MantineProvider>);
   assert.match(html, /aria-label="QA Brand үйлдэл"/);
@@ -40,13 +40,13 @@ test("brand selection resets the model; invalid or parentless URL selections are
 test("Mantine rows retain selection semantics and variants only expose the action menu", () => {
   const common = { context: "QA Brand", rows: [brand], loading: false, error: "", disabled: false, addDisabled: false,
     onRefresh: () => {}, onAdd: () => {}, onEdit: () => {}, onDelete: () => {} };
-  const selected = renderToStaticMarkup(<MantineProvider env="test"><HierarchyColumn {...common} level="brand" title="Марк"
+  const selected = renderToStaticMarkup(<MantineProvider env="test"><HierarchyColumn {...common} selectionPrompt="Марк сонгоно уу" title="Марк"
     selectedId={brandId} onSelect={() => {}} /></MantineProvider>);
   assert.match(selected, /aria-pressed="true"/);
   assert.match(selected, /role="listitem"/);
   assert.match(selected, /title="QA Brand"/);
   assert.doesNotMatch(selected, /class="hierarchy-/);
-  const variant = renderToStaticMarkup(<MantineProvider env="test"><HierarchyColumn {...common} level="variant" title="Хувилбар" /></MantineProvider>);
+  const variant = renderToStaticMarkup(<MantineProvider env="test"><HierarchyColumn {...common} selectionPrompt="Загвар сонгоно уу" title="Хувилбар" /></MantineProvider>);
   assert.match(variant, /aria-label="QA Brand үйлдэл"/);
   assert.doesNotMatch(variant, /aria-pressed|QA Brand сонгох/);
 });

@@ -1,10 +1,9 @@
 import { ActionIcon, Alert, Badge, Box, Button, Divider, Flex, Group, Loader, Menu, NavLink, ScrollArea, Stack, Text, Tooltip } from "@mantine/core";
 import { IconDotsVertical, IconEdit, IconPlus, IconRefresh, IconTrash } from "@tabler/icons-react";
 import type { ReferenceRow } from "../model";
-import type { Level } from "./model";
 
 type Props = {
-  level: Level;
+  selectionPrompt: string;
   title: string;
   context: string;
   rows: ReferenceRow[];
@@ -20,7 +19,7 @@ type Props = {
   onDelete: (row: ReferenceRow) => void;
 };
 
-export function HierarchyColumn({ level, title, context, rows, selectedId, loading, error, disabled, addDisabled, onRefresh, onAdd, onSelect, onEdit, onDelete }: Props) {
+export function HierarchyColumn({ selectionPrompt, title, context, rows, selectedId, loading, error, disabled, addDisabled, onRefresh, onAdd, onSelect, onEdit, onDelete }: Props) {
   return (
     <Stack component="section" gap={0} flex={1} miw={0} h={{ base: 340, sm: "clamp(380px, calc(100dvh - 260px), 760px)" }} aria-label={`${title} багана`}>
       <Box component="header" flex="0 0 auto" bg={{ base: "gray.1", sm: "white" }}>
@@ -33,7 +32,7 @@ export function HierarchyColumn({ level, title, context, rows, selectedId, loadi
             <Tooltip label="Нэмэх"><ActionIcon variant="filled" size={32} aria-label={`${title} нэмэх`} disabled={addDisabled || loading} onClick={onAdd}><IconPlus size={18} /></ActionIcon></Tooltip>
           </Group>
         </Group>
-        <Text size="xs" c={{ base: "gray.7", sm: "dimmed" }} mih={32} mt={8} lineClamp={2} title={context}>{context || "Бүх марк"}</Text>
+        <Text size="xs" c={{ base: "gray.7", sm: "dimmed" }} mih={32} mt={8} lineClamp={2} title={context}>{context}</Text>
         </Box>
         <Divider />
       </Box>
@@ -41,7 +40,7 @@ export function HierarchyColumn({ level, title, context, rows, selectedId, loadi
         viewportProps={{ tabIndex: 0, role: "region", "aria-label": `${title} жагсаалт` }}>
         {loading ? <Group justify="center" mih={180} role="status" aria-label={`${title} ачаалж байна`}><Loader size="sm" /></Group>
           : error ? <Alert color="red" role="alert" m="sm"><Stack gap="sm"><Text size="sm">{error}</Text><Button variant="light" color="red" onClick={onRefresh}>Дахин оролдох</Button></Stack></Alert>
-            : disabled ? <Text size="sm" c="dimmed" ta="center" py={64}>{level === "model" ? "Марк сонгоно уу" : "Загвар сонгоно уу"}</Text>
+            : disabled ? <Text size="sm" c="dimmed" ta="center" py={64}>{selectionPrompt}</Text>
               : !rows.length ? <Text size="sm" c="dimmed" ta="center" py={64}>Бүртгэл олдсонгүй</Text>
                 : <Stack gap={0} role="list">{rows.map((row) => <Box key={row.id} role="listitem" data-selected={row.id === selectedId || undefined}>
                   <Flex align="stretch" mih={64} bg={row.id === selectedId ? "blue.0" : undefined}>

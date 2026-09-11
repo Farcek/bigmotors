@@ -40,6 +40,7 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 | `/references` | Лавлахын нүүр |
 | `/references/colors` | Өнгөний CRUD, нэмэх/засах modal |
 | `/references/vehicle-hierarchy` | Марк → загвар → хувилбар, гурван баганатай удирдлага |
+| `/references/tire-hierarchy` | Дугуйн брэнд → загвар, хоёр баганатай удирдлага |
 | `/demo` | UI demo тойм |
 | `/demo/list` | Жишээ жагсаалт |
 | `/demo/form` | Жишээ нэмэх/засах form (`?id=...`) |
@@ -52,6 +53,8 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 Бусад лавлах мөн өөрийн DTI contract ашиглана. `definitions.ts` дотор талбар/parent тохиргоо болон typed API adapter байна; `ReferencePage`, `ReferenceForm` нь нийтлэг дүрмийг хэрэгжүүлнэ. Parent сонголт бүрэн ачаалахад list API-г 100 мөрөөр дараалан уншина. API/DB схем өөрчлөхгүй.
 
 `src/pages/references/vehicle-hierarchy/` дотор автомашины [гурван баганатай лавлах](../features/admin-vehicle-hierarchy.md) байрлана. `ReferenceForm`-ийн fixed parent/context боломжийг дахин ашиглана. Хуучин гурван URL хэвээр; лавлахын нүүрээс шинэ нэгтгэсэн хуудсанд орно.
+
+`src/pages/references/tire-hierarchy/` дотор дугуйн [хоёр баганатай лавлах](../features/admin-tire-hierarchy.md) байрлана. Автомашин болон дугуйн багана/өгөгдөл унших нийтлэг хэсэг `src/pages/references/hierarchy/` дотор байна. Дугуйн хуучин хоёр URL хэвээр.
 
 ## Demo хөгжүүлэх
 

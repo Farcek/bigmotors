@@ -23,6 +23,12 @@ export const routes: RouteObject[] = [
         lazy: async () => ({ Component: (await import("./pages/references/vehicle-hierarchy/VehicleHierarchyPage")).VehicleHierarchyPage }),
         handle: { title: "Марк / Загвар / Хувилбар" } satisfies PageHandle,
       },
+      {
+        id: "tire-hierarchy",
+        path: "references/tire-hierarchy",
+        lazy: async () => ({ Component: (await import("./pages/references/tire-hierarchy/TireHierarchyPage")).TireHierarchyPage }),
+        handle: { title: "Дугуйн брэнд / Загвар" } satisfies PageHandle,
+      },
       ...referenceRoutes,
       {
         id: "home",

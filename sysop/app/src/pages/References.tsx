@@ -12,7 +12,6 @@ import {
   IconCar,
   IconCategory,
   IconDatabase,
-  IconListDetails,
   IconMapPin,
   IconPackage,
   IconPalette,
@@ -56,8 +55,7 @@ const referenceGroups = [
   {
     title: "Дугуй",
     items: [
-      { label: "Дугуйн брэнд", icon: IconWheel, href: "/references/tire-brands" },
-      { label: "Дугуйн загвар", icon: IconListDetails, href: "/references/tire-models" },
+      { label: "Дугуйн брэнд / Загвар", icon: IconWheel, href: "/references/tire-hierarchy" },
     ],
   },
 ] as const satisfies readonly ReferenceGroup[];
