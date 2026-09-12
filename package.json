@@ -24,7 +24,8 @@
     "typecheck:db": "pnpm build:core && pnpm --filter @bigmotors/db typecheck",
     "test:db": "pnpm build:core && pnpm --filter @bigmotors/db test",
     "db:generate": "pnpm --filter @bigmotors/db db:generate",
-    "db:migrate": "pnpm --filter @bigmotors/db db:migrate"
+    "db:migrate": "pnpm --filter @bigmotors/db db:migrate",
+    "db:reset": "pnpm --filter @bigmotors/db db:reset"
   },
   "engines": {
     "node": ">=24.11.0 <25"

@@ -10,34 +10,31 @@ import { PgDialect } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { readMigrationFiles } from "drizzle-orm/migrator";
-import { migrationConfig, migrationConnectionString } from "../src/migrations.js";
+import { migrationConfig } from "../src/migrations.js";
 import { schemaHooks } from "../src/schema-hooks.js";
 import { testDatabase } from "./support/database.js";
 
-test("migration credentials must be explicit and validation errors do not expose secrets", () => {
-  assert.throws(() => migrationConnectionString({ DATABASE_URL: "postgres://do-not-use/other" }), /is required/);
-  assert.throws(() => migrationConnectionString({ MIGRATION_DATABASE_URL: "postgres://do-not-use/other" }), /is required/);
-  assert.throws(() => migrationConnectionString({ DB_CONNECTION_STRING: " " }), /is required/);
-  for (const value of ["secret-invalid-url", "https://example.test/db", "postgres://localhost/"]) {
-    assert.throws(() => migrationConnectionString({ DB_CONNECTION_STRING: value }), (error: unknown) => {
-      assert.ok(error instanceof Error);
-      assert.ok(!error.message.includes(value));
-      return true;
-    });
-  }
-  const url = "postgresql://migration:example@localhost:5432/bigmotors";
-  assert.equal(migrationConnectionString({ DB_CONNECTION_STRING: url }), url);
+test("standalone CLI uses DBConfig validation before connecting", () => {
+  const result = spawnSync(process.execPath, ["--import=tsx", "src/migrate.ts"], {
+    cwd: fileURLToPath(new URL("../", import.meta.url)),
+    env: { ...process.env, DATABASE_URL: "postgres://secret@unused.invalid/db", DATABASE_POOL_MIN: "invalid", DB_CONNECTION_STRING: "" },
+    encoding: "utf8",
+    timeout: 10_000,
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /DATABASE_POOL_MIN must be a non-negative safe integer/);
+  assert.ok(!result.stderr.includes("secret"));
 });
 
 test("standalone CLI refuses missing credentials before connecting", () => {
   const result = spawnSync(process.execPath, ["--import=tsx", "src/migrate.ts"], {
     cwd: fileURLToPath(new URL("../", import.meta.url)),
-    env: { ...process.env, DB_CONNECTION_STRING: "", DATABASE_URL: "postgres://secret/unused" },
+    env: { ...process.env, DATABASE_URL: "", DB_CONNECTION_STRING: "postgres://secret@unused.invalid/db", MIGRATION_DATABASE_URL: "postgres://secret@unused.invalid/db" },
     encoding: "utf8",
     timeout: 10_000,
   });
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /DB_CONNECTION_STRING is required/);
+  assert.match(result.stderr, /DATABASE_URL is not defined in the environment/);
   assert.ok(!result.stderr.includes("secret"));
 });
 

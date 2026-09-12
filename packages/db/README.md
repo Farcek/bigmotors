@@ -4,18 +4,20 @@
 
 - `src/schema/`: хүснэгт, багана, PK/FK, CHECK, index; [батлагдсан schema](../../docs/db/catalog-schema-proposal.md).
 - `src/schema-hooks.ts`: PostgreSQL trigger/function-ийн TypeScript дахь эх тодорхойлолт. Import хийхэд DB-д үйлдэл хийхгүй.
-- `src/config.ts`: `DBConfig(env)` нь `DATABASE_URL`-ийг шаарддаг; `DATABASE_POOL_MIN` (default `0`), `DATABASE_POOL_MAX` (default `10`) нь safe integer, `0 <= min <= max`, `max > 0` байна. Хоосон утга, `NaN`, хязгааргүй болон бутархай тоог зөвшөөрөхгүй. DI нь `@bigmotors/core`-ийн `TKN_ENV` token-оор environment авна. Migration-ийн `DB_CONNECTION_STRING` тохиргоо өөрчлөгдөхгүй.
+- `src/config.ts`: `DBConfig(env)` нь `DATABASE_URL`-ийг шаарддаг; `DATABASE_POOL_MIN` (default `0`), `DATABASE_POOL_MAX` (default `10`) нь safe integer, `0 <= min <= max`, `max > 0` байна. Хоосон утга, `NaN`, хязгааргүй болон бутархай тоог зөвшөөрөхгүй. DI нь `@bigmotors/core`-ийн `TKN_ENV` token-оор environment авна. `db:migrate`, `db:reset` мөн `DBConfig.DATABASE_URL` ашиглана.
 - `src/db.ts`: `createPgPool(config)`, `createDb(pool)`, `BigMotorsDb`. App pool-оо эзэмшиж, дахин ашиглаж, хаана.
 - `src/service/color.ts`: `ColorService(db)` нь өнгөний list/create/update/delete, Zod validation болон `@napp/error` алдааны mapping-ийг хариуцна. `@bigmotors/db`-ээс импортлоно; [ашиглах дүрэм](../../docs/operations/db-schema.md#colorservice).
 - `src/service/branch.ts`: `BranchService(db)` нь компанийн салбарын list/create/update/delete; өнгөтэй ижил validation, pagination, алдааны бүтэцтэй. [Ашиглах дүрэм](../../docs/operations/db-schema.md#branchservice).
 - `drizzle.config.ts`, `migrations/`, `src/migrate.ts`: schema generate, versioned SQL болон тусдаа migration runner.
-- `Dockerfile`: production migration-ийн one-shot image; repository root build context ашиглана. Runtime нь `DB_CONNECTION_STRING` шаарддаг.
+- `Dockerfile`: production migration-ийн one-shot image; repository root build context ашиглана. Runtime нь `DATABASE_URL` шаарддаг.
 - `test/`: PGlite санах ойн PostgreSQL тест; бодит DB болон файлд schema үүсгэхгүй. Service тестүүд `diDBServiceProviders()`-ийг бүртгүүлж, PGlite Drizzle adapter-ийг `TKN_DB`-д холбоод container-оос service авна. `diDBCoreProviders()`-ийн config/pool/DB бүртгэлийг холболт нээхгүйгээр тусдаа шалгана; тест бүр container болон өөрийн DB/pool-оо хаана.
 
 Package exports: `@bigmotors/db`, `@bigmotors/db/schema`, `@bigmotors/db/schema-hooks`. ESM болон TypeScript declaration build-тэй.
 
 Root-оос `pnpm build:db`, `pnpm typecheck:db`, `pnpm test:db` ажиллуулна. `core` dependency-г эдгээр команд эхэлж build хийнэ.
 
-Root-оос `pnpm db:generate --name=change_name` нь SQL migration үүсгэнэ. `pnpm build:db`-ийн дараа `DB_CONNECTION_STRING`-тай `pnpm db:migrate` нь бодит DB-д хэрэгжүүлнэ. Local `.env` нь энэ package дотор байна. Website/backend startup migration ажиллуулахгүй. [Migration заавар](../../docs/operations/db-migrations.md).
+Root-оос `pnpm db:generate --name=change_name` нь SQL migration үүсгэнэ. `pnpm build:db`-ийн дараа `DATABASE_URL`-тай `pnpm db:migrate` нь бодит DB-д хэрэгжүүлнэ. Local `.env` нь энэ package дотор байна. Website/backend startup migration ажиллуулахгүй. [Migration заавар](../../docs/operations/db-migrations.md).
+
+Root-оос `pnpm db:reset` (эсвэл `pnpm --filter @bigmotors/db db:reset`) нь `public`, `drizzle` schema дахь бүх хүснэгт, өгөгдөл, function, trigger болон migration түүхийг **баталгаажуулах асуултгүй устгана**. `public` schema-г хоосноор дахин үүсгэнэ. `DBConfig.DATABASE_URL` болон package-ийн `.env` ашиглана; эхлээд build шаардлагатай. Migration/seed автоматаар ажиллуулахгүй, upload дискний файлуудад хүрэхгүй. [Reset заавар](../../docs/operations/db-migrations.md#db-reset).
 
 Бүх 12 лавлахын shared CRUD, DTI болон API холболт хэрэгжсэн. [Энгийн лавлахууд](../../docs/operations/db-schema.md#flat-reference-services), [эцэгтэй лавлахууд](../../docs/operations/db-schema.md#parent-reference-services). Бүтээгдэхүүний CRUD, seed, upload болон admin form дараагийн ажил.

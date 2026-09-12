@@ -24,7 +24,7 @@ services:
       target: runner
     environment:
       # Local default only; inject a dedicated migration credential in production.
-      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING:-postgresql://postgres:postgres@bigmotors-db:5432/bigmotors}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@bigmotors-db:5432/bigmotors}
     depends_on:
       bigmotors-db:
         condition: service_healthy

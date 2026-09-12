@@ -29,7 +29,7 @@ Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-l
 - [Sysop app ажиллуулах](sysop-app.md): Vite dev/build/test, React Router бүтэц, URL болон production fallback-ийн шаардлага.
 
 - [DB schema хөгжүүлэх](db-schema.md): 24 хүснэгтийн TypeScript schema, core тогтмолууд, build/typecheck/test, trigger source болон хэрэгжээгүй integration-ийн зааг.
-- [DB migration ажиллуулах](db-migrations.md): generate/migrate команд, эхний SQL, local тохиргоо, production Docker image, `DB_CONNECTION_STRING`, release job, lock/history болон алдаа сэргээх зааг.
+- [DB migration ажиллуулах](db-migrations.md): generate/migrate команд, эхний SQL, local тохиргоо, production Docker image, `DBConfig.DATABASE_URL`, release job, lock/history болон алдаа сэргээх зааг.
 
 - [Зургийн hard disk хадгалалтын шийдвэр](../adr/0022-store-product-images-on-disk.md): persistent disk, DB + файл backup, serve/access-ийн зааг. Upload код хэрэгжсэн; бодит орчны storage/volume тохиргоо тусдаа.
 - [Sysop server ажиллуулах](sysop-server.md): бодит scaffold, dev/build/start/test, environment, endpoint болон хэрэгжээгүй хэсгийн зааг.

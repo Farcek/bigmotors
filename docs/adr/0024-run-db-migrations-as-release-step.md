@@ -19,6 +19,8 @@
 
 Хэрэгжүүлэлтийн нарийвчлал: Drizzle Kit generate, Drizzle ORM migrator, migration job-д зориулсан `DB_CONNECTION_STRING`, dedicated `pg` session, advisory lock. Хэрэглэгчийн шинэчилсэн хүсэлтээр хувьсагчийн нэрийг `DB_CONNECTION_STRING` болгож, `packages/db/Dockerfile`-д production one-shot image нэмсэн. Нэр нь нийтлэг боловч migration credential нь app runtime credential-оос тусдаа хэвээр. Trigger/function-ийг versioned SQL-д хамт хадгална. Seed workflow болон production pipeline-ийн бодит provisioning энэ баталгаанд орохгүй.
 
+2026-09-12 шинэчлэлт: хэрэглэгчийн хүсэлтээр `db:migrate` нь `db:reset` болон runtime-тай ижил `DBConfig.DATABASE_URL` ашиглана. Дээрх `DB_CONNECTION_STRING` нэр нь өмнөх хэрэгжүүлэлтийн түүх; одоо fallback байхгүй. Release job, dedicated session, lock болон тусдаа DDL credential-ийн шийдвэр өөрчлөгдөхгүй.
+
 ## Үр дагавар
 
 - Эхний schema + trigger migration, snapshot/journal, built runner болон тест үүссэн; бодит DB дээр ажиллуулаагүй.

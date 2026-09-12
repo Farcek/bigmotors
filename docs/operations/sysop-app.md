@@ -13,7 +13,7 @@ pnpm dev:app
 
 Root-ийн app dev/build/typecheck/test script нь хамааралтай workspace package-уудыг эхэлж build хийнэ. API client-ийн анхны base URL `/api`; Vite үүнийг `http://127.0.0.1:64402` руу proxy хийнэ. Шаардлагатай бол app-ийн `VITE_API_BASE_URL` build-time env-ээр өөрчилж болно. Өөр origin ашиглавал backend-ийн CORS тохиргоог тусад нь хангана.
 
-Backend-ийн `sysop/server/.env` дэх `DATABASE_URL` нь runtime DB холболт. Local Compose DB-ийн host порт `64401`; migration-ийн `DB_CONNECTION_STRING`-ээс тусдаа. Env өөрчилсний дараа backend-ийг дахин асаана. Нууц утгыг repository-д commit хийхгүй.
+Backend-ийн `sysop/server/.env` дэх `DATABASE_URL` нь runtime DB холболт. Local Compose DB-ийн host порт `64401`; migration мөн `DATABASE_URL` нэр ашиглах боловч `packages/db/.env` эсвэл release job-ийн environment-оос авна. Env өөрчилсний дараа backend-ийг дахин асаана. Нууц утгыг repository-д commit хийхгүй.
 
 ```powershell
 pnpm typecheck:app

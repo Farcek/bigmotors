@@ -40,7 +40,7 @@ Root-ийн `dev:server`, `typecheck:server`, `test:server` нь workspace depen
 | --- | --- | --- |
 | `HOST` | `127.0.0.1` | Хоосон биш; өөр хостоор сонсох бол илэрхий тохируулна |
 | `PORT` | `4000` | Бүхэл тоо, 1–65535 |
-| `DATABASE_URL` | Байхгүй | DB provider resolve хийх үед шаардлагатай; migration-ийн `DB_CONNECTION_STRING`-ээс тусдаа |
+| `DATABASE_URL` | Байхгүй | DB provider resolve хийх үед шаардлагатай; migration мөн ижил нэр ашиглах ч production credential/эрх тусдаа |
 | `DATABASE_POOL_MIN` | `0` | Сөрөг биш safe integer, max-аас ихгүй |
 | `DATABASE_POOL_MAX` | `10` | Эерэг safe integer |
 
