@@ -18,3 +18,4 @@ export * from "./service/part-category.js";
 export * from "./config.js";
 export * from "./di.js";
 export * from "./service/page.js";
+export * from "./service/settings.js";

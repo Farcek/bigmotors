@@ -9,3 +9,4 @@ export * from "./parts.js";
 export * from "./tires.js";
 export * from "./admin-profiles.js";
 export * from "./page.js";
+export * from "./settings.js";

@@ -54,7 +54,6 @@ export const navigationSections = [
         label: "Тохиргоо",
         href: "/settings",
         icon: IconSettings,
-        disabled: true,
       },
     ],
   },

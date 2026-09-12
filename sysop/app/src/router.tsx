@@ -17,6 +17,7 @@ export const routes: RouteObject[] = [
     ErrorBoundary: RouteErrorPage,
     HydrateFallback: RouteLoading,
     children: [
+      { id: "settings", path: "settings", lazy: async () => ({ Component: (await import("./pages/settings/SettingsPage")).SettingsPage }), handle: { title: "Тохиргоо" } satisfies PageHandle },
       { id: "pages", path: "pages", lazy: async () => ({ Component: (await import("./pages/pages/PagesPage")).PagesPage }), handle: { title: "Хуудас" } satisfies PageHandle },
       { id: "page-new", path: "pages/new", lazy: async () => ({ Component: (await import("./pages/pages/PageEditPage")).PageEditPage }), handle: { title: "Хуудас нэмэх" } satisfies PageHandle },
       { id: "page-edit", path: "pages/:id/edit", lazy: async () => ({ Component: (await import("./pages/pages/PageEditPage")).PageEditPage }), handle: { title: "Хуудас засах" } satisfies PageHandle },

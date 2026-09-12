@@ -3,6 +3,7 @@ import { buildDTI } from "./dti.js";
 import { buildColorsApi } from "./colors.js";
 import { buildGalleriesApi } from "./galleries.js";
 import { buildPagesApi } from "./pages.js";
+import { buildSettingsApi } from "./settings.js";
 import { buildBranchesApi } from "./branches.js";
 import { buildVehicleBrandsApi } from "./vehicle-brands.js";
 import { buildVehicleBodyTypesApi } from "./vehicle-body-types.js";
@@ -23,6 +24,7 @@ export function buildAPI(di:Container) {
     buildColorsApi(dti);
     buildGalleriesApi(dti);
     buildPagesApi(dti);
+    buildSettingsApi(dti);
     buildBranchesApi(dti);
     buildVehicleBrandsApi(dti);
     buildVehicleBodyTypesApi(dti);

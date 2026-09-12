@@ -54,9 +54,9 @@ async function publishablePart(): Promise<string> {
   return id;
 }
 
-test("all 27 tables, constraints, indexes and trigger definitions provision together", async () => {
+test("all 28 tables, constraints, indexes and trigger definitions provision together", async () => {
   const result = await db.query<{ tablename: string }>("SELECT tablename FROM pg_tables WHERE schemaname='public'");
-  assert.equal(result.rows.length, 27);
+  assert.equal(result.rows.length, 28);
   assert.ok(result.rows.some((row) => row.tablename === "admin_profiles"));
   const enums = await db.query("SELECT * FROM pg_type WHERE typtype='e'");
   assert.equal(enums.rows.length, 0);

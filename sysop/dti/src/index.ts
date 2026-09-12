@@ -15,3 +15,4 @@ export * from "./vehicle-variant.js";
 export * from "./tire-model.js";
 export * from "./part-category.js";
 export * from "./page.js";
+export * from "./settings.js";

@@ -10,6 +10,7 @@
 
 - [Admin Gallery](admin-gallery.md): gallery/item CRUD, зураг upload, дараалал болон файлын usage холболт.
 - [Admin Page](admin-pages.md): хуудасны CRUD, JSONB content/meta, үндсэн зураг болон нийтлэлийн төлөв.
+- [Admin тохиргоо](admin-settings.md): homepage, siteTitle, adminEmail form болон динамик settings API.
 
 - [Файл upload ба ашиглах дүрэм](file-management.md): нэгдсэн lifecycle, хэмжээний тохиргоо (default 20 MB), FILES_ROOT-оос тооцох зам, form save/cancel, usage болон устгал; POST /api/files/upload болон public GET /files/:id/:originalName contract.
 

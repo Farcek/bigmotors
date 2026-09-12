@@ -7,6 +7,7 @@ import * as schema from "./schema/index.js";
 import { ColorService } from "./service/color.js";
 import { GalleryService } from "./service/gallery.js";
 import { PageService } from "./service/page.js";
+import { SettingsService } from "./service/settings.js";
 import { FileService } from "./service/file.js";
 import { VehicleService } from "./service/vehicle.js";
 import { BranchService } from "./service/branch.js";
@@ -51,6 +52,7 @@ export function diDBServiceProviders() {
             asClass(ColorService),
             asClass(GalleryService),
             asClass(PageService),
+            asClass(SettingsService),
             asClass(FileService),
             asClass(VehicleService),
             asClass(BranchService),
