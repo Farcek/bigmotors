@@ -41,4 +41,4 @@ Item өөр gallery-д харьяалагдсан бол засах/устгах
 
 ## Хамрахгүй
 
-Website дээр gallery render/сонгох, public endpoint, drag-and-drop эрэмбэ, нийтлэх workflow, файл автоматаар устгах/цэвэрлэх энэ ажилд ороогүй. Дарааллыг item form-ийн sort_order-оор удирдана.
+Website `/` нь `key="home"` Gallery болон бүх item-ийг зөвхөн JSON текстээр харуулна. [Website routing](website-routing.md). Зурагтай renderer, public endpoint, drag-and-drop эрэмбэ, нийтлэх workflow, файл автоматаар устгах/цэвэрлэх энэ ажилд ороогүй. Дарааллыг item form-ийн sort_order-оор удирдана.

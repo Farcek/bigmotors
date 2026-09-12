@@ -1,8 +1,9 @@
-export default function HomePage() {
-  return (
-    <section aria-labelledby="catalog-title">
-      <h1 id="catalog-title" className="text-2xl font-semibold">Бүтээгдэхүүний каталог</h1>
-      <p className="mt-3 text-base text-zinc-600">Автомашин, сэлбэг хэрэгсэл, дугуй</p>
-    </section>
-  );
+import { getGalleryByKey } from "../server/galleries";
+
+export default async function HomePage() {
+  const gallery = await getGalleryByKey("home");
+  if(gallery === null) {
+    throw new Error("Gallery not found. gallery key: home");
+  }
+  return <pre className="max-w-full whitespace-pre-wrap break-all font-mono text-sm">{JSON.stringify(gallery, null, 2)}</pre>;
 }

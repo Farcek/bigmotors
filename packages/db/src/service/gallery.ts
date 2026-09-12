@@ -67,6 +67,10 @@ export class GalleryService {
     const key = parse(idField, id);
     return storage(async () => required((await this.db.select().from(gallery).where(eq(gallery.id, key)))[0]));
   }
+  async findByKey(key: string) {
+    const value = parse(fields.shape.key, key);
+    return storage(async () => required((await this.db.select().from(gallery).where(eq(gallery.key, value)).limit(1))[0]));
+  }
   async create(body: CreateGalleryInput) {
     const input = parse(fields, body);
     return storage(async () => required((await this.db.insert(gallery).values(input).returning())[0]));

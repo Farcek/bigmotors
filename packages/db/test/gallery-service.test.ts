@@ -72,6 +72,10 @@ test("gallery keys are required, unique on create/update and searchable", async 
     }
     const first = await service.create({ key: "home-banner", name: "Gallery" });
     const second = await service.create({ key: "second", name: "Gallery" });
+    assert.equal((await service.findByKey("home-banner")).id, first.id);
+    await assert.rejects(service.findByKey("home"), { code: "GALLERY_NOT_FOUND" });
+    await assert.rejects(service.findByKey("HOME-BANNER"), { code: "GALLERY_NOT_FOUND" });
+    await assert.rejects(service.findByKey(" "), { code: "GALLERY_INVALID_INPUT" });
     await assert.rejects(service.create({ key: " home-banner ", name: "Duplicate" }), { code: "GALLERY_KEY_CONFLICT", status: 409 });
     await assert.rejects(service.update(second.id, { key: first.key }), { code: "GALLERY_KEY_CONFLICT", status: 409 });
     assert.equal((await service.findById(second.id)).key, "second");

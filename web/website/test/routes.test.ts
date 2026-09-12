@@ -2,16 +2,25 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 const baseUrl = process.env.WEBSITE_TEST_URL ?? "http://127.0.0.1:64400";
+const expectHomeError = process.env.WEBSITE_TEST_HOME_ERROR === "1";
 const id = "00000000-0000-4000-8000-000000000001";
 
-test("home renders its own content instead of Page module JSON inside shared layout", async () => {
+test("home renders gallery JSON or the explicitly expected production error", async () => {
   const response = await fetch(new URL("/", baseUrl));
-  assert.equal(response.status, 200);
+  assert.equal(response.status, expectHomeError ? 500 : 200);
   const html = await response.text();
-  assert.match(html, /Бүтээгдэхүүний каталог/);
-  assert.match(html, /Автомашин, сэлбэг хэрэгсэл, дугуй/);
-  assert.doesNotMatch(html, /<pre\b/);
+  if (expectHomeError) {
+    assert.doesNotMatch(html, /Gallery not found|gallery key: home/);
+    return;
+  }
   assert.match(html, /<header\b/); assert.match(html, /<footer\b/);
+  const pre = html.match(/<pre\b[^>]*>([\s\S]*?)<\/pre>/)?.[1];
+  assert.notEqual(pre, undefined);
+  const text = pre!.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+  const gallery = JSON.parse(text);
+  assert.notEqual(gallery, null);
+  assert.equal(gallery.key, "home");
+  assert.ok(Array.isArray(gallery.items));
 });
 
 for (const path of ["/vehicles", `/vehicles/${id}`, "/parts", `/parts/${id}`, "/tires", `/tires/${id}`, "/vehicles?sort=price_asc&page=2"]) {

@@ -42,6 +42,7 @@ API дээр `galleryId`, `sortOrder`, `imageId` camelCase байна. `desc`, `
 - Item-ийн эрэмбэ `sort_order ASC, id ASC`; ижил дараалал зөвшөөрнө. Admin form-оос sort_order-ийг засна.
 - Gallery-ийн нэр болон image_id давхцахыг хориглоогүй. Нэг файлыг олон item/gallery ашиглаж болно.
 - Gallery `key` нь давхцахгүй. API/service захын зайг trim хийнэ; lowercase болон slug формат шаардахгүй. Засаж болно; давхардсан create/update нь `GALLERY_KEY_CONFLICT` (409). UUID id болон item холбоос өөрчлөгдөхгүй.
+- `GalleryService.findByKey(key)` нь яг тэнцүү, том/жижиг үсэг ялгасан key-ээр нэг Gallery олно. Байхгүй бол `GALLERY_NOT_FOUND`. Website нүүр хуудас `home` key-г ашиглана; admin-ийн UUID route-ууд хэвээр.
 - `files.usage`-д ашиглагчийн key нь **gallery_item.id**, gallery.id биш.
 - Item нэмэх/зураг солих/устгах, gallery cascade delete хийхэд DB trigger usage-г тухайн transaction дотроо sync хийнэ. Бусад ашиглагчийн key-г хадгална; файлын lock-ийг UUID дарааллаар авна.
 - Item өөрчлөгдөхөд gallery.updated мөн шинэчлэгдэнэ. Item-ийн id болон gallery_id өөрчлөхгүй.
