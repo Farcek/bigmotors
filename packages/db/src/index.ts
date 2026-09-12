@@ -1,4 +1,5 @@
 export * from "./db.js";
+export * from "./service/gallery.js";
 export * from "./schema/index.js";
 export * from "./service/color.js";
 export * from "./service/file.js";
@@ -16,3 +17,4 @@ export * from "./service/tire-model.js";
 export * from "./service/part-category.js";
 export * from "./config.js";
 export * from "./di.js";
+export * from "./service/page.js";

@@ -1,7 +1,7 @@
 # Каталогийн DB диаграм
 
 - Огноо: 2026-09-12
-- Хамрах хүрээ: одоогийн Drizzle schema-ийн бүх **24 хүснэгт, 217 багана, 35 FK холбоос**.
+- Хамрах хүрээ: одоогийн Drizzle schema-ийн бүх **27 хүснэгт, 242 багана, 38 FK холбоос**. Gallery болон Page module нэмэгдсэн.
 - Кодын эх сурвалж: [schema/index.ts](../../packages/db/src/schema/index.ts).
 - Бизнес дүрэм, CHECK, index, trigger-ийн тайлбар: [батлагдсан schema](catalog-schema-proposal.md), [хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
 - Энэ нь кодын бүтцийн зураглал; бодит DB-д migration хэрэгжсэн гэсэн үг биш.
@@ -30,6 +30,41 @@ Mermaid дэмждэг Markdown preview-д диаграм хэлбэрээр х�
 ```mermaid
 erDiagram
     direction LR
+
+    gallery ||..o{ gallery_item : "gallery_id"
+    files |o..o{ pages : "main_image_id"
+    pages {
+        uuid id PK
+        varchar255 title "NN"
+        varchar255 slug UK "NN"
+        varchar512 description
+        uuid main_image_id FK
+        jsonb meta "NN"
+        jsonb content "NN"
+        varchar16 status "NN"
+        timestamptz published_at
+        timestamptz created_at "NN"
+        timestamptz updated_at "NN"
+    }
+    files ||..o{ gallery_item : "image_id"
+    gallery {
+        uuid id PK "NN"
+        varchar255 name "NN"
+        varchar512 desc "NULL"
+        timestamptz created "NN"
+        timestamptz updated "NN"
+    }
+    gallery_item {
+        uuid id PK "NN"
+        uuid gallery_id FK "NN"
+        integer sort_order "NN default 0"
+        timestamptz created "NN"
+        timestamptz updated "NN"
+        varchar255 title "NULL"
+        varchar255 label "NULL"
+        varchar512 desc "NULL"
+        uuid image_id FK "NN"
+    }
 
     products ||--o| vehicles : "product_id, product_type"
     products ||--o| parts : "product_id, product_type"

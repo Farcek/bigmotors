@@ -8,6 +8,9 @@
 
 ## Каталог ба агуулгын нарийвчлах санал
 
+- [Admin Gallery](admin-gallery.md): gallery/item CRUD, зураг upload, дараалал болон файлын usage холболт.
+- [Admin Page](admin-pages.md): хуудасны CRUD, JSONB content/meta, үндсэн зураг болон нийтлэлийн төлөв.
+
 - [Файл upload ба ашиглах дүрэм](file-management.md): нэгдсэн lifecycle, хэмжээний тохиргоо (default 20 MB), FILES_ROOT-оос тооцох зам, form save/cancel, usage болон устгал; POST /api/files/upload болон public GET /files/:id/:originalName contract.
 
 - [Admin UI demo](admin-ui-demo.md): `/demo`, `/demo/list`, `/demo/form` тусгаарласан жишээ; бодит API/DB-д хүрэхгүй.

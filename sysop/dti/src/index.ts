@@ -1,4 +1,5 @@
 export * from "./health.js";
+export * from "./gallery.js";
 export * from "./file.js";
 export * from "./vehicle.js";
 export * from "./color.js";
@@ -13,3 +14,4 @@ export * from "./vehicle-model.js";
 export * from "./vehicle-variant.js";
 export * from "./tire-model.js";
 export * from "./part-category.js";
+export * from "./page.js";

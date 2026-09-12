@@ -15,6 +15,20 @@
       "when": 1789209894046,
       "tag": "0001_restore_catalog_hooks",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789217064353,
+      "tag": "0002_gallery",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789226935207,
+      "tag": "0003_pages",
+      "breakpoints": true
     }
   ]
 }

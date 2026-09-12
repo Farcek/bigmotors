@@ -4,6 +4,8 @@ import {
   IconHome,
   IconLayoutDashboard,
   IconPackage,
+  IconPhoto,
+  IconFileText,
   IconSettings,
   IconWheel,
 } from "@tabler/icons-react";
@@ -27,6 +29,8 @@ export const navigationSections = [
     items: [
       { label: "Home", href: "/", icon: IconHome },
       { label: "Лавлах", href: "/references", icon: IconDatabase },
+      { label: "Gallery", href: "/galleries", icon: IconPhoto },
+      { label: "Хуудас", href: "/pages", icon: IconFileText },
     ],
   },
   {

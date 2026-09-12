@@ -1,4 +1,5 @@
 export * from "./branches.js";
+export * from "./gallery.js";
 export * from "./locations.js";
 export * from "./references.js";
 export * from "./files.js";
@@ -7,3 +8,4 @@ export * from "./vehicles.js";
 export * from "./parts.js";
 export * from "./tires.js";
 export * from "./admin-profiles.js";
+export * from "./page.js";

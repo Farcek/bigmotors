@@ -1,5 +1,7 @@
 # Өгөгдлийн сан
 
+- [Page schema](pages.md): JSONB агуулга/meta, нийтлэлийн төлөв болон files usage.
+
 Өгөгдлийн бүтэц, холбоос, бүрэн бүтэн байдлын дүрэм болон схемийн өөрчлөлтийг энд баримтжуулна.
 
 ## Технологийн сонголт
@@ -37,6 +39,8 @@ Factory болон schema код үүссэн; app integration, DB role боло
 Local admin profile нь stable Userly `sub`-тай required/unique холбоостой identity projection байна; email нь identity key биш. `admin_profiles` schema үүссэн; зөвшөөрөгдсөн identity-ийн анхны хандалтаар idempotent create/upsert хийх integration хийгдээгүй. Local metadata, scope mapping болон reload security audit persistence тусдаа. Chip CRM-ийн `employees`, owner/assignee, department, retention хүснэгтүүдийг шууд хуулж нэмэхгүй. Дэлгэрэнгүйг [admin feature](../features/admin-authentication-access.md)-ээс харна.
 
 ## Баримтжуулах зүйлс
+
+- [Gallery module](gallery.md): каталогийн 24 хүснэгт дээр нэмэгдэх `gallery`, `gallery_item`; нийт schema 26 хүснэгт. Item зураг files руу зааж, usage trigger ашиглана.
 
 - [Каталогийн батлагдсан schema](catalog-schema-proposal.md): 24 хүснэгтийн нэгтгэл, багана, холбоос, нийтлэх дүрэм, constraint/index; files шинэчлэлийн migration бэлдсэн, бодит DB-д ажиллуулаагүй.
 - [DB schema хөгжүүлэх](../operations/db-schema.md): кодын бүтэц, командыг ажиллуулах, trigger source, тест болон үлдсэн integration.

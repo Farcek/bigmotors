@@ -17,6 +17,11 @@ export const routes: RouteObject[] = [
     ErrorBoundary: RouteErrorPage,
     HydrateFallback: RouteLoading,
     children: [
+      { id: "pages", path: "pages", lazy: async () => ({ Component: (await import("./pages/pages/PagesPage")).PagesPage }), handle: { title: "Хуудас" } satisfies PageHandle },
+      { id: "page-new", path: "pages/new", lazy: async () => ({ Component: (await import("./pages/pages/PageEditPage")).PageEditPage }), handle: { title: "Хуудас нэмэх" } satisfies PageHandle },
+      { id: "page-edit", path: "pages/:id/edit", lazy: async () => ({ Component: (await import("./pages/pages/PageEditPage")).PageEditPage }), handle: { title: "Хуудас засах" } satisfies PageHandle },
+      { id: "galleries", path: "galleries", lazy: async () => ({ Component: (await import("./pages/gallery/GalleryPage")).GalleryPage }), handle: { title: "Gallery" } satisfies PageHandle },
+      { id: "gallery-items", path: "galleries/:id", lazy: async () => ({ Component: (await import("./pages/gallery/GalleryPage")).GalleryPage }), handle: { title: "Gallery зургууд" } satisfies PageHandle },
       { id: "vehicles", path: "vehicles", lazy: async () => ({ Component: (await import("./pages/vehicles/VehiclesPage")).VehiclesPage }), handle: { title: "Автомашин" } satisfies PageHandle },
       { id: "vehicle-new", path: "vehicles/new", lazy: async () => ({ Component: (await import("./pages/vehicles/VehicleEditPage")).VehicleEditPage }), handle: { title: "Автомашин нэмэх" } satisfies PageHandle },
       { id: "vehicle-edit", path: "vehicles/:id/edit", lazy: async () => ({ Component: (await import("./pages/vehicles/VehicleEditPage")).VehicleEditPage }), handle: { title: "Автомашин засах" } satisfies PageHandle },

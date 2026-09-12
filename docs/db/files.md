@@ -27,6 +27,8 @@ Schema нь `uuid[]`, хоосон array default болон NOT NULL-ийг ха
 
 ## Холбоос Ба Устгал
 
+- `gallery_item.image_id` → `files.id`, ON DELETE RESTRICT. Gallery item-ийн usage key нь item.id; энэ module-ийн DB trigger шууд SQL болон cascade delete дээр ч usage sync хийнэ. [Gallery schema](gallery.md). Дээрх ерөнхий trigger-гүй тайлбар нь бусад хэрэглэгчид хамаарна.
+
 - `products.main_image_id`, `products.item_image_id`, `product_images.file_id` бүгд шууд `files.id` рүү FK, ON DELETE RESTRICT.
 - `usage` хоосон биш бол DB delete trigger files мөрийн устгалыг хориглоно. Usage хоосон байсан ч бодит FK үлдвэл устгахгүй.
 - Metadata шинэчлэгдэхэд `files.updated_at` trigger ажиллана. Файлын агуулга солих, form save/cancel, холбоос салгах болон physical delete-ийн lifecycle нь [нэгдсэн дүрэмд](../features/file-management.md) байна.
@@ -36,3 +38,6 @@ Schema нь `uuid[]`, хоосон array default болон NOT NULL-ийг ха
 ## Шилжилт
 
 `0003_shared_files` нь хуучин `product_images`-ийн файлын багануудыг files руу хуулна. Хуучин зургийн ID = шинэ files ID; main/item утга, файлын зам/нэр/гарчиг/тайлбар/огноо хадгалагдана. Gallery-ийн ID, product ID, sort order хэвээр, `file_id` нөхөгдөнө. Дискний файл зөөхгүй, нэр өөрчлөхгүй. Хуулсны дараа хуучин metadata баганууд болон owner composite FK-г хасна.
+## Page ашиглалт
+
+`pages.main_image_id` нь files.id руу шууд заана. Page үүсгэх, зургийг солих/хасах, page устгах үед trigger нь files.usage дотор page.id-г атомикаар нэмж/хасна. Эх файл болон бусад ашиглагчийн key-г устгахгүй. JSONB доторх UUID утгуудад автомат usage tracking байхгүй. [Page schema](pages.md).

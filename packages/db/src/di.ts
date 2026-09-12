@@ -5,6 +5,8 @@ import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema/index.js";
 import { ColorService } from "./service/color.js";
+import { GalleryService } from "./service/gallery.js";
+import { PageService } from "./service/page.js";
 import { FileService } from "./service/file.js";
 import { VehicleService } from "./service/vehicle.js";
 import { BranchService } from "./service/branch.js";
@@ -47,6 +49,8 @@ export function diDBServiceProviders() {
         name: "db-service",
         providers: [
             asClass(ColorService),
+            asClass(GalleryService),
+            asClass(PageService),
             asClass(FileService),
             asClass(VehicleService),
             asClass(BranchService),
