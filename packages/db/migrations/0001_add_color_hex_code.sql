@@ -1,2 +1,0 @@
-ALTER TABLE "colors" ADD COLUMN "hex_code" varchar(7);--> statement-breakpoint
-ALTER TABLE "colors" ADD CONSTRAINT "colors_hex_code_format" CHECK ("colors"."hex_code" is null or "colors"."hex_code" ~ '^#[0-9A-Fa-f]{6}$');

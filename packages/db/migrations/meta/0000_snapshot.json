@@ -1,5 +1,5 @@
 {
-  "id": "ed6ec28d-db26-4c95-8fe3-f3d40227479b",
+  "id": "1f7181a1-369a-4576-89f1-e4c46375296d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -85,8 +85,8 @@
       },
       "isRLSEnabled": false
     },
-    "public.colors": {
-      "name": "colors",
+    "public.locations": {
+      "name": "locations",
       "schema": "",
       "columns": {
         "id": {
@@ -138,6 +138,93 @@
         }
       },
       "indexes": {
+        "locations_name_unique": {
+          "name": "locations_name_unique",
+          "columns": [
+            {
+              "expression": "lower(btrim(\"name\"))",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "locations_name_nonblank": {
+          "name": "locations_name_nonblank",
+          "value": "length(btrim(\"locations\".\"name\")) > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.colors": {
+      "name": "colors",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "hex_code": {
+          "name": "hex_code",
+          "type": "varchar(7)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
         "colors_name_unique": {
           "name": "colors_name_unique",
           "columns": [
@@ -162,6 +249,10 @@
         "colors_name_nonblank": {
           "name": "colors_name_nonblank",
           "value": "length(btrim(\"colors\".\"name\")) > 0"
+        },
+        "colors_hex_code_format": {
+          "name": "colors_hex_code_format",
+          "value": "\"colors\".\"hex_code\" is null or \"colors\".\"hex_code\" ~ '^#[0-9A-Fa-f]{6}$'"
         }
       },
       "isRLSEnabled": false
@@ -1062,8 +1153,8 @@
       },
       "isRLSEnabled": false
     },
-    "public.product_images": {
-      "name": "product_images",
+    "public.files": {
+      "name": "files",
       "schema": "",
       "columns": {
         "id": {
@@ -1072,12 +1163,6 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
-        },
-        "product_id": {
-          "name": "product_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
         },
         "file_path": {
           "name": "file_path",
@@ -1103,13 +1188,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "sort_order": {
-          "name": "sort_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -1123,9 +1201,83 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "usage": {
+          "name": "usage",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::uuid[]"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "files_file_path_unique": {
+          "name": "files_file_path_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "file_path"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "files_path_nonblank": {
+          "name": "files_path_nonblank",
+          "value": "length(btrim(\"files\".\"file_path\")) > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.product_images": {
+      "name": "product_images",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_id": {
+          "name": "file_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         }
       },
       "indexes": {
+        "product_images_file_idx": {
+          "name": "product_images_file_idx",
+          "columns": [
+            {
+              "expression": "file_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "product_images_order_idx": {
           "name": "product_images_order_idx",
           "columns": [
@@ -1167,23 +1319,29 @@
           ],
           "onDelete": "restrict",
           "onUpdate": "no action"
+        },
+        "product_images_file_id_files_id_fk": {
+          "name": "product_images_file_id_files_id_fk",
+          "tableFrom": "product_images",
+          "tableTo": "files",
+          "columnsFrom": [
+            "file_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "product_images_file_path_unique": {
-          "name": "product_images_file_path_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "file_path"
-          ]
-        },
-        "product_images_product_id_id_unique": {
-          "name": "product_images_product_id_id_unique",
+        "product_images_product_file_unique": {
+          "name": "product_images_product_file_unique",
           "nullsNotDistinct": false,
           "columns": [
             "product_id",
-            "id"
+            "file_id"
           ]
         }
       },
@@ -1192,10 +1350,6 @@
         "product_images_sort_order_check": {
           "name": "product_images_sort_order_check",
           "value": "\"product_images\".\"sort_order\" >= 0"
-        },
-        "product_images_path_nonblank": {
-          "name": "product_images_path_nonblank",
-          "value": "length(btrim(\"product_images\".\"file_path\")) > 0"
         }
       },
       "isRLSEnabled": false
@@ -1407,31 +1561,27 @@
         }
       },
       "foreignKeys": {
-        "products_main_image_owner_fk": {
-          "name": "products_main_image_owner_fk",
+        "products_main_image_id_files_id_fk": {
+          "name": "products_main_image_id_files_id_fk",
           "tableFrom": "products",
-          "tableTo": "product_images",
+          "tableTo": "files",
           "columnsFrom": [
-            "id",
             "main_image_id"
           ],
           "columnsTo": [
-            "product_id",
             "id"
           ],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
-        "products_item_image_owner_fk": {
-          "name": "products_item_image_owner_fk",
+        "products_item_image_id_files_id_fk": {
+          "name": "products_item_image_id_files_id_fk",
           "tableFrom": "products",
-          "tableTo": "product_images",
+          "tableTo": "files",
           "columnsFrom": [
-            "id",
             "item_image_id"
           ],
           "columnsTo": [
-            "product_id",
             "id"
           ],
           "onDelete": "restrict",
@@ -1689,6 +1839,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "sale_status": {
           "name": "sale_status",
           "type": "text",
@@ -1835,6 +1991,21 @@
           "method": "btree",
           "with": {}
         },
+        "vehicles_location_idx": {
+          "name": "vehicles_location_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "vehicles_exterior_color_idx": {
           "name": "vehicles_exterior_color_idx",
           "columns": [
@@ -1925,6 +2096,19 @@
           "tableTo": "branches",
           "columnsFrom": [
             "branch_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "vehicles_location_id_locations_id_fk": {
+          "name": "vehicles_location_id_locations_id_fk",
+          "tableFrom": "vehicles",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
           ],
           "columnsTo": [
             "id"
@@ -2488,6 +2672,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -2550,6 +2740,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "parts_location_idx": {
+          "name": "parts_location_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2585,6 +2790,19 @@
           "tableTo": "branches",
           "columnsFrom": [
             "branch_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "parts_location_id_locations_id_fk": {
+          "name": "parts_location_id_locations_id_fk",
+          "tableFrom": "parts",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
           ],
           "columnsTo": [
             "id"
@@ -2868,6 +3086,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -2963,6 +3187,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "tires_location_idx": {
+          "name": "tires_location_idx",
+          "columns": [
+            {
+              "expression": "location_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2985,6 +3224,19 @@
           "tableTo": "branches",
           "columnsFrom": [
             "branch_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "tires_location_id_locations_id_fk": {
+          "name": "tires_location_id_locations_id_fk",
+          "tableFrom": "tires",
+          "tableTo": "locations",
+          "columnsFrom": [
+            "location_id"
           ],
           "columnsTo": [
             "id"
