@@ -145,7 +145,7 @@ packages/db
 - Төлөв: Хэсэгчлэн баталсан
 - Хамаарал: TASK-03, TASK-12
 - Баталсан огноо: 2026-09-10 (disk хадгалалтын хүрээ)
-- Батлагдсан: Эх зургийг серверийн hard disk дээр хадгална. [ADR 0022](docs/adr/0022-store-product-images-on-disk.md). DB бүртгэлийн бүтэц нь [product_images баримтын](docs/db/product-images.md) хүрээ; техникийн task-ийн батлах шалгуур биш.
+- Батлагдсан: Эх файлыг серверийн hard disk дээр хадгална. [ADR 0022](docs/adr/0022-store-product-images-on-disk.md), metadata-г нэгдсэн files руу салгасан [ADR 0029](docs/adr/0029-use-shared-files.md). DB бүтэц нь [files](docs/db/files.md), [product_images](docs/db/product-images.md) баримтын хүрээ; техникийн task-ийн батлах шалгуур биш.
 
 **Үлдсэн шийдвэр:** Upload сан/transport, disk root/config, аюулгүй path/name, upload/serve access control, persistent volume, файл/DB-ийн алдааны цэвэрлэгээ болон backup/restore механизм.
 

@@ -38,11 +38,12 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 
 ## Баримтжуулах зүйлс
 
-- [Каталогийн батлагдсан schema](catalog-schema-proposal.md): 23 хүснэгтийн нэгтгэл, багана, холбоос, нийтлэх дүрэм, constraint/index; schema код болон migration үүссэн; бодит DB-д ажиллуулаагүй.
+- [Каталогийн батлагдсан schema](catalog-schema-proposal.md): 24 хүснэгтийн нэгтгэл, багана, холбоос, нийтлэх дүрэм, constraint/index; files шинэчлэлийн migration бэлдсэн, бодит DB-д ажиллуулаагүй.
 - [DB schema хөгжүүлэх](../operations/db-schema.md): кодын бүтэц, командыг ажиллуулах, trigger source, тест болон үлдсэн integration.
 - [Лавлах хүснэгтүүдийн батлагдсан бүтэц](reference-tables.md): 12 лавлах + `vehicle_feature_links`, нийтлэг багана, холбоос, нэрийн давхардлын дүрэм; migration файл үүссэн, бодит DB-д ажиллуулаагүй.
-- [Product images ба disk хадгалалт](product-images.md): эх файл hard disk дээр, бүртгэл `product_images` хүснэгтэд; хадгалах арга, багана, эзэмшил болон lifecycle батлагдсан.
-- [Каталогийн DB диаграм (ERD)](catalog-erd.md): бүх 23 хүснэгтийн багана, төрөл, PK/FK/UNIQUE, nullable эсэх болон холбоос.
+- [Files](files.md): зураг/файлын нийтлэг бүртгэл, disk зам, metadata, usage UUID key болон устгалын хамгаалалт.
+- [Product images](product-images.md): product/file gallery холбоос ба дараалал; main/item шууд files руу заана.
+- [Каталогийн DB диаграм (ERD)](catalog-erd.md): бүх 24 хүснэгтийн багана, төрөл, PK/FK/UNIQUE, nullable эсэх болон холбоос.
 - Хүснэгт, талбар, өгөгдлийн төрөл, тайлбар
 - Анхдагч болон гадаад түлхүүр, заавал бөглөх болон давхцахгүй байх нөхцөл
 - Индекс, хайлт болон шүүлтэд шаардлагатай бүтэц
@@ -51,7 +52,7 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 
 ## Загварчлах үндсэн мэдээлэл
 
-Төлөв: **Каталогийн 23 хүснэгтийн TypeScript/Drizzle schema, core тогтмолууд болон trigger source болон migration үүссэн; бодит DB-д ажиллуулаагүй**. 2026-09-10-нд [products-ийн 18 талбарын логик бүтэц](products-schema.md), зориулалт, бөглөх нөхцөл болон render fallback батлагдсан. `content` нь HTML `text`, nullable. Зургийн эх файл hard disk дээр, бүртгэл [product_images](product-images.md)-д байна. Лавлахын [12 хүснэгт + тоноглолын холбоос](reference-tables.md) батлагдсан; [нэгтгэсэн schema](catalog-schema-proposal.md)-ийн төрөл тус бүрийн бүтэц, зураг, profile, ID/constraint/index-ийн арга батлагдсан. CRUD, render, upload болон бодит DB integration хэрэгжсэн гэсэн үг биш.
+Төлөв: **Каталогийн 24 хүснэгтийн TypeScript/Drizzle schema, core тогтмолууд, trigger source болон migration бэлэн; files шинэчлэлийн `0003` migration бодит DB-д ажиллаагүй**. Өмнөх migration-ийн орчны төлөв [operations](../operations/db-migrations.md)-д байна. [Products-ийн 18 талбар](products-schema.md), render fallback хэвээр. `content` нь HTML `text`, nullable. Эх файл hard disk дээр, бүртгэл [files](files.md)-д; [product_images](product-images.md) нь gallery холбоос. [12 лавлах + тоноглолын холбоос](reference-tables.md) болон [нэгтгэсэн schema](catalog-schema-proposal.md) батлагдсан. Каталогийн CRUD, usage sync, render, upload бэлэн гэсэн үг биш.
 
 ### Батлагдсан бүртгэлийн нэгж
 
@@ -95,7 +96,7 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 | `content` | Дэлгэрэнгүй танилцуулгын хуудасны үндсэн rich text агуулга | Өмнөх V30/P22/T30; HTML `text`, nullable гэж батлагдсан; 512-ын хязгаар хамаарахгүй |
 | `item_title` | Жагсаалтын гарчгийг тусад нь тохируулах | Сонголттой/nullable; хоосон үед render дээр `title` |
 | `item_desc` | Жагсаалтын товч тайлбарыг тусад нь тохируулах | Сонголттой/nullable; хоосон үед render дээр `description`, `content` биш |
-| `item_image_id` | Жагсаалтын зургийг тусад нь тохируулах | Сонголттой/nullable; хоосон үед render дээр `main_image_id`; `product_images.id` рүү холбоно |
+| `item_image_id` | Жагсаалтын зургийг тусад нь тохируулах | Сонголттой/nullable; хоосон үед render дээр `main_image_id`; шууд `files.id` рүү холбоно |
 
 Үндсэн гарчиг болон үндсэн зургийн өмнөх нийтлэх шаардлага хэвээр. `item_desc`, `description` хоёул хоосон бол тайлбар харуулахгүй. Render fallback нь браузер зураг харуулж чадахгүй үед өөр зураг сонгох дүрэм биш. Нийтлэг шаардлагын үндсэн эх сурвалж нь [бүтээгдэхүүний нийтлэг дүрэм](../features/product-common-rules.md).
 

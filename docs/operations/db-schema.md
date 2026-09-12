@@ -1,7 +1,7 @@
 # DB schema хөгжүүлэх
 
 - Огноо: 2026-09-10
-- Төлөв: 23 хүснэгтийн TypeScript schema, migration, build, typecheck, 35 санах ойн тест хэрэгжсэн; 0000–0002 migration local PostgreSQL 18-д ажилласан. Staging/production-д ажиллуулаагүй.
+- Төлөв: 24 хүснэгтийн TypeScript schema, migration болон тест хэрэгжсэн. 0000–0002 migration өмнө local PostgreSQL 18-д ажилласан; `0003_shared_files` бэлдсэн, бодит орчинд ажиллуулаагүй. Staging/production-д ажиллуулаагүй.
 - Эх сурвалж: [каталогийн батлагдсан schema](../db/catalog-schema-proposal.md), [ADR 0023](../adr/0023-approve-catalog-schema.md).
 
 ## Бүтэц
@@ -9,8 +9,8 @@
 | Байршил | Үүрэг |
 | --- | --- |
 | `packages/core/src/catalog.ts` | Батлагдсан тогтмол сонголт, хязгаар |
-| `packages/db/src/schema/` | 23 хүснэгтийн Drizzle schema, constraint/index |
-| `packages/db/src/schema-hooks.ts` | Timestamp, product identity/lifecycle, subtype, publication болон category tree trigger-ийн эх тодорхойлолт |
+| `packages/db/src/schema/` | 24 хүснэгтийн Drizzle schema, constraint/index |
+| `packages/db/src/schema-hooks.ts` | Timestamp, product identity/lifecycle, subtype, publication, category tree болон files delete guard trigger-ийн эх тодорхойлолт |
 | `packages/db/src/db.ts` | App-аас өгсөн pool-ийг Drizzle-д холбоно |
 | `packages/db/test/` | PGlite доторх schema/constraint/trigger тест, pool factory тест |
 
@@ -112,7 +112,7 @@ Service тест: `packages/db/test/parent-reference-services.test.ts`; contract
 
 ## Migration
 
-Дараагийн баталгаагаар `packages/db/drizzle.config.ts`, `migrations/`, `db:generate`, `db:migrate` болон эхний migration/snapshot үүссэн. Root-оос дуудах командтай; app startup-аас тусдаа. Бодит DB schema, өгөгдөл өөрчлөөгүй; seed болон push команд нэмээгүй. [Migration ажиллуулах заавар](db-migrations.md).
+`packages/db/drizzle.config.ts`, `migrations/`, `db:generate`, `db:migrate` болон migration/snapshot-ууд бэлэн. Root-оос дуудах командтай; app startup-аас тусдаа. Seed болон push команд нэмээгүй. `0003_shared_files` нь хуучин зургийн metadata/ID/холбоосыг хадгалж files руу шилжүүлнэ; энэ migration бодит DB-д ажиллаагүй. [Migration ажиллуулах заавар](db-migrations.md).
 
 Drizzle-ийн table metadata нь PostgreSQL trigger-үүдийг төлөөлөхгүй. Эхний migration-д function/trigger-үүдийг хамт хадгалсан. Дараагийн өөрчлөлтөд шинэ custom SQL migration шаардлагатай; source import дангаараа DB trigger шинэчлэхгүй.
 

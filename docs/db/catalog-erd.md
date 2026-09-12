@@ -1,7 +1,7 @@
 # Каталогийн DB диаграм
 
-- Огноо: 2026-09-10
-- Хамрах хүрээ: одоогийн Drizzle schema-ийн бүх **23 хүснэгт, 214 багана, 34 FK холбоос**.
+- Огноо: 2026-09-12
+- Хамрах хүрээ: одоогийн Drizzle schema-ийн бүх **24 хүснэгт, 217 багана, 35 FK холбоос**.
 - Кодын эх сурвалж: [schema/index.ts](../../packages/db/src/schema/index.ts).
 - Бизнес дүрэм, CHECK, index, trigger-ийн тайлбар: [батлагдсан schema](catalog-schema-proposal.md), [хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
 - Энэ нь кодын бүтцийн зураглал; бодит DB-д migration хэрэгжсэн гэсэн үг биш.
@@ -35,8 +35,9 @@ erDiagram
     products ||--o| parts : "product_id, product_type"
     products ||--o| tires : "product_id, product_type"
     products ||..o{ product_images : "product_id"
-    product_images |o..o| products : "id, main_image_id"
-    product_images |o..o| products : "id, item_image_id"
+    files |o..o{ products : "main_image_id"
+    files |o..o{ products : "item_image_id"
+    files ||..o{ product_images : "file_id"
 
     vehicle_brands ||..o{ vehicle_models : "brand_id"
     vehicle_models ||..o{ vehicle_variants : "model_id"
@@ -70,7 +71,7 @@ erDiagram
     tires ||..o{ tire_markings : "product_id"
 
     products {
-        uuid id PK, FK "NN"
+        uuid id PK "NN"
         text product_type "NN; CHECK"
         varchar(255) title "NN"
         varchar(512) description "NULL"
@@ -93,13 +94,19 @@ erDiagram
     product_images {
         uuid id PK "NN"
         uuid product_id FK "NN"
+        uuid file_id FK "NN"
+        integer sort_order "NN; default 0"
+    }
+
+    files {
+        uuid id PK "NN"
         text file_path UK "NN; relative disk path"
         text original_name "NN"
         varchar(255) title "NULL"
         varchar(512) description "NULL"
-        integer sort_order "NN; default 0"
         timestamptz created_at "NN"
         timestamptz updated_at "NN"
+        uuid[] usage "NN; default empty array; not FK"
     }
 
     vehicles {
@@ -360,22 +367,20 @@ erDiagram
 | `vehicles` | `(product_id, product_type)` | `products(id, product_type)` |
 | `parts` | `(product_id, product_type)` | `products(id, product_type)` |
 | `tires` | `(product_id, product_type)` | `products(id, product_type)` |
-| `products` | `(id, main_image_id)` | `product_images(product_id, id)` |
-| `products` | `(id, item_image_id)` | `product_images(product_id, id)` |
 | `vehicles` | `(brand_id, model_id)` | `vehicle_models(brand_id, id)` |
 | `vehicles` | `(model_id, variant_id)` | `vehicle_variants(model_id, id)` |
 | `part_fitments` | `(brand_id, model_id)` | `vehicle_models(brand_id, id)` |
 | `tires` | `(brand_id, model_id)` | `tire_models(brand_id, id)` |
 
 - `vehicle_feature_links`-ийн PK нь `(product_id, feature_id)`; багана тус бүр дангаараа unique биш.
-- Нийлмэл UNIQUE: `products(id, product_type)`, `product_images(product_id, id)`, `vehicle_models(brand_id, id)`, `vehicle_variants(model_id, id)`, `tire_models(brand_id, id)`.
+- Нийлмэл UNIQUE: `products(id, product_type)`, `product_images(product_id, file_id)`, `vehicle_models(brand_id, id)`, `vehicle_variants(model_id, id)`, `tire_models(brand_id, id)`.
 - Нэг бүтээгдэхүүн доторх UNIQUE: `part_oem_numbers(product_id, oem_number)`, `tire_markings(product_id, marking)`.
 - Лавлахын нэрийн UNIQUE index нь `lower(btrim(name))`; model/variant болон дэд category-д эцгийн хүрээнд үйлчилнэ. Root category нь `parent_id IS NULL` гэсэн тусдаа unique index-тэй. `name` багана бүрийг дан UNIQUE гэж тэмдэглээгүй.
 
 ## Уншихад Анхаарах Нь
 
 1. `products`-оос төрөл тус бүр рүү `0..1` гэж харагдах нь бүтээгдэхүүн гурван дэлгэрэнгүйтэй эсвэл огт дэлгэрэнгүйгүй байж болно гэсэн үг биш. **Гурвын зөвхөн нэг**, `product_type`-тай тохирсон мөртэй байх XOR дүрмийг composite FK, CHECK болон deferred trigger хамт хамгаална.
-2. Зураг бүр нэг product-ийнх; product олон зурагтай байж болно. Main/item сонголт тус бүр зөвхөн өөрийн product-ийн зураг руу заана. Нэг зураг тухайн product-ийн main болон item аль аль нь байж болно. Сонголтын хоёр `0..1` холбоос нь зураг эзэмшлийн `1:N` холбоосоос тусдаа.
+2. Нэг файлыг олон product ашиглаж болно. Main/item нь шууд files руу заана; gallery мөр шаардахгүй. Product images нь тусдаа gallery холбоос. `files.usage` нь ашиглагчдын UUID key array, FK биш; [usage ба устгалын дүрэм](files.md)-ийг баримтална.
 3. Ноорог хадгалахын тулд олон бизнес багана nullable. Нийтлэх үеийн заавал нөхцөлийг энэ диаграмын `NULL` тэмдэглэгээгээр орлуулахгүй. [Нийтлэх дүрэм](catalog-schema-proposal.md#нэг-нэг-холбоос-ба-нийтлэх-шалгалт)-ийг баримтална.
 4. `item_title`, `item_desc`, `item_image_id` хоосон үед render дээр `title`, `description`, `main_image_id`-г авна; fallback-ийг DB-д хуулж хадгалахгүй. `content` нь дэлгэрэнгүй HTML, `description` нь товч энгийн текст.
 5. `admin_profiles` одоогоор каталогийн хүснэгтүүдтэй FK холбоогүй. `created_by`, owner эсвэл ACL холбоос зохиож нэмээгүй; `userly_sub` нь гадаад Userly identity-ийн утга, энэ DB-ийн FK биш.

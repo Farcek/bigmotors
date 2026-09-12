@@ -4,7 +4,7 @@ import { after, before, test } from "node:test";
 import type { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { eq } from "drizzle-orm";
-import { colors, locations, products, vehicles } from "../src/schema/index.js";
+import { colors, files, locations, products, vehicles } from "../src/schema/index.js";
 import { testDatabase, transaction } from "./support/database.js";
 
 let db: PGlite;
@@ -22,7 +22,10 @@ async function draft(type: "vehicle" | "part" | "tire" = "vehicle"): Promise<str
 
 async function image(productId: string): Promise<string> {
   const id = randomUUID();
-  await db.query("INSERT INTO product_images (id, product_id, file_path, original_name) VALUES ($1, $2, $3, 'original.unknown')", [id, productId, `products/${id}.unknown`]);
+  await transaction(db, async () => {
+    await db.query("INSERT INTO files (id, file_path, original_name, usage) VALUES ($1, $2, 'original.unknown', ARRAY[$3::uuid])", [id, `products/${id}.unknown`, productId]);
+    await db.query("INSERT INTO product_images (product_id, file_id) VALUES ($1, $2)", [productId, id]);
+  });
   return id;
 }
 
@@ -51,9 +54,9 @@ async function publishablePart(): Promise<string> {
   return id;
 }
 
-test("all 23 tables, constraints, indexes and trigger definitions provision together", async () => {
+test("all 24 tables, constraints, indexes and trigger definitions provision together", async () => {
   const result = await db.query<{ tablename: string }>("SELECT tablename FROM pg_tables WHERE schemaname='public'");
-  assert.equal(result.rows.length, 23);
+  assert.equal(result.rows.length, 24);
   assert.ok(result.rows.some((row) => row.tablename === "admin_profiles"));
   const enums = await db.query("SELECT * FROM pg_type WHERE typtype='e'");
   assert.equal(enums.rows.length, 0);
@@ -133,21 +136,61 @@ test("product text limits, optional short description, HTML content and exact pr
   await rejects("UPDATE products SET publication_status='unknown' WHERE id=$1", [id], "23514");
 });
 
-test("images accept arbitrary filenames but enforce owner, unique path and selected-image deletion", async () => {
+test("files have the requested fields, defaults, text limits and arbitrary original names", async () => {
+  for (const [table, columns] of [
+    ["files", ["id", "file_path", "original_name", "title", "description", "created_at", "updated_at", "usage"]],
+    ["product_images", ["id", "product_id", "file_id", "sort_order"]],
+  ] as const) {
+    const result = await db.query<{ column_name: string }>("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name=$1", [table]);
+    assert.deepEqual(result.rows.map((row) => row.column_name).sort(), [...columns].sort());
+  }
+  const orm = drizzle(db);
+  const [file] = await orm.insert(files).values({ filePath: `files/${randomUUID()}`, originalName: "original.anything" }).returning();
+  assert.ok(file);
+  assert.deepEqual(file.usage, []);
+  assert.equal(file.title, null);
+  assert.equal(file.description, null);
+  assert.ok(file.createdAt instanceof Date);
+  const keys = [randomUUID(), randomUUID()];
+  const [updated] = await orm.update(files).set({ title: "x".repeat(255), description: "y".repeat(512), usage: keys }).where(eq(files.id, file.id)).returning();
+  assert.deepEqual(updated?.usage, keys);
+  assert.ok(updated!.updatedAt.getTime() >= file.updatedAt.getTime());
+  await rejects("UPDATE files SET title=$2 WHERE id=$1", [file.id, "x".repeat(256)], "22001");
+  await rejects("UPDATE files SET description=$2 WHERE id=$1", [file.id, "x".repeat(513)], "22001");
+  await rejects("UPDATE files SET usage=NULL WHERE id=$1", [file.id], "23502");
+  await rejects("UPDATE files SET usage=ARRAY['not-uuid']::uuid[] WHERE id=$1", [file.id], "22P02");
+  await rejects("INSERT INTO files (file_path,original_name) VALUES ('  ','any')", [], "23514");
+  await rejects("INSERT INTO files (file_path,original_name) SELECT file_path,original_name FROM files WHERE id=$1", [file.id], "23505");
+  await rejects("DELETE FROM files WHERE id=$1", [file.id], "23514");
+  await db.query("UPDATE files SET usage='{}' WHERE id=$1", [file.id]);
+  await db.query("DELETE FROM files WHERE id=$1", [file.id]);
+});
+
+test("products reference shared files directly; gallery removal does not delete files or main/item links", async () => {
   const a = await draft();
   const b = await draft();
   const main = await image(a);
   await db.query("UPDATE products SET main_image_id=$2,item_image_id=$2 WHERE id=$1", [a, main]);
-  await rejects("UPDATE products SET main_image_id=$2 WHERE id=$1", [b, main], "23503");
-  await rejects("UPDATE products SET item_image_id=$2 WHERE id=$1", [b, main], "23503");
-  await rejects("UPDATE product_images SET product_id=$2 WHERE id=$1", [main, b], "23514");
-  await rejects("DELETE FROM product_images WHERE id=$1", [main], "23001");
-  await rejects("UPDATE product_images SET sort_order=-1 WHERE id=$1", [main], "23514");
-  await rejects("INSERT INTO product_images (product_id,file_path,original_name) SELECT product_id,file_path,original_name FROM product_images WHERE id=$1", [main], "23505");
-  await transaction(db, async () => {
-    await db.query("UPDATE products SET main_image_id=NULL,item_image_id=NULL WHERE id=$1", [a]);
-    await db.query("DELETE FROM product_images WHERE id=$1", [main]);
-  });
+  await db.query("UPDATE products SET main_image_id=$2,item_image_id=$2 WHERE id=$1", [b, main]);
+  await db.query("UPDATE files SET usage=array_append(usage,$2::uuid) WHERE id=$1", [main, b]);
+  await rejects("UPDATE product_images SET product_id=$2 WHERE file_id=$1", [main, b], "23514");
+  await rejects("UPDATE product_images SET sort_order=-1 WHERE file_id=$1", [main], "23514");
+  await rejects("INSERT INTO product_images (product_id,file_id) VALUES ($1,$2)", [a, main], "23505");
+  await db.query("INSERT INTO product_images (product_id,file_id) VALUES ($1,$2)", [b, main]);
+  await rejects("INSERT INTO product_images (product_id,file_id) VALUES ($1,$2)", [a, randomUUID()], "23503");
+  await rejects("UPDATE products SET main_image_id=$2 WHERE id=$1", [a, randomUUID()], "23503");
+  await rejects("UPDATE products SET item_image_id=$2 WHERE id=$1", [a, randomUUID()], "23503");
+  // Even stale empty usage cannot override the actual gallery/main/item FKs.
+  await db.query("UPDATE files SET usage='{}' WHERE id=$1", [main]);
+  await rejects("DELETE FROM files WHERE id=$1", [main], "23001");
+  await db.query("DELETE FROM product_images WHERE file_id=$1", [main]);
+  await rejects("DELETE FROM files WHERE id=$1", [main], "23001");
+  const rows = await db.query("SELECT main_image_id,item_image_id FROM products WHERE id IN ($1,$2)", [a, b]);
+  assert.deepEqual(rows.rows, [a, b].map(() => ({ main_image_id: main, item_image_id: main })));
+  await db.query("UPDATE products SET main_image_id=NULL WHERE id IN ($1,$2)", [a, b]);
+  await rejects("DELETE FROM files WHERE id=$1", [main], "23001");
+  await db.query("UPDATE products SET item_image_id=NULL WHERE id IN ($1,$2)", [a, b]);
+  await db.query("DELETE FROM files WHERE id=$1", [main]);
 });
 
 test("reference names are case-insensitive and trimmed for uniqueness without rewriting display text", async () => {

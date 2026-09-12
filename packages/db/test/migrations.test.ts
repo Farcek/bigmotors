@@ -45,7 +45,7 @@ test("migration history contains every current trigger definition", () => {
   const migrations = readMigrationFiles(migrationConfig);
   const definitions = migrations.flatMap((migration) => migration.sql).join("\n").replaceAll("CREATE OR REPLACE FUNCTION", "CREATE FUNCTION");
   for (const hook of schemaHooks) assert.ok(definitions.includes(new PgDialect().sqlToQuery(hook).sql));
-  assert.equal(migrations.length, 3);
+  assert.equal(migrations.length, 4);
 });
 
 test("migrating twice does not reapply SQL or duplicate the migration history", async () => {
@@ -82,7 +82,24 @@ test("additive migrations preserve existing colors, branches and product links w
       await db.query(`INSERT INTO ${table} (product_id, branch_id) VALUES ($1, $2)`, [item!.id, branch!.id]);
     }
     await db.exec("COMMIT");
+    const { rows: [image] } = await db.query<{ id: string }>(`INSERT INTO product_images
+      (product_id,file_path,original_name,title,description,sort_order,created_at,updated_at)
+      VALUES ($1,'products/existing.unknown','original.unknown','Existing title','Existing description',7,'2025-01-02Z','2025-02-03Z') RETURNING id`, [product!.id]);
+    const { rows: [gallery] } = await db.query<{ id: string }>(`INSERT INTO product_images
+      (product_id,file_path,original_name,sort_order) VALUES ($1,'products/gallery.bin','gallery.bin',2) RETURNING id`, [product!.id]);
+    await db.query("UPDATE products SET main_image_id=$2,item_image_id=$2 WHERE id=$1", [product!.id, image!.id]);
+    const beforeProduct = await db.query("SELECT main_image_id,item_image_id,updated_at FROM products WHERE id=$1", [product!.id]);
+    const beforeFiles = await db.query("SELECT id,file_path,original_name,title,description,created_at,updated_at,ARRAY[product_id] AS usage FROM product_images ORDER BY id");
     await migrate(orm, migrationConfig);
+    assert.deepEqual((await db.query("SELECT * FROM files ORDER BY id")).rows, beforeFiles.rows);
+    assert.deepEqual((await db.query("SELECT main_image_id,item_image_id,updated_at FROM products WHERE id=$1", [product!.id])).rows, beforeProduct.rows);
+    assert.deepEqual((await db.query("SELECT id,product_id,file_id,sort_order FROM product_images ORDER BY sort_order")).rows, [
+      { id: gallery!.id, product_id: product!.id, file_id: gallery!.id, sort_order: 2 },
+      { id: image!.id, product_id: product!.id, file_id: image!.id, sort_order: 7 },
+    ]);
+    // Removed timestamp columns must not leave a broken gallery update trigger.
+    await db.query("UPDATE product_images SET sort_order=8 WHERE id=$1", [image!.id]);
+    await db.query("UPDATE files SET title='Updated after migration' WHERE id=$1", [image!.id]);
     const result = await db.query("SELECT c.name, c.hex_code, v.exterior_color_id, v.interior_color_id FROM colors c JOIN vehicles v ON v.exterior_color_id=c.id");
     assert.deepEqual(result.rows, [{ name: "Existing color", hex_code: null, exterior_color_id: color!.id, interior_color_id: color!.id }]);
     for (const table of ["vehicles", "parts", "tires"]) {

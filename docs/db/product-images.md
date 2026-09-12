@@ -1,42 +1,31 @@
-# Product images ба disk хадгалалт
+# Product Images
 
-- Огноо: 2026-09-10
-- Төлөв: Хадгалах арга, багана, холбоос болон lifecycle баталсан; Drizzle schema хэрэгжсэн. Migration файл үүссэн; бодит DB-д ажиллуулах, upload/serve болон файл цэвэрлэх урсгал хийгдээгүй. [Хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
-- Холбоотой баримт: [Products](products-schema.md), [Нийтлэг дүрэм](../features/product-common-rules.md), [ADR 0022](../adr/0022-store-product-images-on-disk.md)
-
-## Батлагдсан шийдвэр
-
-- Upload хийсэн эх зургийн файл серверийн hard disk дээр өөрчлөлтгүй хадгалагдана.
-- Зургийн бүртгэл, файлын зам болон metadata-г `product_images` хүснэгтэд хадгална; binary файлыг DB-д хадгалахгүй.
-- Энэ бүтээгдэхүүний зургийн хүрээнд тусдаа `media_files` хүснэгт үүсгэх өмнөх саналыг хэрэглэхгүй.
-- `products.main_image_id`, `products.item_image_id` нь `product_images.id` рүү холбоно. `item_image_id` сонголттой, render fallback хэвээр.
-- Зургийн тоог хязгаарлахгүй, формат болон браузер харуулж чадах эсэхийг шалгахгүй; эх файл хөрвүүлэхгүй. Зураг бүрийн title/тайлбар сонголттой.
+- Огноо: 2026-09-12
+- Төлөв: Шинэ бүтэц баталсан; schema болон `0003_shared_files` migration бэлдсэн, бодит DB-д ажиллуулаагүй.
+- Холбоотой: [Files](files.md), [Products](products-schema.md), [ADR 0029](../adr/0029-use-shared-files.md)
 
 ## Баганууд
 
-Requiredness, FK эзэмшил, upload/устгалын дарааллыг [нэгтгэсэн schema](catalog-schema-proposal.md#product-images)-тай хамт 2026-09-10-нд баталсан.
+`product_images` нь бүтээгдэхүүн ба файлын gallery холбоос, дарааллыг л хадгална.
 
-Доорх 9 багана/төрөл батлагдсан. Title/description nullable; бусад нь NOT NULL. File path unique; sort_order default 0, сөрөг биш.
-
-| Багана | Санал | Зориулалт |
+| Багана | Төрөл / нөхцөл | Зориулалт |
 | --- | --- | --- |
-| `id` | UUID, PK | UUID v4; DB default gen_random_uuid() |
-| `product_id` | UUID, FK | Эзэмшигч бүтээгдэхүүн |
-| `file_path` | text | Тохируулсан upload root-оос харьцангуй зам; public URL эсвэл төхөөрөмжийн absolute path биш |
-| `original_name` | text | Upload үеийн файлын нэр; дискний зам үүсгэхэд шууд ашиглахгүй |
-| `title` | varchar(255), nullable | Зургийн сонголттой гарчиг |
-| `description` | varchar(512), nullable | Зургийн сонголттой тайлбар; product.description-оос тусдаа |
-| `sort_order` | integer | Нэмэлт зургийн харагдах дараалал |
-| `created_at` | timestamptz | Бүртгэл үүсгэсэн огноо |
-| `updated_at` | timestamptz | Metadata/дараалал өөрчилсөн огноо |
+| `id` | uuid, PK, default gen_random_uuid() | Gallery холбоосын танигч |
+| `product_id` | uuid, NOT NULL, FK -> products.id | Бүтээгдэхүүн |
+| `file_id` | uuid, NOT NULL, FK -> files.id | Зургийн файл |
+| `sort_order` | integer, NOT NULL, default 0, >= 0 | Gallery дахь дараалал |
 
-## Холбоос ба lifecycle
+`(product_id, file_id)` UNIQUE; нэг product-ийн gallery-д нэг файл давхар орохгүй. Эрэмбэ `(sort_order, id)`; индекс `(product_id, sort_order, id)` болон `file_id`. FK-ууд ON DELETE RESTRICT. Gallery холбоосын `product_id` үүссэний дараа өөрчлөгдөхгүй.
 
-- Нэг product олон зурагтай; үндсэн болон item зураг нь тухайн product-ийн өөрийн зураг байх нөхцөлийг DB/API түвшинд баталгаажуулна. Composite FK-ийн арга нэгтгэсэн schema-д батлагдсан; migration-ийг хэрэгжүүлж шалгана.
-- Ижил зургийг үндсэн болон item зураг болгон сонгоход нэг бүртгэл, нэг файл ашиглаж болно; давхар upload шаардахгүй.
-- Upload хийхээс өмнө product-ийн ноорог үүсгэнэ; энэ дараалал батлагдсан.
-- Upload/DB insert алдаанд файлыг нөхөн цэвэрлэнэ. Ашиглагдаж байгаа зургийн холбоосыг эхлээд transaction-д солих/цэвэрлэх, image мөр устгах, commit-ийн дараа файл устгах дараалал батлагдсан; retry/reconciliation tooling нээлттэй. Үндсэн зургийг устгаад нийтлэгдсэн product-ийг шаардлагагүй үлдээхгүй.
-- Үндсэн зургийг gallery-д нэг удаа, бусдыг sort_order/id дарааллаар харуулна; зөвхөн item зураг gallery-д орохгүй. Нийтэд metadata харуулах нарийвчлал нээлттэй.
-- Disk folder, upload сан/transport, serve route болон нийтлэгдээгүй product-ийн файлд хандах эрхийг дараа шийднэ. Бүх upload хавтсыг шууд public болгох шийдвэр гараагүй.
+Зам, эх нэр, гарчиг, тайлбар, огноо нь зөвхөн [files](files.md)-д байна. `product_images` дээр timestamp багана байхгүй; gallery insert/update/delete нь `products.updated_at`-ийг шинэчилнэ.
 
-Энэ баримтаар хүснэгт, migration, upload endpoint эсвэл disk хавтас үүсгээгүй.
+## Main, Item Ба Gallery
+
+- `products.main_image_id`, `products.item_image_id` нь шууд `files.id` рүү заана. Тухайн файл gallery-д заавал байх шаардлагагүй; өмнөх same-product owner composite FK хүчингүй.
+- Main/item нэг файл зааж болно; нэг файлыг олон product ашиглаж болно.
+- Main нийтлэхэд заавал, item сонголттой. Item хоосон бол render үед main-ийг авна; DB-д fallback хуулж хадгалахгүй.
+- Үндсэн зургийг gallery render дээр эхэнд нэг удаа харуулж, нэмэлт зургуудыг sort_order/id дарааллаар харуулна. Gallery дахь ижил main file_id-г давтаж харуулахгүй. Зөвхөн item-д холбосон файл gallery-д орохгүй; зориуд gallery-д холбосон бол харуулна.
+- Gallery холбоос үүсгэхэд product болон file бүртгэл хоёул байна. Харин file upload нь product-оос өмнө байж болно.
+- Gallery мөр устгах нь files мөр/дискний файл устгах үйлдэл биш. Product main/item эсвэл өөр gallery холбоосоор ашигласан хэвээр бол usage key-г хадгална.
+
+Файлын нийтлэг шаардлага, usage transaction болон устгалын хамгаалалтын үндсэн эх сурвалж нь [Files](files.md). Upload, usage CRUD, serve болон cleanup урсгал тусдаа хэрэгжүүлэлт хэвээр.

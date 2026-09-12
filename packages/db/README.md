@@ -1,6 +1,6 @@
 # @bigmotors/db
 
-Каталогийн 23 хүснэгтийн Drizzle schema болон сервер талын DB factory. Зөвхөн `web/website`-ийн сервер тал, `sysop/server` ашиглана. Browser, `sysop/dti`, `packages/core` руу импортлохгүй.
+Каталогийн 24 хүснэгтийн Drizzle schema болон сервер талын DB factory. Зөвхөн `web/website`-ийн сервер тал, `sysop/server` ашиглана. Browser, `sysop/dti`, `packages/core` руу импортлохгүй.
 
 - `src/schema/`: хүснэгт, багана, PK/FK, CHECK, index; [батлагдсан schema](../../docs/db/catalog-schema-proposal.md).
 - `src/schema-hooks.ts`: PostgreSQL trigger/function-ийн TypeScript дахь эх тодорхойлолт. Import хийхэд DB-д үйлдэл хийхгүй.

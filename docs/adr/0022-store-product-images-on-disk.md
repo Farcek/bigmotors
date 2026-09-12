@@ -1,7 +1,7 @@
 # 0022: Бүтээгдэхүүний зургийг hard disk дээр хадгалах
 
 - Огноо: 2026-09-10
-- Төлөв: Баталсан
+- Төлөв: Хэсэгчлэн орлуулсан; metadata болон main/item холбоосыг [ADR 0029](0029-use-shared-files.md) шинэчилсэн. Disk хадгалалтын шийдвэр хэвээр.
 - Холбоотой баримт: [Зургийн DB бүтэц](../db/product-images.md), [Products](../db/products-schema.md), [TASK-06](../../docs.task.md#task-06-storage-ба-upload-технологи)
 
 ## Нөхцөл байдал

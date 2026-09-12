@@ -115,7 +115,16 @@ export const schemaHooks: readonly SQL[] = [
     END $$`),
   sql.raw(`CREATE TRIGGER part_categories_tree_guard BEFORE INSERT OR UPDATE OR DELETE ON part_categories
     FOR EACH ROW EXECUTE FUNCTION bm_check_category_tree()`),
-  ...["products", "product_images", "admin_profiles", "branches", "locations", "vehicle_brands", "vehicle_models", "vehicle_variants", "vehicle_body_types", "colors", "vehicle_features", "part_categories", "part_brands", "tire_brands", "tire_models"].map((table) =>
+  sql.raw(`CREATE FUNCTION bm_guard_file_delete() RETURNS trigger LANGUAGE plpgsql AS $$
+    BEGIN
+      IF cardinality(OLD.usage) > 0 THEN
+        RAISE EXCEPTION 'File is in use' USING ERRCODE = '23514';
+      END IF;
+      RETURN OLD;
+    END $$`),
+  sql.raw(`CREATE TRIGGER files_delete_guard BEFORE DELETE ON files
+    FOR EACH ROW EXECUTE FUNCTION bm_guard_file_delete()`),
+  ...["products", "files", "admin_profiles", "branches", "locations", "vehicle_brands", "vehicle_models", "vehicle_variants", "vehicle_body_types", "colors", "vehicle_features", "part_categories", "part_brands", "tire_brands", "tire_models"].map((table) =>
     sql.raw(`CREATE TRIGGER ${table}_updated_at BEFORE UPDATE ON ${table} FOR EACH ROW EXECUTE FUNCTION bm_set_updated_at()`)),
   ...["vehicles", "parts", "tires", "product_images", "vehicle_feature_links", "part_fitments", "part_oem_numbers", "part_specifications", "tire_markings"].map((table) =>
     sql.raw(`CREATE TRIGGER ${table}_touch_product BEFORE INSERT OR UPDATE OR DELETE ON ${table} FOR EACH ROW EXECUTE FUNCTION bm_touch_product()`)),

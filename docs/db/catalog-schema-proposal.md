@@ -1,7 +1,7 @@
 # Каталогийн батлагдсан schema
 
 - Огноо: 2026-09-10
-- Төлөв: Баталсан; TypeScript/Drizzle schema болон trigger source болон migration хэрэгжсэн; бодит DB-д ажиллуулаагүй
+- Төлөв: Баталсан; одоогийн 24 хүснэгтийн schema болон trigger source хэрэгжсэн. `0003_shared_files` migration бэлдсэн, бодит DB-д ажиллуулаагүй; өмнөх migration-ийн төлөв [operations](../operations/db-migrations.md)-д байна.
 - Баталсан огноо: 2026-09-10
 - Үндэслэл: Хэрэглэгч нэгтгэсэн 22 хүснэгтийн schema, дагалдах техникийн болон эхний хувилбарын бизнес дүрмийн саналыг баталсан. Файлын анхны нэрийг холбоос хадгалах зорилгоор өөрчлөөгүй. [ADR 0023](../adr/0023-approve-catalog-schema.md).
 - Батлагдсан суурь: [Products](products-schema.md), [12 лавлах + тоноглолын холбоос](reference-tables.md), [Зургийн хадгалалт](product-images.md), [Нийтлэг дүрэм](../features/product-common-rules.md)
@@ -24,21 +24,22 @@
 | `part_specifications` | Сэлбэгийн нэр/утга/нэгжтэй үзүүлэлт | Баталсан |
 | `tires` | Дугуйн бүтээгдэхүүн, хэмжээ, индекс | Баталсан |
 | `tire_markings` | Дугуйн олон нэмэлт тэмдэглэгээ | Баталсан |
-| `product_images` | Disk файлын зам, зургийн metadata | Нэр, хадгалалт, багана, lifecycle баталсан |
+| `files` | Зураг/файлын зам, metadata, ашиглагчдын UUID key | [ADR 0029](../adr/0029-use-shared-files.md)-өөр баталсан |
+| `product_images` | Product ба file-ийн gallery холбоос, дараалал | 4 баганатай шинэ бүтэц баталсан |
 | `admin_profiles` | Userly identity-ийн local projection | Аргачлал, багана баталсан |
 
-Нийт **23 хүснэгт**. [ADR 0025](../adr/0025-separate-branches-and-locations.md)-аар компанийн салбар ба бүтээгдэхүүний байршил тусдаа болсон. CRM, агуулахын үлдэгдэл/хөдөлгөөн, checkout, төлбөр, нийлүүлэлтийн batch, local password/session/role хүснэгт ороогүй. Компанийн бусад агуулгын CMS нь одоогийн каталогийн schema хүрээний гадна.
+Нийт **24 хүснэгт**. [ADR 0025](../adr/0025-separate-branches-and-locations.md)-аар салбар/байршил салж, [ADR 0029](../adr/0029-use-shared-files.md)-өөр files нэмэгдсэн. CRM, агуулахын үлдэгдэл/хөдөлгөөн, checkout, төлбөр, нийлүүлэлтийн batch, local password/session/role хүснэгт ороогүй. Компанийн бусад агуулгын CMS нь одоогийн каталогийн schema хүрээний гадна.
 
 ## Нийтлэг техникийн шийдвэр
 
 - Бүх танигч UUID v4; үндсэн мөрийн ID-г DB default `gen_random_uuid()`-аар үүсгэнэ. Нэг-нэг өргөтгөлийн `product_id`-г шинээр үүсгэхгүй, product-ийн ID-г авна.
-- Бүх огноо `timestamptz`; `created_at` default `now()`, `updated_at`-ийг DB update trigger-ээр шинэчилнэ. Төрлийн мөр/хүүхэд мөр засах CRUD transaction нь `products.updated_at`-ийг мөн шинэчилнэ.
+- Огноо агуулсан хүснэгтүүдэд `timestamptz`; `created_at` default `now()`, `updated_at`-ийг DB update trigger-ээр шинэчилнэ. Төрлийн мөр/хүүхэд мөр засах CRUD transaction нь `products.updated_at`-ийг мөн шинэчилнэ. `product_images` огнооны баганагүй; файлын metadata өөрчлөгдөхөд `files.updated_at` шинэчлэгдэнэ.
 - Сонголтын баганууд `text + CHECK`, утгын source нь `packages/core` дахь тогтмолууд. Шинэ утга нэмэхэд DB CHECK migration-ийг хамт гаргана. TypeScript төрөл дангаараа DB constraint болохгүй.
 - Ноорогт төрөл тус бүрийн бизнес талбарууд nullable. Бөглөсөн утгын төрөл, хязгаар, FK-г ноорогт ч шалгана; нийтлэх requiredness нь тусдаа. Доорх хүснэгтэд заавал гэж тусгайлан бичээгүй бизнес багана бүгд nullable.
 - Дутуу optional энгийн текстийг `NULL` болгох гэж баталсан; item-ийн whitespace-only утгыг бөглөөгүй гэж үзнэ. VIN/арлын дугаарыг энэ normalization-аар хувиргахгүй, тусгай шалгалтгүй text хэвээр.
 - Бизнес талбарын өөрчлөлт product-ийн төрлийг солихгүй. Анх үүсгэсэн `product_type`-ийг өөрчлөхгүй байх гэж баталсан.
 
-Энэ хэсгийн техникийн сонголтууд 2026-09-10-нд батлагдсан. TypeScript schema, trigger source болон санах ойн PostgreSQL тест хэрэгжсэн. SQL migration болон runner үүссэн, бодит DB-д өөрчлөлт оруулаагүй. [Migration заавар](../operations/db-migrations.md). [Хөгжүүлэх заавар ба хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
+Энэ хэсгийн суурь сонголтууд 2026-09-10-нд, files шинэчлэл 2026-09-12-нд батлагдсан. TypeScript schema, trigger source болон санах ойн PostgreSQL тест хэрэгжсэн. Бодит орчны төлөв: [Migration заавар](../operations/db-migrations.md). [Хөгжүүлэх заавар ба хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
 
 ## Vehicles
 
@@ -191,15 +192,13 @@ T20-ийн үйлдвэрлэгчийн нэмэлт тэмдэглэгээ бү
 
 ## Product images
 
-[Батлагдсан 9 багана](product-images.md#баганууд)-ыг хадгална: `id`, `product_id`, `file_path`, `original_name`, `title`, `description`, `sort_order`, `created_at`, `updated_at`.
+[Product images](product-images.md) нь `id`, `product_id`, `file_id`, `sort_order` гэсэн 4 баганатай. Бүгд NOT NULL; sort_order default 0, сөрөг биш; `(product_id, file_id)` UNIQUE. Metadata болон timestamp энд байхгүй.
 
-Батлагдсан нарийвчлал: id/product_id/file_path/original_name/sort_order/огноонууд NOT NULL; title/description nullable. `file_path` unique, `sort_order` default 0, сөрөг биш; тэнцвэл id-аар тогтвортой эрэмбэлнэ. Дискний root-оос харьцангуй, системээс үүсгэсэн нэртэй зам хадгална.
+[Files](files.md) нь `id`, `file_path`, `original_name`, `title`, `description`, `created_at`, `updated_at`, `usage uuid[]` гэсэн 8 баганатай. Title/description nullable; usage default хоосон array. Багана/нөхцөл болон usage transaction-ийн үндсэн эх сурвалж нь files баримт.
 
-Product-ийн ноорог эхэлж үүсгээд зураг upload хийнэ. Upload бүрэн дууссаны дараа image мөрийг бүртгэж, тухайн зураг сонгох боломжтой болно. Файл бичилт эсвэл DB insert бүтэлгүй бол үлдэгдэл файлыг цэвэрлэнэ; filesystem ба DB нь нэг atomic transaction биш тул нөхөн цэвэрлэх ажиллагаа хэрэгтэй.
+Main/item ID шууд `files.id` рүү FK; gallery-д заавал байх шаардлагагүй. Нэг файлыг олон product ашиглаж болно. Өмнөх product owner composite FK хүчингүй. Gallery холбоос устгах нь файлыг устгахгүй; usage хоосон биш эсвэл FK үлдсэн файлыг DB устгахгүй. Үндсэн зураг нийтлэхэд заавал, item fallback болон gallery render дүрэм хэвээр.
 
-Үндсэн болон item зураг зөвхөн тухайн product-ийнх байна. `product_images(product_id, id)` unique; products дээр `(id, main_image_id)` болон `(id, item_image_id)` composite FK-ээр эзэмшлийг хамгаалах гэж баталсан. Main/item нэг image ID зааж болно. Үндсэн зураг gallery-д нэг удаа, үлдсэн зураг дарааллаар; зөвхөн item-д зориулсан зургийг gallery-д оруулахгүй байх гэж баталсан.
-
-Ашиглаж байгаа main/item зургийг шууд устгахгүй: нэг transaction-д холбоосыг солих/цэвэрлэх, дараа image мөрийг устгах гэж баталсан. Published product-ийн main зургийг шинэ зургаар солих эсвэл эхлээд product-ийг нуух ёстой. Commit-ийн дараа дискний файл устгана; алдаатай устгалын retry/reconciliation болон backup retention-ийг operations талд тодорхойлно. Формат, зураг decode эсвэл браузерын дэмжлэгийн шалгалт нэмэхгүй.
+Upload нь product-оос хамааралгүй; бүрэн upload хийсэн файлыг files-д бүртгэж дараа нь хэрэглээнд холбоно. Формат, decode, браузерын дэмжлэг шалгахгүй. Upload/serve, usage sync, disk cleanup хэрэгжүүлэлт тусдаа.
 
 ## Admin profiles
 
@@ -241,8 +240,8 @@ DB хамгаалалтын шийдвэр: `products(id, product_type)` unique;
 
 Сэлбэг/дугуйн нэг салбар, метр хэмжээтэй дугуй, ижил хэмжээтэй багц, SKU-ийн төрөл тус бүрийн uniqueness болон тусгай нийтлэх шаардлагыг энэ schema-ийн хамт баталсан. Доорх хүрээнээс гадуурх боломж болон хэрэгслийн сонголтыг батлаагүй.
 
-Used дугуйн ширхэг/багц, mixed-size set, олон салбарын хуваарилалт, нэмэлт сэлбэгийн лавлахыг одоогийн 23 хүснэгт бүрэн дэмждэг гэж амлахгүй. Хэрэгтэй бол хүснэгтийн тоо өөрчлөгдөнө. Seed, frontend editor, HTML sanitizer, upload/serve tooling болон production тохиргоо schema-ийн энэ баталгаагаар сонгогдохгүй.
+Used дугуйн ширхэг/багц, mixed-size set, олон салбарын хуваарилалт, нэмэлт сэлбэгийн лавлахыг одоогийн 24 хүснэгт бүрэн дэмждэг гэж амлахгүй. Хэрэгтэй бол хүснэгтийн тоо өөрчлөгдөнө. Seed, frontend editor, HTML sanitizer, upload/serve tooling болон production тохиргоо schema-ийн энэ баталгаагаар сонгогдохгүй.
 
 HTML-г шууд итгэж render хийхгүй; хадгалах/харуулах урсгалд аюулгүй HTML sanitization төлөвлөнө. Энэ нь зураг файл өөрчлөх тухай биш. [OWASP HTML sanitization](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html).
 
-PostgreSQL integer/numeric төрөл болон precision-ийн суурийг [албан ёсны тайлбартай](https://www.postgresql.org/docs/current/datatype-numeric.html) тулгасан. `packages/db/src/schema/branches.ts`-ийн өмнө хуулсан scaffold-ийг батлагдсан лавлахын бүтэцтэй тааруулсан. 22 хүснэгтийн Drizzle schema болон `packages/core` тогтмолууд болон эхний migration үүссэн; seed хийгдээгүй, бодит DB-д ажиллуулаагүй. Trigger source нь нийтлэх requiredness-ийг commit дээр нэмэлтээр шалгана; shared CRUD/request validator-ийн бүрэн хэрэгжүүлэлт хийгдээгүй.
+PostgreSQL integer/numeric төрөл болон precision-ийн суурийг [албан ёсны тайлбартай](https://www.postgresql.org/docs/current/datatype-numeric.html) тулгасан. Одоогийн 24 хүснэгтийн schema нь эхний 22 хүснэгт дээр locations, files нэмсэн бүтэц. Trigger source нь нийтлэх requiredness-ийг commit дээр нэмэлтээр шалгана; каталогийн shared CRUD/request validator-ийн бүрэн хэрэгжүүлэлт хийгдээгүй. Migration-ийн орчны төлөвийг operations баримтаас харна.

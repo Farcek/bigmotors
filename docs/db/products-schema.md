@@ -55,7 +55,7 @@
 ## Физик schema-ийн баталгаа
 
 - `content` хадгалалт 2026-09-10-нд HTML `text`, nullable гэж батлагдсан. Editor болон аюулгүй HTML render/sanitization хэрэгсэл нээлттэй; editor JSON хадгалахгүй.
-- Зургийн хадгалалт батлагдсан: эх файл hard disk дээр, бүртгэл `product_images` хүснэгтэд. `main_image_id`, `item_image_id` нь `product_images.id` рүү заана. [Багана, эзэмшил/дараалал/устгах дүрэм](product-images.md) нэгтгэсэн schema-тай хамт батлагдсан.
+- 2026-09-12-ны шинэчлэл: эх файл hard disk дээр, нийтлэг бүртгэл [files](files.md)-д. `main_image_id`, `item_image_id` нь шууд `files.id` рүү заана; gallery-д байх шаардлагагүй, файлыг хамтран ашиглаж болно. [Product images](product-images.md) нь зөвхөн gallery холбоос/дараалал; өмнөх owner composite FK хүчингүй.
 - ID: UUID v4, DB default `gen_random_uuid()` гэж баталсан.
 - Физик төрлийн шийдвэр: гарчиг `varchar(255)`, товч тайлбар `varchar(512)`, үнэ `bigint`, тэмдэглэл `text`, огноо `timestamptz`. Тогтмол сонголт `text + CHECK`; timestamp default/update trigger-ийн арга нэгтгэсэн schema-д батлагдсан.
 - Constraint, index, transaction болон төрөлтэй таарсан ганц дэлгэрэнгүй мөртэй байх арга нэгтгэсэн schema-д батлагдсан; SQL хэрэгжүүлэлт/тест хийгдээгүй.
