@@ -39,6 +39,7 @@ ADR (Architecture Decision Record) нь техникийн чухал шийдв
 | [0030: Файлын upload ба ашиглалтыг нэгтгэх](0030-unify-file-management.md) | 2026-09-12 | Замын суурийг ADR 0031-ээр орлуулсан |
 | [0031: Файлын замыг FILES_ROOT-оос тооцох](0031-use-files-root-for-storage-paths.md) | 2026-09-12 | Баталсан |
 | [0032: Sysop ба website-ийн public file read route](0032-public-file-read-route.md) | 2026-09-12 | Баталсан |
+| [0033: Website-д Tailwind CSS ашиглах](0033-use-tailwind-for-website.md) | 2026-09-12 | Баталсан |
 
 ## Бүртгэх шийдвэрүүд
 

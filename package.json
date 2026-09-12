@@ -4,6 +4,11 @@
   "private": true,
   "packageManager": "pnpm@11.19.0",
   "scripts": {
+    "dev:website": "pnpm --filter @bigmotors/website dev",
+    "build:website": "pnpm --filter @bigmotors/website build",
+    "start:website": "pnpm --filter @bigmotors/website start",
+    "typecheck:website": "pnpm --filter @bigmotors/website typecheck",
+    "dev:seed:vehicles": "pnpm --filter @bigmotors/sysop-server dev:seed:vehicles",
     "dev:app": "pnpm --filter \"@bigmotors/sysop-app^...\" build && pnpm --filter @bigmotors/sysop-app dev",
     "build:app": "pnpm --filter @bigmotors/sysop-app... build",
     "typecheck:app": "pnpm --filter \"@bigmotors/sysop-app^...\" build && pnpm --filter @bigmotors/sysop-app typecheck",

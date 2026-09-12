@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev:seed:vehicles": "node --use-system-ca --env-file-if-exists=.env --import=tsx src/dev/seed-vehicles.ts",
     "dev": "tsx watch --clear-screen=false --env-file-if-exists=.env src/main.ts",
     "build": "tsdown",
     "start": "node --env-file-if-exists=.env dist/main.mjs",

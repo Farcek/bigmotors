@@ -2,7 +2,34 @@
   "name": "@bigmotors/website",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 64400",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 64400",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "postcss": {
+    "plugins": {
+      "@tailwindcss/postcss": {}
+    }
+  },
   "engines": {
     "node": ">=24.11.0 <25"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "postcss": "^8.5.28",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "@tabler/icons-react": "3.46.0",
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   }
 }

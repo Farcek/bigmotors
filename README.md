@@ -53,7 +53,7 @@ packages/core
 packages/db
 ```
 
-- Public website: Next.js, PWA дэмжлэгтэй
+- Public website: Next.js, Tailwind CSS; PWA шаардлага батлагдсан, хэрэгжүүлэлт үлдсэн. [Ажиллуулах заавар](web/website/README.md), [1440px layout дүрэм](docs/ui/website-layout.md).
 - Admin frontend (`sysop-app`): [Mantine UI, Vite build](docs/adr/0007-use-mantine-and-vite-for-sysop-app.md)
 - Admin backend (`sysop-server`): [Express.js](docs/adr/0010-use-express-for-sysop-server.md)
 - Admin login, user management, ACL: [Userly OAuth/OIDC + PKCE, memory-only access token, `userly-acl`](docs/adr/0019-use-userly-admin-authentication-and-acl.md); Chip CRM-ийн аргачлалтай ижил, local password/role management хийхгүй

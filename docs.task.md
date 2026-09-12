@@ -174,9 +174,11 @@ packages/db
 
 **Form/cache баталсан:** `@mantine/form`-ийн `useForm` ашиглана. TanStack Query болон өөр cache сан/давхарга хэрэглэхгүй; API өгөгдлийг шаардлагатай үед дахин уншина. [ADR 0028](docs/adr/0028-use-mantine-form-without-query-cache.md). Өмнөх TanStack Query, staleTime болон invalidation санал хэрэгжихгүй.
 
-**Үлдсэн шийдвэр:** Website styling, CSS файлын зохион байгуулалтын нарийвчлал, form validation/mode integration болон global client-side state хэрэгцээ. Эдгээрийг form/cache сонголтоор бүхэлд нь батлагдсан гэж үзэхгүй.
+**Website styling баталсан (2026-09-12):** Next.js App Router + Tailwind CSS 4, PostCSS plugin, utility-first styling. [ADR 0033](docs/adr/0033-use-tailwind-for-website.md). Layout-ийн дүрмийг [UI баримт](docs/ui/website-layout.md)-д хөтөлнө.
 
-**Үлдсэн санал:** Website-д CSS Modules/CSS variables ашиглаж, энгийн UI төлөвт React state, global state санг бодит хэрэгцээгээр үнэлнэ. Admin-ийн form болон cache-ийн дээрх батлагдсан шийдвэрийг дагана.
+**Үлдсэн шийдвэр:** Form validation/mode integration болон global client-side state хэрэгцээ. Эдгээрийг form/cache сонголтоор бүхэлд нь батлагдсан гэж үзэхгүй.
+
+**Үлдсэн санал:** Энгийн UI төлөвт React state, global state санг бодит хэрэгцээгээр үнэлнэ. CSS Modules-ийн өмнөх саналыг Tailwind сонголт орлосон. Admin-ийн form болон cache-ийн дээрх батлагдсан шийдвэрийг дагана.
 
 **Үндэслэл ба сул тал:** Form болон routing зориулалтын хэрэгсэлтэй; cache-ийн нэмэлт dependency байхгүй. API өгөгдлийн loading/error, хуучирсан хүсэлтийн хариу болон mutation-ийн дараах дахин уншилтыг integration хариуцна.
 

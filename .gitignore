@@ -1,5 +1,7 @@
 node_modules/
 dist/
+.next/
+web/website/next-env.d.ts
 coverage/
 infra/.docker/
 *.tsbuildinfo

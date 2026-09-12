@@ -24,6 +24,8 @@ Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-l
 
 ## Агуулга
 
+- [Development-ийн 20 автомашин](demo-vehicles.md): зурагтай ноорог жишээ өгөгдөл, лиценз/эх сурвалж, `dev:seed:vehicles` болон давтан run-ийн дүрэм.
+
 - [Файлын хадгалалтын тохиргоо](file-storage.md): FILES_ROOT-оос зам тооцох, FILES_UPLOADS-д бичих, хэмжээний хязгаар, disk алдаа болон persistence/backup-ийн зааг.
 
 - [Sysop app ажиллуулах](sysop-app.md): Vite dev/build/test, React Router бүтэц, URL болон production fallback-ийн шаардлага.
