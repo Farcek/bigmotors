@@ -5,6 +5,21 @@ import { Vehicles } from "@bigmotors/sysop-dti";
 import { availableCommands, changedPayload, initialValues, listQuery, rawPayload, returnToList, validateVehicle, vehicleError, vehiclePayload } from "../src/pages/vehicles/model";
 import { lookupOptions } from "../src/pages/vehicles/useVehicleLookups";
 import { fileUrl, uploadFile } from "../src/files/client";
+import { vehicleFieldTab, vehicleTabs, vehicleTabValue } from "../src/pages/vehicles/form-tabs";
+
+test("saved tab state preserves valid tabs and defaults invalid navigation state", () => {
+  for (const tab of vehicleTabs) assert.equal(vehicleTabValue(tab.value), tab.value);
+  for (const value of [null, undefined, "unknown", {}, 1]) assert.equal(vehicleTabValue(value), "basic");
+});
+
+test("seven tabs assign every editable vehicle field exactly once", () => {
+  assert.deepEqual(vehicleTabs.map((tab) => tab.label), ["Үндсэн", "Автомашин", "Үзүүлэлт", "Борлуулалт", "Зураг", "Агуулга", "Карт"]);
+  const fields = vehicleTabs.flatMap((tab) => [...tab.fields]);
+  assert.equal(fields.length, new Set(fields).size);
+  assert.deepEqual([...fields].sort(), Object.keys(initialValues()).sort());
+  assert.deepEqual(vehicleTabs[0].fields, ["title", "description", "mainImageId"]);
+  for (const tab of vehicleTabs) for (const field of tab.fields) assert.equal(vehicleFieldTab(field), tab.value);
+});
 
 const id = "00000000-0000-4000-8000-000000000001";
 const timestamp = "2026-09-12T00:00:00.000Z";

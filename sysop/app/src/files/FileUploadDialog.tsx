@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { uploadFile } from "./client";
 
 type Pending = { file: File; title: string; description: string; done: boolean };
-export function FileUploadDialog({ opened, onClose, onUploaded, onBusy }: {
-  opened: boolean; onClose: () => void; onUploaded: (file: Files.UploadResult) => void; onBusy: (busy: boolean) => void;
+export function FileUploadDialog({ opened, onClose, onUploaded, onBusy, multiple = true }: {
+  opened: boolean; onClose: () => void; onUploaded: (file: Files.UploadResult) => void; onBusy: (busy: boolean) => void; multiple?: boolean;
 }) {
   const [items, setItems] = useState<Pending[]>([]);
   const [busy, setBusy] = useState(false);
@@ -38,7 +38,10 @@ export function FileUploadDialog({ opened, onClose, onUploaded, onBusy }: {
   return <Modal opened={opened} onClose={close} title="Зураг / файл нэмэх" size="lg" closeOnClickOutside={!busy} closeOnEscape={!busy} withCloseButton={!busy}>
     <Stack>
       {error && <Alert color="red" role="alert">{error}</Alert>}
-      <FileInput label="Файлууд" multiple value={items.map((item) => item.file)} disabled={busy || items.some((item) => item.done)} onChange={(files) => setItems(files.map((file) => ({ file, title: "", description: "", done: false })))} />
+      <FileInput label={multiple ? "Файлууд" : "Файл"} multiple={multiple} value={multiple ? items.map((item) => item.file) : items[0]?.file ?? null} disabled={busy || items.some((item) => item.done)} onChange={(value) => {
+        const files = Array.isArray(value) ? value : value ? [value] : [];
+        setItems(files.map((file) => ({ file, title: "", description: "", done: false })));
+      }} />
       {items.map((item, index) => <Stack key={index} gap="xs" py="sm">
         <Text size="sm" fw={600} style={{ overflowWrap: "anywhere" }}>{item.file.name}{item.done ? " — Upload хийгдсэн" : ""}</Text>
         <TextInput label="Гарчиг" maxLength={255} value={item.title} disabled={busy || item.done} onChange={(event) => { const title = event.currentTarget.value; setItems((current) => current.map((entry, i) => i === index ? { ...entry, title } : entry)); }} />

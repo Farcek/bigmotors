@@ -1,9 +1,9 @@
-import { ActionIcon, Alert, Badge, Box, Button, Checkbox, Fieldset, Group, Image, Menu, Modal, MultiSelect, NumberInput, Select, SimpleGrid, Stack, Tabs, Text, Textarea, TextInput, Tooltip } from "@mantine/core";
+import { ActionIcon, Alert, Badge, Box, Button, Checkbox, Fieldset, Group, Image, Menu, Modal, MultiSelect, NumberInput, ScrollArea, Select, SimpleGrid, Stack, Tabs, Text, Textarea, TextInput, Tooltip } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconArrowDown, IconArrowLeft, IconArrowUp, IconDotsVertical, IconPhotoPlus, IconTrash, IconDeviceFloppy } from "@tabler/icons-react";
 import { CURRENCIES, DRIVETRAINS, FUEL_TYPES, PRICE_DISPLAY_MODES, STEERING_POSITIONS, TRANSMISSIONS, VEHICLE_ARRIVAL_STATUSES, VEHICLE_CONDITIONS, VEHICLE_SALE_STATUSES, CATALOG_LIMITS } from "@bigmotors/core";
 import { Vehicles, type Files } from "@bigmotors/sysop-dti";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useBeforeUnload, useBlocker } from "react-router";
 import { apiClient } from "../../api/client";
 import { fileUrl } from "../../files/client";
@@ -13,15 +13,16 @@ import { availableCommands, changedPayload, commandLabels, initialValues, labels
 import { lookupOptions, type VehicleLookups } from "./useVehicleLookups";
 import { VehicleCommandModal } from "./VehicleCommandModal";
 import { VehicleContentEditor } from "./VehicleContentEditor";
+import { vehicleFieldTab, vehicleTabs } from "./form-tabs";
 
-const specFields = new Set(["brandId", "modelId", "variantId", "manufactureYear", "importYear", "vin", "bodyTypeId", "fuelType", "engineCapacityCc", "transmission", "drivetrain", "steeringPosition", "exteriorColorId", "interiorColorId", "seatCount", "mileageKm", "conditionDescription", "featureIds"]);
-export function VehicleForm({ row, lookups, back, onSaved }: { row?: Vehicles.Entity; lookups: VehicleLookups; back: string; onSaved: (row: Vehicles.Entity) => void }) {
+export function VehicleForm({ row, lookups, back, tab, onTabChange: setTab, onSaved }: { row?: Vehicles.Entity; lookups: VehicleLookups; back: string; tab: string; onTabChange: (tab: string | null) => void; onSaved: (row: Vehicles.Entity) => void }) {
   const [initial] = useState(() => initialValues(row));
   const form = useForm<VehicleValues>({ initialValues: initial, validate: (values) => validateVehicle(values, row?.publicationStatus === "published") });
-  const [tab, setTab] = useState<string | null>("basic");
   const [busy, setBusy] = useState(false);
   const [uploadBusy, setUploadBusy] = useState(false);
-  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadTarget, setUploadTarget] = useState<"images" | "mainImageId" | "itemImageId" | null>(null);
+  const tabButtons = useRef<Record<string, HTMLButtonElement | null>>({});
+  useEffect(() => { if (tab) tabButtons.current[tab]?.scrollIntoView({ block: "nearest", inline: "nearest" }); }, [tab]);
   const [error, setError] = useState("");
   const [command, setCommand] = useState<VehicleCommand | null>(null);
   const lock = useRef(false);
@@ -58,6 +59,7 @@ export function VehicleForm({ row, lookups, back, onSaved }: { row?: Vehicles.En
   function uploaded(file: Files.UploadResult) {
     setFiles((current) => [...current, file]);
     form.setFieldValue("images", (current) => [...current, { fileId: file.id, sortOrder: current.length }]);
+    if (uploadTarget && uploadTarget !== "images") form.setFieldValue(uploadTarget, file.id);
   }
   function reorder(index: number, direction: number) {
     const images = [...form.values.images];
@@ -77,6 +79,13 @@ export function VehicleForm({ row, lookups, back, onSaved }: { row?: Vehicles.En
   }
   const fileOptions = files.map((file) => ({ value: file.id, label: file.title || file.originalName }));
   const galleryOptions = fileOptions.filter((file) => !form.values.images.some((image) => image.fileId === file.value));
+  function imageField(field: "mainImageId" | "itemImageId") {
+    const file = files.find((entry) => entry.id === form.values[field]);
+    return <Stack gap="sm">
+      <Group align="flex-end"><Select flex={1} miw={180} label={labels[field]} searchable clearable data={fileOptions} {...form.getInputProps(field)} /><Button variant="light" leftSection={<IconPhotoPlus size={18} />} onClick={() => setUploadTarget(field)}>Upload</Button></Group>
+      {file && <Image src={fileUrl(file)} w="100%" maw={400} h={240} fit="contain" alt={file.title || labels[field]} />}
+    </Stack>;
+  }
   return <Stack>
     <Group justify="space-between"><Button component={Link} to={back} variant="subtle" leftSection={<IconArrowLeft size={16} />} disabled={disabled}>Жагсаалт</Button>
       <Group><Badge color={statusColor[row?.publicationStatus ?? "draft"]}>{valueLabels[row?.publicationStatus ?? "draft"]}</Badge>
@@ -84,9 +93,9 @@ export function VehicleForm({ row, lookups, back, onSaved }: { row?: Vehicles.En
       </Group>
     </Group>
     <Tabs value={tab} onChange={setTab}>
-      <Tabs.List mb="md">{[["basic", "Үндсэн"], ["specs", "Үзүүлэлт"], ["images", "Зураг"], ["content", "Агуулга"]].map(([value, label]) => <Tabs.Tab key={value} value={value}>{label}</Tabs.Tab>)}</Tabs.List>
+      <ScrollArea scrollbars="x" type="auto" offsetScrollbars="x" mb="md"><Tabs.List w="max-content" miw="100%">{vehicleTabs.map(({ value, label }) => <Tabs.Tab key={value} value={value} ref={(node) => { tabButtons.current[value] = node; }}>{label}</Tabs.Tab>)}</Tabs.List></ScrollArea>
       <Box maw={850}><PageBody><form noValidate onSubmit={form.onSubmit((values) => void save(values), (errors) => {
-        const key = Object.keys(errors)[0]; setTab(specFields.has(key) ? "specs" : ["images", "mainImageId", "itemImageId"].includes(key) ? "images" : ["content", "itemTitle", "itemDesc", "internalNote"].includes(key) ? "content" : "basic");
+        const key = Object.keys(errors)[0]; setTab(vehicleFieldTab(key));
         setError("Тэмдэглэсэн талбаруудыг шалгана уу.");
         window.setTimeout(() => form.getInputNode(key)?.focus(), 0);
       })}>
@@ -95,27 +104,30 @@ export function VehicleForm({ row, lookups, back, onSaved }: { row?: Vehicles.En
             <Tabs.Panel value="basic"><Stack>
               <TextInput label={labels.title} maxLength={255} required {...form.getInputProps("title")} />
               <Textarea label={labels.description} maxLength={512} minRows={3} {...form.getInputProps("description")} />
-              <SimpleGrid cols={{ base: 1, sm: 2 }}>
-                {enumeration("condition", VEHICLE_CONDITIONS)}{enumeration("priceDisplayMode", PRICE_DISPLAY_MODES)}
-                {number("price", CATALOG_LIMITS.priceMin, CATALOG_LIMITS.priceMax)}{enumeration("currency", CURRENCIES)}
-                {enumeration("saleStatus", VEHICLE_SALE_STATUSES)}{enumeration("arrivalStatus", VEHICLE_ARRIVAL_STATUSES)}
-                {lookup("branchId", "branches")}{lookup("locationId", "locations")}
-                <Select label={labels.financingAvailable} data={[{ value: "", label: "Тодорхойгүй" }, { value: "true", label: "Боломжтой" }, { value: "false", label: "Боломжгүй" }]} {...form.getInputProps("financingAvailable")} />
-              </SimpleGrid><Checkbox label={labels.isFeatured} {...form.getInputProps("isFeatured", { type: "checkbox" })} />
+              {imageField("mainImageId")}
             </Stack></Tabs.Panel>
-            <Tabs.Panel value="specs"><Stack><SimpleGrid cols={{ base: 1, sm: 2 }}>
+            <Tabs.Panel value="vehicle"><Stack><SimpleGrid cols={{ base: 1, sm: 2 }}>
               {lookup("brandId", "vehicle-brands")}{lookup("modelId", "vehicle-models", "brandId")}{lookup("variantId", "vehicle-variants", "modelId")}{lookup("bodyTypeId", "vehicle-body-types")}
               {(["manufactureYear", "importYear"] as const).map((field) => <TextInput key={field} label={labels[field]} inputMode="numeric" maxLength={4} {...form.getInputProps(field)} />)}
-              <TextInput label={labels.vin} {...form.getInputProps("vin")} />{number("mileageKm", 0, CATALOG_LIMITS.mileageMax)}
+              <TextInput label={labels.vin} {...form.getInputProps("vin")} />
+              {enumeration("condition", VEHICLE_CONDITIONS)}{number("mileageKm", 0, CATALOG_LIMITS.mileageMax)}
+            </SimpleGrid><Textarea label={labels.conditionDescription} maxLength={512} minRows={3} {...form.getInputProps("conditionDescription")} /></Stack></Tabs.Panel>
+            <Tabs.Panel value="specs"><Stack><SimpleGrid cols={{ base: 1, sm: 2 }}>
               {enumeration("fuelType", FUEL_TYPES)}{number("engineCapacityCc", 1, CATALOG_LIMITS.engineCapacityMax, form.values.fuelType === "electric")}
               {enumeration("transmission", TRANSMISSIONS)}{enumeration("drivetrain", DRIVETRAINS)}{enumeration("steeringPosition", STEERING_POSITIONS)}{number("seatCount", 1, 100)}
               {lookup("exteriorColorId", "colors")}{lookup("interiorColorId", "colors")}
-            </SimpleGrid><MultiSelect label={labels.featureIds} searchable clearable data={lookupOptions(lookups["vehicle-features"], initial.featureIds)} {...form.getInputProps("featureIds")} />
-              <Textarea label={labels.conditionDescription} maxLength={512} minRows={3} {...form.getInputProps("conditionDescription")} />
+            </SimpleGrid><MultiSelect label={labels.featureIds} searchable clearable data={lookupOptions(lookups["vehicle-features"], initial.featureIds)} {...form.getInputProps("featureIds")} /></Stack></Tabs.Panel>
+            <Tabs.Panel value="sales"><Stack>
+              <SimpleGrid cols={{ base: 1, sm: 2 }}>
+                {enumeration("priceDisplayMode", PRICE_DISPLAY_MODES)}
+                {number("price", CATALOG_LIMITS.priceMin, CATALOG_LIMITS.priceMax)}{enumeration("currency", CURRENCIES)}
+                <Select label={labels.financingAvailable} data={[{ value: "", label: "Тодорхойгүй" }, { value: "true", label: "Боломжтой" }, { value: "false", label: "Боломжгүй" }]} {...form.getInputProps("financingAvailable")} />
+                {enumeration("saleStatus", VEHICLE_SALE_STATUSES)}{enumeration("arrivalStatus", VEHICLE_ARRIVAL_STATUSES)}
+                {lookup("branchId", "branches")}{lookup("locationId", "locations")}
+              </SimpleGrid><Textarea label={labels.internalNote} minRows={3} {...form.getInputProps("internalNote")} />
             </Stack></Tabs.Panel>
             <Tabs.Panel value="images"><Stack>
-              <Group justify="space-between"><Text fw={600}>Зургууд ({form.values.images.length})</Text><Button leftSection={<IconPhotoPlus size={18} />} onClick={() => setUploadOpen(true)}>Файл нэмэх</Button></Group>
-              <SimpleGrid cols={{ base: 1, sm: 2 }}>{(["mainImageId", "itemImageId"] as const).map((field) => <Stack key={field} gap="xs"><Select label={labels[field]} searchable clearable data={fileOptions} {...form.getInputProps(field)} />{files.find((file) => file.id === form.values[field]) && <Image src={fileUrl(files.find((file) => file.id === form.values[field])!)} w={160} h={100} fit="contain" alt={labels[field]} />}</Stack>)}</SimpleGrid>
+              <Group justify="space-between"><Text fw={600}>Зургууд ({form.values.images.length})</Text><Button leftSection={<IconPhotoPlus size={18} />} onClick={() => setUploadTarget("images")}>Файл нэмэх</Button></Group>
               {galleryOptions.length > 0 && <Select label="Галерейд нэмэх" searchable data={galleryOptions} value={null} onChange={(fileId) => { if (fileId) form.setFieldValue("images", [...form.values.images, { fileId, sortOrder: form.values.images.length }]); }} />}
               {form.errors.images && <Text c="red" size="sm">{form.errors.images}</Text>}
               {!form.values.images.length && <Text c="dimmed" py="lg" ta="center">Зураг байхгүй</Text>}
@@ -127,16 +139,19 @@ export function VehicleForm({ row, lookups, back, onSaved }: { row?: Vehicles.En
             </Stack></Tabs.Panel>
             <Tabs.Panel value="content"><Stack>
               <VehicleContentEditor value={initial.content} onChange={(html) => form.setFieldValue("content", html)} disabled={disabled} error={form.errors.content} />
+            </Stack></Tabs.Panel>
+            <Tabs.Panel value="card"><Stack>
               <TextInput label={labels.itemTitle} maxLength={255} placeholder="Үндсэн гарчиг" {...form.getInputProps("itemTitle")} />
               <Textarea label={labels.itemDesc} maxLength={512} placeholder="Товч тайлбар" {...form.getInputProps("itemDesc")} />
-              <Textarea label={labels.internalNote} minRows={3} {...form.getInputProps("internalNote")} />
+              {imageField("itemImageId")}
+              <Checkbox label={labels.isFeatured} {...form.getInputProps("isFeatured", { type: "checkbox" })} />
             </Stack></Tabs.Panel>
           </Fieldset>
           <Group justify="flex-end" mt="md"><Button component={Link} to={back} variant="default" disabled={disabled}>Болих</Button><Button type="submit" leftSection={<IconDeviceFloppy size={16} />} loading={busy} disabled={uploadBusy || command !== null || (!!row && !dirty)}>Хадгалах</Button></Group>
         </Stack>
       </form></PageBody></Box>
     </Tabs>
-    <FileUploadDialog opened={uploadOpen} onClose={() => setUploadOpen(false)} onUploaded={uploaded} onBusy={setUploadBusy} />
+    <FileUploadDialog opened={uploadTarget !== null} multiple={uploadTarget === "images"} onClose={() => setUploadTarget(null)} onUploaded={uploaded} onBusy={setUploadBusy} />
     {row && command && <VehicleCommandModal target={{ row, command }} onClose={() => setCommand(null)} onDone={(result) => { allowLeave.current = true; setCommand(null); onSaved(result); }} />}
     <Modal opened={blocker.state === "blocked"} onClose={() => blocker.state === "blocked" && blocker.reset()} title="Хадгалаагүй өөрчлөлт" closeOnClickOutside={false}><Stack><Text>{disabled ? "Үйлдэл дуусахыг хүлээнэ үү." : "Өөрчлөлтийг хадгалахгүйгээр гарах уу?"}</Text><Group justify="flex-end"><Button variant="default" onClick={() => blocker.state === "blocked" && blocker.reset()}>Үлдэх</Button><Button color="red" disabled={disabled} onClick={() => blocker.state === "blocked" && blocker.proceed()}>Хадгалахгүй гарах</Button></Group></Stack></Modal>
   </Stack>;
