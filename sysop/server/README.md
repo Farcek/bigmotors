@@ -2,6 +2,8 @@
 
 `@bigmotors/sysop-server`: admin backend-ийн Express + TypeScript суурь.
 
+`/api/vehicles`: list/get/create/update, publish/hide/archive/restore нь [Vehicles handler](src/api/vehicles.ts) → DI → [VehicleService](../../packages/db/src/service/vehicle.ts)-ээр холбогдсон. Машин, gallery, тоноглол болон files.usage-г нэг transaction-д хадгална. [Endpoint, алдаа, transaction ба тестийн тайлбар](../../docs/operations/sysop-server.md#автомашины-api). Одоогийн түр auth/ACL bypass хэвээр; public production-д нээхгүй.
+
 `GET /files/:id/:originalName` (мөн HEAD): public file read. `FileService.findById`-аар олж, FILES_ROOT + DB file_path-аас эх byte-уудыг stream хийнэ. URL-ийн нэр, нэвтрэлт, ACL, usage болон нийтлэлийн төлөв шалгахгүй; production дээр ч public. [Read contract болон response header](../../docs/features/file-management.md#file-read-route). Sysop app dev `/files` proxy нэмсэн; website route нь Next.js initialize хүртэл холбогдоогүй.
 
 `POST /api/files/upload`: Multer multipart upload, нэг file 20 MB хүртэл, optional title/description; flat 201 response. [Route contract](../../docs/features/file-management.md#upload-route), [FILES_ROOT/FILES_UPLOADS тохиргоо](../../docs/operations/file-storage.md). FileService + UploadStorage DI ашиглана. Userly холболт хүртэл production орчинд route 503 буцаана; development bypass хэвээр. Usage sync, UI болон serve энэ endpoint-д орохгүй.

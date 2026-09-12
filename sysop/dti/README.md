@@ -2,6 +2,8 @@
 
 `@bigmotors/sysop-dti` нь admin frontend болон backend хоорондын API contract package.
 
+`Vehicles`: автомашины `list`, `get`, `create`, `update`, `publish`, `hide`, `archive`, `restore` action-ууд [src/vehicle.ts](src/vehicle.ts)-д байна. [Payload, route болон validation-ийн зааг](../../docs/operations/sysop-dti.md#автомашин). Contract нь VehicleService болон backend handler-т холбогдсон; [HTTP хэрэгжүүлэлт](../../docs/operations/sysop-server.md#автомашины-api). Admin UI болон ACL холболт үлдсэн.
+
 `@napp/dti-core`-ийн `createAction`, Zod schema, domain namespace болон barrel export ашиглана. Browser/server shared package учраас DB, Express, environment, token, ACL хэрэгжүүлэлт агуулахгүй.
 
 `Health.check` (`GET /health`), `Colors`, `Branches`, `VehicleBrands`, `VehicleBodyTypes`, `VehicleFeatures`, `PartBrands`, `TireBrands`, `Locations` contract-ууд байна. Лавлах бүр тусдаа файл/namespace, `list`, `create`, `update`, `remove` action болон input/output schema/type экспортолно. `common.ts` нь дундын ID, pagination, лавлахын талбаруудыг хариуцна. `@bigmotors/core`-ийн текстийн хязгаарыг хэрэглэнэ; DB package импортлохгүй.

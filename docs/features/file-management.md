@@ -1,7 +1,7 @@
 # Файл Upload Ба Ашиглах Дүрэм
 
 - Огноо: 2026-09-12
-- Төлөв: Upload болон sysop public read route, disk хадгалалт, files бүртгэл, contract болон алдааны нөхөн цэвэрлэгээ хэрэгжсэн. Website route, usage CRUD, file сонгох UI болон ерөнхий delete/retry урсгал хараахан хийгдээгүй.
+- Төлөв: Upload болон sysop public read route, disk хадгалалт, files бүртгэл, автомашины холбоос/usage transaction, [автомашины form дахь upload/select UI](admin-vehicles.md) болон алдааны нөхөн цэвэрлэгээ хэрэгжсэн. Website route, бусад ашиглагчийн usage CRUD, бүх файлын нэгдсэн browser болон ерөнхий delete/retry урсгал хараахан хийгдээгүй.
 - Хэрэглэгч: Admin; файл унших нь sysop болон public website дээр нэвтрэлт шаардахгүй.
 - Холбоотой: [Files schema](../db/files.md), [Product images](../db/product-images.md), [Storage тохиргоо](../operations/file-storage.md), [ADR 0030](../adr/0030-unify-file-management.md)
 
@@ -129,6 +129,8 @@ Userly нэвтрэлт/эрхийн шалгалт хараахан холбо�
 - Бодит холбоос ба usage өөрчлөлт нэг DB transaction-д хийгдэнэ. Нэг ашиглагчийн зэрэгцээ өөрчлөлтийг serialize хийж, usage-г atomic SQL-аар шинэчилнэ; өмнө уншсан array-г бүхлээр нь дарж бичихгүй.
 - Өөр ашиглагчийн key-г хасахгүй. Usage нь тоолуур, FK эсвэл ACL биш.
 
+Автомашины create/update дээр эдгээр дүрэм [VehicleService](../../packages/db/src/service/vehicle.ts)-д хэрэгжсэн. Archive/hide нь холбоос салгахгүй тул usage хэвээр. Сэлбэг/дугуй болон ерөнхий хэрэглээний sync service/trigger хараахан нэмээгүй; шууд SQL-аар холбоос засахад usage автоматаар sync болохгүй.
+
 ## Засах Ба Устгах
 
 - `title` (255), `description` (512) нь сонголттой, засаж болно. Нийтлэг file metadata учраас бүх хэрэглээнд өөрчлөгдөнө.
@@ -149,7 +151,7 @@ Userly нэвтрэлт/эрхийн шалгалт хараахан холбо�
 | `sysop/dti` | Admin файлын response/error төрөл; multipart request-ийн contract |
 | `sysop/app` | Нийтлэг upload/select компонент, form save/cancel урсгал |
 
-`FileService.createUploadedFile`, `FileService.findById`, `UploadStorage`, multipart upload, sysop public read болон DI холболт бэлэн. Upload нь usage-г зөвхөн хоосон default-оор үүсгэнэ; form save/холбоос/usage sync, metadata edit, file delete, UI болон website read route хийгдээгүй. Нийтлэх үеийн бүтээгдэхүүний дүрэм, main/item fallback болон gallery дарааллыг [product images](../db/product-images.md)-ээс баримтална.
+`FileService.createUploadedFile`, `FileService.findById`, `UploadStorage`, multipart upload, sysop public read болон DI холболт бэлэн. Upload нь usage-г зөвхөн хоосон default-оор үүсгэнэ; автомашины save/холбоос/usage sync нь VehicleService/backend API-д хэрэгжсэн. Автомашины form upload, metadata оруулах, холбоотой файлаа main/item/gallery-д сонгох UI бэлэн. Бусад ашиглагчийн sync, metadata edit, file delete, нэгдсэн file browser болон website read route хийгдээгүй. Нийтлэх үеийн бүтээгдэхүүний дүрэм, main/item fallback болон gallery дарааллыг [product images](../db/product-images.md)-ээс баримтална.
 
 ## Хүлээн Авах Шалгуур
 
@@ -166,5 +168,5 @@ Userly нэвтрэлт/эрхийн шалгалт хараахан холбо�
 
 - Upload болон өөрчлөх/устгах үйлдлийн permission mapping; read нь public гэж батлагдсан.
 - Production serve domain/cache-ийн нэмэлт хэрэгцээ; одоогийн хамгаалсан response header дээрх Read Response хэсэгт байна.
-- Form upload/select UI, хэрэглээний холбоос/usage CRUD болон website read implementation.
+- Нэгдсэн file browser, сэлбэг/дугуй болон бусад хэрэглээний холбоос/usage CRUD, website read implementation. Автомашины form upload/select UI хэрэгжсэн.
 - Production persistent volume, backup/restore болон disk cleanup retry-ийн бодит механизм.

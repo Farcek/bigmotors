@@ -28,7 +28,9 @@ test("only implemented URLs resolve to pages; unknown and prefix URLs resolve to
     ["/references/colors", "colors"],
     ["/references/vehicle-hierarchy", "vehicle-hierarchy"],
     ["/references/tire-hierarchy", "tire-hierarchy"],
-    ["/vehicles", "not-found"],
+    ["/vehicles", "vehicles"],
+    ["/vehicles/new", "vehicle-new"],
+    ["/vehicles/123/edit", "vehicle-edit"],
     ["/missing", "not-found"],
   ]) {
     assert.equal(matchRoutes(routes, path)?.at(-1)?.route.id, id, path);
@@ -54,7 +56,7 @@ test("home renders inside the admin layout with exactly one active menu link", (
   assert.match(html, /<h1[^>]*>Home<\/h1>/);
   assert.match(html, /<a[^>]*aria-current="page"[^>]*href="\/"/);
   assert.equal(html.match(/aria-current="page"/g)?.length, 1);
-  assert.doesNotMatch(html, /<a[^>]*href="\/vehicles"/);
+  assert.match(html, /<a[^>]*href="\/vehicles"/);
 });
 
 test("references supports direct entry and displays its title and active menu", (t) => {

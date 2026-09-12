@@ -62,6 +62,10 @@ test("contracts bundle and validate without Node.js globals", async () => {
     }
     assert.equal(contracts.PartCategories.listQuery.parse({ rootOnly: "false" }).rootOnly, false);
     assert.equal(contracts.PartCategories.listQuery.safeParse({ rootOnly: "true", parentId: id }).success, false);
+    assert.equal(contracts.Vehicles.createBody.safeParse({ title: "Vehicle" }).success, true);
+    assert.equal(contracts.Vehicles.updateBody.safeParse({ publicationStatus: "published" }).success, false);
+    assert.equal(contracts.Vehicles.listQuery.parse({ isFeatured: "false", priceMin: "1" }).priceMin, 1);
+    assert.equal(contracts.Vehicles.publish.path, "/vehicles/:id/publish");
   } finally {
     for (const bundle of handle.bundles) {
       await bundle[Symbol.asyncDispose]();

@@ -77,13 +77,62 @@ SSL verification-г унтраахгүй. Энэ нь зөвхөн тухайн 
 | `POST /api/branches` | `200` | Салбар үүсгэж entity буцаана |
 | `PATCH /api/branches/:id` | `200` | Өгсөн талбаруудыг засаж entity буцаана |
 | `DELETE /api/branches/:id` | `200` | Устгасан entity буцаана; бүтээгдэхүүнд ашиглагдаж байвал `409 BRANCH_IN_USE` |
+| `/api/vehicles` болон `/:id` action-ууд | `200` | Доорх автомашины API; DTI response |
+| `POST /api/files/upload` | `201` | Multipart file upload; production auth холбогдох хүртэл 503 |
+| `GET /files/:id/:originalName` | `200` | Public file read; ACL шалгахгүй |
 | Бусад route | `404`, `NOT_FOUND` | JSON алдаа |
 
 Өнгө, салбарын DTI response нь `{ success: true, data }`, алдаа нь `{ success: false, code, message }`. Validation алдаа `400`, олдоогүй бүртгэл `404`, нэрийн давхардал болон ашиглагдаж буй бүртгэлийг устгах үед `409`. Одоогийн mapping нь `NappError`-ийн code/message-ийг хадгална: DB алдаа `500 COLOR_STORAGE_ERROR` эсвэл `500 BRANCH_STORAGE_ERROR`; бусад unknown алдаа `500 UNKNOWN_ERROR`. Stack/cause/details-ийг дамжуулахгүй. Бүртгэлгүй route зэрэг Express алдаа `{ error: { code, message } }` хэлбэртэй. `x-powered-by` унтраалттай, response `no-store`, `nosniff`; proxy trust анх унтраалттай.
 
-Userly token validation, permission/scope, login endpoint, CORS policy, upload болон бүтээгдэхүүний CRUD **хэрэгжээгүй**. Userly/ACL-ийг хэрэглэгч түр алгассан: `/api` deny gate идэвхгүй, DTI auth нь түр `admin` context буцаана. Энэ нь баталгаажсан хэрэглэгч биш; API token шаардахгүй. **Зөвхөн хөгжүүлэлтэд ашиглана, production болон нийтэд нээлттэй орчинд байршуулахгүй.** Userly/ACL хамгаалалтыг дараа хэрэгжүүлнэ. Startup migration ажиллуулахгүй. `pool.end()`-ийг shutdown-д холбох ажил үлдсэн; container-ийн `destroy()` дангаараа `pg.Pool`-ийг хаадаггүй.
+Userly token validation, permission/scope, login endpoint, CORS policy болон сэлбэг/дугуйн бүтээгдэхүүний CRUD **хэрэгжээгүй**. File upload/read болон автомашины API хэрэгжсэн. Userly/ACL-ийг хэрэглэгч түр алгассан: `/api` deny gate идэвхгүй, DTI auth нь түр `admin` context буцаана. Энэ нь баталгаажсан хэрэглэгч биш; API token шаардахгүй. **Зөвхөн хөгжүүлэлтэд ашиглана, production болон нийтэд нээлттэй орчинд байршуулахгүй.** Userly/ACL хамгаалалтыг дараа хэрэгжүүлнэ. Startup migration ажиллуулахгүй. `pool.end()`-ийг shutdown-д холбох ажил үлдсэн; container-ийн `destroy()` дангаараа `pg.Pool`-ийг хаадаггүй.
 
 `SIGINT`/`SIGTERM` үед шинэ холболт авахаа зогсоож, хүсэлт дуусахыг 10 секунд хүлээнэ. Хугацаа хэтэрвэл холболтуудыг хааж алдааны exit code-той гарна. Порт ашиглагдаж байвал `EADDRINUSE`-тай зогсоно.
+
+## Автомашины API
+
+2026-09-12: [src/api/vehicles.ts](../../sysop/server/src/api/vehicles.ts) нь [Vehicles DTI](sysop-dti.md#автомашин)-г DI-ээр [VehicleService](../../packages/db/src/service/vehicle.ts)-тэй холбоно. Бүх амжилттай response 200 `{ success: true, data }`; list data нь `{ items, total, limit, offset }`, бусад нь Entity. Огноонууд ISO string; дотоод file_path/usage serialize хийхгүй.
+
+| Endpoint | Үйлдэл |
+| --- | --- |
+| GET `/api/vehicles` | Admin хайлт, шүүлт, эрэмбэ, pagination |
+| GET `/api/vehicles/:id` | Зураг/тоноглолтой дэлгэрэнгүй |
+| POST `/api/vehicles` | Гарчигтай ноорог үүсгэх |
+| PATCH `/api/vehicles/:id` | Өгсөн талбар, gallery/features-ийг шинэчлэх |
+| POST `/api/vehicles/:id/publish` | draft/hidden -> published |
+| POST `/api/vehicles/:id/hide` | published -> hidden |
+| POST `/api/vehicles/:id/archive` | draft/hidden/published -> archived |
+| POST `/api/vehicles/:id/restore` | archived -> hidden |
+
+DELETE болон publicationStatus-ийг PATCH-аар солих боломжгүй. Зөвшөөрөгдөөгүй/давтан төлөв шилжилт 409. Sold/arrival төлөвийг PATCH-аар засаж болох ч нийтлэлийн төлөвийг автоматаар өөрчлөхгүй. Admin жагсаалт draft/hidden/archived/sold-ийг хамарна; public API биш.
+
+### Transaction Ба Хадгалалт
+
+- DB package нь DTI/Express импортлохгүй. `vehicle-input.ts` DB service-ийн оролтыг Zod/core enum/limits-ээр давхар шалгана; DTI нь HTTP transport-ийн validation-ийг хариуцна.
+- Mutation эхлэхэд product мөрийг FOR UPDATE түгжинэ; эцсийн merge утгад тоон, нөхцөлтэй нийтлэх болон лавлахын шаардлагыг шалгана. Parent өөрчлөгдөхөд орхигдсон, тохирохгүй child сонголтыг цэвэрлэнэ; илэрхий өгсөн буруу child-ийг 400 буцаана.
+- Лавлах мөрүүдийг FOR SHARE түгжиж шалгана. Өмнөх идэвхгүй сонголт хадгалагдана; шинээр сонгох model/variant-ийн ancestor идэвхтэй байх ёстой. Хассан идэвхгүй тоноглолыг дахин нэмэх нь шинэ сонголт тул хориглоно.
+- Product, vehicle, gallery, feature links, usage нь нэг transaction. Gallery upsert нь хадгалагдсан file холбоосын ID-г өөрчлөхгүй. Arrays өгвөл орлоно; орхивол хадгална. Үндсэн/item нь gallery-д багтах албагүй.
+- Хуучин/шинэ file ID-уудыг UUID дарааллаар FOR UPDATE түгжиж, тухайн product UUID-г atomic array_remove/array_append-аар нэмэх/хасна. Өөр ашиглагчийн key хэвээр; нэг product main/item/gallery-д зэрэг ашиглахад нэг л key байна. Archive/hide нь холбоос болон usage-г арилгахгүй.
+- Create/update/publish үед handler-ийн `verifyFiles` callback нь FILES_ROOT болон DB file_path-аар эх файл байгаа, storage хүрээнд regular file эсэхийг шалгана. Public read-тэй ижил `resolveStoredFile` helper хэрэглэнэ. MIME, өргөтгөл, decode болон браузерын дэмжлэг шалгахгүй. Hide/archive/restore-д disk шалгалт хийхгүй; эвдэрсэн зурагтай бүртгэлийг нуух боломжтой байна.
+- `VehicleWriteOptions.verifyFiles` нь app-owned storage hook. DB service шууд хэрэглэх өөр app нь өөрийн hook-ийг дамжуулна; callback байхгүй DB-only хэрэглээнд physical disk шалгалт хийгдэхгүй. DB FK, row lock болон usage дүрэм хэвээр хэрэгжинэ.
+- Get/list нь repeatable-read, read-only transaction ашиглаж, aggregate болон total/items-ийг ижил snapshot-оос уншина. List нь content, VIN, internalNote болон gallery-г DB-ээс татахгүй; main/item metadata-г batch уншина.
+- FirstPublishedAt-г байгаа DB trigger анх нийтлэхэд оноож, дахин нийтлэхэд хадгална. Schema/migration өөрчлөөгүй; runtime нь одоогийн `0003_shared_files` хүртэлх schema шаарддаг.
+
+### Алдаа
+
+| HTTP | Code | Нөхцөл |
+| --- | --- | --- |
+| 400 | DTI_BODY_VALIDATE_ERROR / DTI_QUERY_VALIDATE_ERROR / DTI_PATH_PARAMS_VALIDATE_ERROR | Transport schema зөрчсөн |
+| 400 | VEHICLE_INVALID_INPUT | Service validation, нийлсэн он/цахилгаан хөдөлгүүрийн зөрчил, DB check constraint |
+| 400 | VEHICLE_REFERENCE_NOT_FOUND / VEHICLE_REFERENCE_MISMATCH | Лавлах байхгүй эсвэл эцэг/хүүхэд зөрсөн |
+| 400 | VEHICLE_FILE_NOT_FOUND | Сонгосон file бүртгэл байхгүй |
+| 404 | VEHICLE_NOT_FOUND | ID байхгүй эсвэл өөр төрлийн бүтээгдэхүүн |
+| 409 | VEHICLE_REFERENCE_INACTIVE | Шинэ/өөрчилсөн идэвхгүй сонголт |
+| 409 | VEHICLE_PUBLICATION_INVALID / VEHICLE_INVALID_TRANSITION | Нийтлэх шаардлага эсвэл төлөв шилжилт зөрчсөн |
+| 409 | VEHICLE_FILE_UNAVAILABLE | Сонгосон эх файл дискэнд байхгүй |
+| 409 | VEHICLE_REFERENCE_CONFLICT / VEHICLE_WRITE_CONFLICT | FK/concurrent өөрчлөлт, serialization failure/deadlock |
+| 500 | VEHICLE_STORAGE_ERROR | DB/storage алдаа; дотоод зам/SQL/credential задруулахгүй |
+
+Тестүүд нь HTTP → DTI → DI → service → тусгаарласан PGlite + түр disk урсгалыг шалгана. Анхны/дахин нийтлэх, нөхцөлтэй талбар, parent цэвэрлэгээ, идэвхгүй лавлах, upload/read, usage, gallery ID/order, pagination, rollback, зэрэгцээ хүсэлт, safe errors хамрагдсан. Бодит PostgreSQL олон connection-ийн race/load, OS-level гаднын file өөрчлөлт, production ACL болон HTML sanitization шалгагдаагүй. HTTP зэрэгцээ тест нь PGlite-ийн нэг connection орчинд ажилладаг; PostgreSQL concurrency proof биш.
 
 ## Шалгалт
 

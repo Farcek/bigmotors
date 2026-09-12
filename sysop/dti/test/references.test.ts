@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { Branches, Colors, VehicleBrands, VehicleBodyTypes, VehicleFeatures, PartBrands, TireBrands, Locations } from "../src/index.js";
 import { VehicleModels, VehicleVariants, TireModels, PartCategories } from "../src/index.js";
+import { Vehicles } from "../src/index.js";
 
 const id = "d4ea26c2-52a0-4223-8cc1-d649b84281d1";
 const branch: Branches.Entity = {
@@ -118,7 +119,8 @@ test("color HEX is optional on input, nullable on output and not a branch field"
 test("all public action names and method/path pairs are unique", () => {
   const actions = references.flatMap(([, , contract]) => [contract.list, contract.create, contract.update, contract.remove]);
   const parentActions = [VehicleModels, VehicleVariants, TireModels, PartCategories].flatMap((c) => [c.list, c.create, c.update, c.remove]);
-  const allActions = [...actions, ...parentActions];
+  const allActions = [...actions, ...parentActions, Vehicles.list, Vehicles.get, Vehicles.create, Vehicles.update,
+    Vehicles.publish, Vehicles.hide, Vehicles.archive, Vehicles.restore];
   assert.equal(new Set(allActions.map((action) => action.name)).size, allActions.length);
   assert.equal(new Set(allActions.map((action) => `${action.method} ${action.path}`)).size, allActions.length);
 });

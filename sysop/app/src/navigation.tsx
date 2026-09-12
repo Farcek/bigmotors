@@ -32,7 +32,7 @@ export const navigationSections = [
   {
     label: "Каталог",
     items: [
-      { label: "Автомашин", href: "/vehicles", icon: IconCar, disabled: true },
+      { label: "Автомашин", href: "/vehicles", icon: IconCar },
       {
         label: "Сэлбэг хэрэгсэл",
         href: "/parts",

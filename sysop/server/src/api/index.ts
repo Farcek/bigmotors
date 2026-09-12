@@ -14,6 +14,7 @@ import { buildTireModelsApi } from "./tire-models.js";
 import { buildPartCategoriesApi } from "./part-categories.js";
 import { Router } from "express";
 import { buildFilesApi } from "./files.js";
+import { buildVehiclesApi } from "./vehicles.js";
 
 export function buildAPI(di:Container) {
     const dti = buildDTI(di);
@@ -29,6 +30,7 @@ export function buildAPI(di:Container) {
     buildVehicleVariantsApi(dti);
     buildTireModelsApi(dti);
     buildPartCategoriesApi(dti);
+    buildVehiclesApi(dti);
 
 
 

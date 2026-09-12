@@ -45,7 +45,7 @@ test("unknown routes return a safe JSON 404", async () => {
 });
 
 test("unregistered admin routes return 404", async () => {
-  for (const path of ["/api", "/api/vehicles", "/api/users"]) {
+  for (const path of ["/api", "/api/unregistered", "/api/users"]) {
     for (const method of ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]) {
       const response = await fetch(`${baseUrl}${path}`, {
         method, headers: { Authorization: "Bearer fake-token" },

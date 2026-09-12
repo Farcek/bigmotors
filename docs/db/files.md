@@ -23,7 +23,7 @@ MIME, хэмжээ, өргөтгөл, өргөн/өндөр зэрэг нэмэ�
 
 ## Usage
 
-Schema нь `uuid[]`, хоосон array default болон NOT NULL-ийг хангана; array-ийн key нь FK биш. Key нэмэх/хасах, давхардалгүй байлгах болон холбоосуудтай sync хийх transaction дүрмийн үндсэн эх сурвалж нь [File management: Usage](../features/file-management.md#usage). Одоогоор auto-sync service/trigger хэрэгжээгүй.
+Schema нь `uuid[]`, хоосон array default болон NOT NULL-ийг хангана; array-ийн key нь FK биш. Key нэмэх/хасах, давхардалгүй байлгах болон холбоосуудтай sync хийх transaction дүрмийн үндсэн эх сурвалж нь [File management: Usage](../features/file-management.md#usage). Автомашины VehicleService create/update нь холбоосуудтай usage-г нэг transaction-д sync хийнэ. Бусад ашиглагчийн service болон ерөнхий auto-sync trigger хэрэгжээгүй; шууд SQL өөрчлөлт usage-г автоматаар шинэчлэхгүй.
 
 ## Холбоос Ба Устгал
 
@@ -31,7 +31,7 @@ Schema нь `uuid[]`, хоосон array default болон NOT NULL-ийг ха
 - `usage` хоосон биш бол DB delete trigger files мөрийн устгалыг хориглоно. Usage хоосон байсан ч бодит FK үлдвэл устгахгүй.
 - Metadata шинэчлэгдэхэд `files.updated_at` trigger ажиллана. Файлын агуулга солих, form save/cancel, холбоос салгах болон physical delete-ийн lifecycle нь [нэгдсэн дүрэмд](../features/file-management.md) байна.
 
-`FileService.createUploadedFile`, `FileService.findById`, upload болон sysop read endpoint хэрэгжсэн; usage CRUD, website read route, ерөнхий delete/retry урсгал хийгдээгүй. Upload-ийн алдааны нөхөн цэвэрлэгээ болон commit reconciliation [storage зааварт](../operations/file-storage.md#upload-хэрэгжүүлэлт) байна. [File read](../features/file-management.md#file-read-route) нь `/files/:id/:originalName`, ID-аар lookup хийдэг, нэр болон access шалгахгүй public route; schema өөрчлөх шаардлагагүй. Persistence болон өөрчлөх үйлдлийн эрхийн нарийвчлал тусдаа хэвээр.
+`FileService.createUploadedFile`, `FileService.findById`, upload, sysop read endpoint болон автомашины usage sync хэрэгжсэн; бусад ашиглагчийн usage CRUD, website read route, ерөнхий delete/retry урсгал хийгдээгүй. Upload-ийн алдааны нөхөн цэвэрлэгээ болон commit reconciliation [storage зааварт](../operations/file-storage.md#upload-хэрэгжүүлэлт) байна. [File read](../features/file-management.md#file-read-route) нь `/files/:id/:originalName`, ID-аар lookup хийдэг, нэр болон access шалгахгүй public route; schema өөрчлөх шаардлагагүй. Persistence болон өөрчлөх үйлдлийн эрхийн нарийвчлал тусдаа хэвээр.
 
 ## Шилжилт
 

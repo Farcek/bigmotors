@@ -6,6 +6,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema/index.js";
 import { ColorService } from "./service/color.js";
 import { FileService } from "./service/file.js";
+import { VehicleService } from "./service/vehicle.js";
 import { BranchService } from "./service/branch.js";
 import { VehicleBrandService } from "./service/vehicle-brand.js";
 import { VehicleBodyTypeService } from "./service/vehicle-body-type.js";
@@ -47,6 +48,7 @@ export function diDBServiceProviders() {
         providers: [
             asClass(ColorService),
             asClass(FileService),
+            asClass(VehicleService),
             asClass(BranchService),
             asClass(VehicleBrandService),
             asClass(VehicleBodyTypeService),

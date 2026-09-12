@@ -4,6 +4,7 @@ Mantine + React + Vite admin frontend. Routing нь React Router Data Mode.
 
 - [Ажиллуулах, route нэмэх болон шалгах заавар](../../docs/operations/sysop-app.md)
 - [Routing шийдвэр](../../docs/adr/0026-use-react-router-data-mode.md)
+- [Автомашины удирдлага](../../docs/features/admin-vehicles.md): `/vehicles`, нэмэх/засах, зураг upload, нийтлэх/нуух/архивлах/сэргээх.
 - [Марк / Загвар / Хувилбар](../../docs/features/admin-vehicle-hierarchy.md): гурван баганатай нэгтгэсэн удирдлага, автоматаар бөглөх харьяалал.
 - [Дугуйн брэнд / Загвар](../../docs/features/admin-tire-hierarchy.md): хоёр баганатай удирдлага, загварт брэнд автоматаар бөглөгдөнө.
 - [Сэлбэгийн ангиллын tree view](../../docs/features/admin-part-category-tree.md): хажуугийн модоос сонгож дэд ангиллуудыг удирдана.

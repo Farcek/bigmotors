@@ -38,6 +38,9 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 | --- | --- |
 | `/` | Нүүр |
 | `/references` | Лавлахын нүүр |
+| `/vehicles` | Автомашины жагсаалт, хайлт/шүүлт/эрэмбэ |
+| `/vehicles/new` | Автомашин нэмэх |
+| `/vehicles/:id/edit` | Автомашин засах, зураг болон төлөв удирдах |
 | `/references/colors` | Өнгөний CRUD, нэмэх/засах modal |
 | `/references/vehicle-hierarchy` | Марк → загвар → хувилбар, гурван баганатай удирдлага |
 | `/references/tire-hierarchy` | Дугуйн брэнд → загвар, хоёр баганатай удирдлага |
@@ -47,7 +50,7 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 | `/demo/form` | Жишээ нэмэх/засах form (`?id=...`) |
 | Бусад | Layout доторх 404 |
 
-Өнгө болон [үлдсэн 11 лавлахын CRUD](../features/admin-reference-crud.md#дэлгэцүүд) хэрэгжсэн. Нэмэлт route-ууд `src/pages/references/routes.ts`-д бүртгэлтэй. Бүтээгдэхүүний дэлгэц нэмээгүй. Цаашид шинэ route нэмэхэд component болон `handle.title` бүртгэж, бэлэн болсон үед цэсний холбоосыг идэвхжүүлнэ.
+Өнгө болон [үлдсэн 11 лавлахын CRUD](../features/admin-reference-crud.md#дэлгэцүүд), [автомашины удирдлага](../features/admin-vehicles.md) хэрэгжсэн. Нэмэлт лавлахын route-ууд `src/pages/references/routes.ts`-д бүртгэлтэй. Цаашид шинэ route нэмэхэд component болон `handle.title` бүртгэж, бэлэн болсон үед цэсний холбоосыг идэвхжүүлнэ.
 
 Дотоод navigation-д `Link`/`NavLink` ашиглана. Demo жагсаалтын хайлт/шүүлт/pagination болон өнгөний шүүлт/page URL query-д байна. Өнгөний UI нь `Colors` contract-оор API-д хандана; mutation амжилттай бол жагсаалтыг дахин уншина. Cache болон login/ACL guard нэмээгүй. [Өнгөний CRUD-ийн дэлгэрэнгүй](../features/admin-colors.md).
 
@@ -74,6 +77,18 @@ Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах
 ## Бусад лавлахын шалгалт
 
 2026-09-12: App-ийн нийт 38 тест, TypeScript check, Vite build тэнцсэн. Үлдсэн 11 лавлахын backend HTTP шалгалтын 38 тест тусгаарласан DB дээр тэнцсэн. Playwright/Edge дээр лавлах тус бүрийн нэмэх/засах/устгах, validation, идэвхтэй шүүлт болон immutable parent payload-ыг шалгасан. Ангиллын root/parent шүүлт, идэвхгүй ancestor сонголт, pagination/refresh болон хуудсын сүүлийн мөрийг устгах урсгал шалгагдсан. 320/390/1440px form screenshot, хуудасны overflow болон page error-ийг нягталсан. Browser mutation-ууд mocked API ашигласан; бодит local 11 endpoint-оос зөвхөн уншиж, DB-д тест өгөгдөл бичээгүй.
+
+## Автомашины UI
+
+`src/pages/vehicles/` нь Vehicles DTI contract ашиглах жагсаалт, form, lookup уншилт болон нийтлэлийн action-уудыг хариуцна. Cache сан нэмээгүй. Form-ийн HTML editor нь `@mantine/tiptap` 9.6.0, TipTap 3.31.3; Mantine 9.6/React 19-д нийцэх peer dependency болон MIT лицензийг шалгаж сонгосон implementation detail. [Mantine-ийн албан заавар](https://mantine.dev/x/tiptap/). Editor нь edit route-ийн lazy chunk-д орно; бусад route нээхэд ачаалахгүй. Тус chunk build дээр ойролцоогоор 463 KB, gzip 144 KB байсан.
+
+`src/files/client.ts` нь multipart upload болон file URL үүсгэнэ. Dev орчинд `/api/files/upload`, `/files/:id/:originalName` proxy-г ашиглана. Тусдаа file origin хэрэгтэй бол `VITE_FILES_BASE_URL`; заагаагүй үед absolute VITE_API_BASE_URL-ийн origin эсвэл тухайн origin-ийг хэрэглэнэ. Env нь build-time утга, нууц мэдээлэл байж болохгүй.
+
+Frontend/Backend-ийг тусдаа ажиллуулна. Upload gate, ConfigFiles-ийн хэмжээ болон disk хадгалалтыг [server заавраас](sysop-server.md) харна. Энэ өөрчлөлт schema/migration, ACL болон backend-ийн эрхийг өөрчлөхгүй.
+
+`test/vehicles.test.tsx` нь mapping, өөрчлөгдсөн PATCH, field/publish validation, inactive lookup, URL, төлөвийн menu, upload metadata болон хэмжээний алдааг шалгана. Browser шалгалт нь mock API-тай; бодит DB-д туршилтын бүртгэл бичихгүй.
+
+2026-09-12: App-ийн нийт 65 тест, TypeScript check, Vite production build тэнцсэн. Playwright/Chrome дээр нэмэх/засах, хамааралтай лавлах, rich text, upload metadata/хэмжээний алдаа/retry, галерейд дахин нэмэх, main/item сонголт, хадгалаагүй өөрчлөлтийн guard, нийтлэх алдаа, архивлах/сэргээх, хайлт/цэвэрлэх болон хоосон/алдааны төлөв шалгасан. 320/390/1440px өргөнд screenshot/overflow шалгасан; page error гараагүй. Бодит backend тухайн үед унтарсан байсан; live mutation болон production deployment шалгаагүй.
 
 ## Production fallback
 

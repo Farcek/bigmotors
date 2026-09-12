@@ -17,6 +17,9 @@ export const routes: RouteObject[] = [
     ErrorBoundary: RouteErrorPage,
     HydrateFallback: RouteLoading,
     children: [
+      { id: "vehicles", path: "vehicles", lazy: async () => ({ Component: (await import("./pages/vehicles/VehiclesPage")).VehiclesPage }), handle: { title: "Автомашин" } satisfies PageHandle },
+      { id: "vehicle-new", path: "vehicles/new", lazy: async () => ({ Component: (await import("./pages/vehicles/VehicleEditPage")).VehicleEditPage }), handle: { title: "Автомашин нэмэх" } satisfies PageHandle },
+      { id: "vehicle-edit", path: "vehicles/:id/edit", lazy: async () => ({ Component: (await import("./pages/vehicles/VehicleEditPage")).VehicleEditPage }), handle: { title: "Автомашин засах" } satisfies PageHandle },
       {
         id: "vehicle-hierarchy",
         path: "references/vehicle-hierarchy",
