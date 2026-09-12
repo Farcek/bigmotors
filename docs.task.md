@@ -144,12 +144,16 @@ packages/db
 
 - Төлөв: Хэсэгчлэн баталсан
 - Хамаарал: TASK-03, TASK-12
-- Баталсан огноо: 2026-09-10 (disk хадгалалтын хүрээ)
+- Баталсан огноо: 2026-09-10 (disk хадгалалт), 2026-09-12 (нэгдсэн lifecycle, 20 MB, FILES_ROOT-оос зам тооцох)
 - Батлагдсан: Эх файлыг серверийн hard disk дээр хадгална. [ADR 0022](docs/adr/0022-store-product-images-on-disk.md), metadata-г нэгдсэн files руу салгасан [ADR 0029](docs/adr/0029-use-shared-files.md). DB бүтэц нь [files](docs/db/files.md), [product_images](docs/db/product-images.md) баримтын хүрээ; техникийн task-ийн батлах шалгуур биш.
 
-**Үлдсэн шийдвэр:** Upload сан/transport, disk root/config, аюулгүй path/name, upload/serve access control, persistent volume, файл/DB-ийн алдааны цэвэрлэгээ болон backup/restore механизм.
+**Нэмэлт баталсан:** [ADR 0030](docs/adr/0030-unify-file-management.md)-ийн дагуу upload нь backend, DB/usage нь shared repository, сонголт/upload UI нь нийтлэг компонент байна. Нэг файл 20 MB; нэрийг backend үүсгэнэ, client path/usage array засахгүй. [ADR 0031](docs/adr/0031-use-files-root-for-storage-paths.md)-ээр DB path-ийг FILES_ROOT-оос тооцож, FILES_UPLOADS-д бичихээр тодруулсан; repository root гэсэн өмнөх тайлбар хүчингүй. Lifecycle болон upload API-ийн тусдаа санал [нэгдсэн дүрэмд](docs/features/file-management.md) байна.
 
-**Миний санал:** Backend-ийн эрхээр хянах upload, тохируулдаг persistent disk root, системээс үүсгэсэн хадгалалтын нэр, хамгаалалттай serve болон файл/DB-ийн алдааны цэвэрлэгээ ашиглана. Сангийн сонголт хараахан батлаагүй. Өмнөх S3 болон `sharp` боловсруулалтын санал энэ урсгалд үйлчлэхгүй; эх файл өөрчлөхгүй, формат/browser render шалгахгүй байх батлагдсан дүрмийг хадгална.
+**Upload route тодорхойлсон:** `POST /api/files/upload`, multipart/form-data, нэг file болон optional title/description; 201 response/error contract [Upload Route](docs/features/file-management.md#upload-route)-д байна. Өмнөх API саналыг энэ нарийвчилсан contract-аар шинэчилсэн; endpoint код хэрэгжээгүй.
+
+**Үлдсэн шийдвэр:** Multipart upload сан/DTI adapter, empty file, хадгалах нэр/дэд хавтасны загвар, upload/serve access control, persistent volume, файл/DB-ийн алдааны retry/цэвэрлэгээний бодит механизм болон backup/restore. Config key нь FILES_ROOT, FILES_UPLOADS гэж кодод тогтсон; default derive болон validation хэрэгжүүлэлт дутуу.
+
+**Миний санал:** Үлдсэн tooling-ийг [батлагдсан storage зарчимд](docs/operations/file-storage.md) тааруулж сонгоно. Сангийн сонголт хараахан батлаагүй. Өмнөх S3 болон `sharp` боловсруулалтын санал энэ урсгалд үйлчлэхгүй; эх файл өөрчлөхгүй, формат/browser render шалгахгүй байх батлагдсан дүрмийг хадгална.
 
 **Үндэслэл ба сул тал:** External object storage хэрэггүй. Disk persistence, багтаамж, DB + файл backup болон олон instance-ийн файлын хандалтыг хариуцах шаардлагатай.
 

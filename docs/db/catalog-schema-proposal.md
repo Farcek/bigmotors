@@ -194,7 +194,7 @@ T20-ийн үйлдвэрлэгчийн нэмэлт тэмдэглэгээ бү
 
 [Product images](product-images.md) нь `id`, `product_id`, `file_id`, `sort_order` гэсэн 4 баганатай. Бүгд NOT NULL; sort_order default 0, сөрөг биш; `(product_id, file_id)` UNIQUE. Metadata болон timestamp энд байхгүй.
 
-[Files](files.md) нь `id`, `file_path`, `original_name`, `title`, `description`, `created_at`, `updated_at`, `usage uuid[]` гэсэн 8 баганатай. Title/description nullable; usage default хоосон array. Багана/нөхцөл болон usage transaction-ийн үндсэн эх сурвалж нь files баримт.
+[Files](files.md) нь `id`, `file_path`, `original_name`, `title`, `description`, `created_at`, `updated_at`, `usage uuid[]` гэсэн 8 баганатай. Title/description nullable; usage default хоосон array. Багана/нөхцөл files баримтад, usage transaction болон upload-ийн үндсэн эх сурвалж [нэгдсэн дүрэмд](../features/file-management.md) байна.
 
 Main/item ID шууд `files.id` рүү FK; gallery-д заавал байх шаардлагагүй. Нэг файлыг олон product ашиглаж болно. Өмнөх product owner composite FK хүчингүй. Gallery холбоос устгах нь файлыг устгахгүй; usage хоосон биш эсвэл FK үлдсэн файлыг DB устгахгүй. Үндсэн зураг нийтлэхэд заавал, item fallback болон gallery render дүрэм хэвээр.
 

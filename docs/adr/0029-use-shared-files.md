@@ -2,6 +2,8 @@
 
 - Огноо: 2026-09-12
 - Төлөв: Баталсан
+
+2026-09-12: Ашиглалтын lifecycle-ийг [ADR 0030](0030-unify-file-management.md)-оор нэгтгэсэн. Холбогдох DB баримтын upload-root-relative замын өмнөх зарчмыг repository-root-relative болгосон; schema болон бусад шийдвэр хэвээр.
 - Холбоотой: [Files](../db/files.md), [Product images](../db/product-images.md), [ADR 0022](0022-store-product-images-on-disk.md), [ADR 0023](0023-approve-catalog-schema.md)
 
 ## Нөхцөл Байдал
@@ -15,7 +17,7 @@
 
 ## Шийдвэр
 
-Хоёр дахь хувилбарыг баталсан. Files нь `id`, `file_path`, `original_name`, `title`, `description`, `created_at`, `updated_at`, `usage uuid[]`; product_images нь `id`, `product_id`, `file_id`, `sort_order`. Products main/item image ID шууд files руу заана. Баганын төрөл/нөхцөл, usage болон устгалын дүрмийн эх сурвалж нь дээрх DB баримтууд.
+Хоёр дахь хувилбарыг баталсан. Files нь `id`, `file_path`, `original_name`, `title`, `description`, `created_at`, `updated_at`, `usage uuid[]`; product_images нь `id`, `product_id`, `file_id`, `sort_order`. Products main/item image ID шууд files руу заана. Баганын төрөл/нөхцөл болон DB хамгаалалт дээрх DB баримтад; шинэчилсэн lifecycle нь [нэгдсэн дүрэмд](../features/file-management.md) байна.
 
 ADR 0022-ын metadata байрлал, тусдаа файлын хүснэгтгүй байх болон main/item холбоосын хэсэг; ADR 0023-ын image ownership/баганын хэсгийг орлоно. Эх файлыг disk дээр өөрчлөлтгүй хадгалах, формат/браузерын шалгалтгүй, тооны хязгааргүй шаардлага хэвээр.
 

@@ -36,6 +36,8 @@ ADR (Architecture Decision Record) нь техникийн чухал шийдв
 | [0027: Admin UI kit-ийг app дотор нэгтгэх](0027-use-app-local-admin-ui-kit.md) | 2026-09-12 | Баталсан |
 | [0028: Mantine useForm, нэмэлт cache-гүй admin](0028-use-mantine-form-without-query-cache.md) | 2026-09-12 | Баталсан |
 | [0029: Зураг болон файлын нэгдсэн бүртгэл](0029-use-shared-files.md) | 2026-09-12 | Баталсан |
+| [0030: Файлын upload ба ашиглалтыг нэгтгэх](0030-unify-file-management.md) | 2026-09-12 | Замын суурийг ADR 0031-ээр орлуулсан |
+| [0031: Файлын замыг FILES_ROOT-оос тооцох](0031-use-files-root-for-storage-paths.md) | 2026-09-12 | Баталсан |
 
 ## Бүртгэх шийдвэрүүд
 

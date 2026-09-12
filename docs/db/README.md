@@ -41,7 +41,7 @@ Local admin profile нь stable Userly `sub`-тай required/unique холбоо
 - [Каталогийн батлагдсан schema](catalog-schema-proposal.md): 24 хүснэгтийн нэгтгэл, багана, холбоос, нийтлэх дүрэм, constraint/index; files шинэчлэлийн migration бэлдсэн, бодит DB-д ажиллуулаагүй.
 - [DB schema хөгжүүлэх](../operations/db-schema.md): кодын бүтэц, командыг ажиллуулах, trigger source, тест болон үлдсэн integration.
 - [Лавлах хүснэгтүүдийн батлагдсан бүтэц](reference-tables.md): 12 лавлах + `vehicle_feature_links`, нийтлэг багана, холбоос, нэрийн давхардлын дүрэм; migration файл үүссэн, бодит DB-д ажиллуулаагүй.
-- [Files](files.md): зураг/файлын нийтлэг бүртгэл, disk зам, metadata, usage UUID key болон устгалын хамгаалалт.
+- [Files](files.md): зураг/файлын нийтлэг бүртгэл, disk зам, metadata, usage UUID key болон DB устгалын хамгаалалт. Upload/ашиглалтын үндсэн эх сурвалж нь [нэгдсэн дүрэм](../features/file-management.md).
 - [Product images](product-images.md): product/file gallery холбоос ба дараалал; main/item шууд files руу заана.
 - [Каталогийн DB диаграм (ERD)](catalog-erd.md): бүх 24 хүснэгтийн багана, төрөл, PK/FK/UNIQUE, nullable эсэх болон холбоос.
 - Хүснэгт, талбар, өгөгдлийн төрөл, тайлбар

@@ -24,6 +24,8 @@ Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-l
 
 ## Агуулга
 
+- [Файлын хадгалалтын тохиргоо](file-storage.md): FILES_ROOT-оос зам тооцох, FILES_UPLOADS-д бичих, хэмжээний хязгаар, disk алдаа болон persistence/backup-ийн зааг.
+
 - [Sysop app ажиллуулах](sysop-app.md): Vite dev/build/test, React Router бүтэц, URL болон production fallback-ийн шаардлага.
 
 - [DB schema хөгжүүлэх](db-schema.md): 24 хүснэгтийн TypeScript schema, core тогтмолууд, build/typecheck/test, trigger source болон хэрэгжээгүй integration-ийн зааг.
