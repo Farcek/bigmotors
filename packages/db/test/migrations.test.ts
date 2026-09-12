@@ -42,7 +42,7 @@ test("migration history contains every current trigger definition", () => {
   const migrations = readMigrationFiles(migrationConfig);
   const definitions = migrations.flatMap((migration) => migration.sql).join("\n").replaceAll("CREATE OR REPLACE FUNCTION", "CREATE FUNCTION");
   for (const hook of schemaHooks) assert.ok(definitions.includes(new PgDialect().sqlToQuery(hook).sql));
-  assert.equal(migrations.length, 4);
+  assert.equal(migrations.length, 2);
 });
 
 test("migrating twice does not reapply SQL or duplicate the migration history", async () => {
@@ -59,56 +59,47 @@ test("migrating twice does not reapply SQL or duplicate the migration history", 
   }
 });
 
-test("additive migrations preserve existing colors, branches and product links without guessing locations", async () => {
-  const folder = await mkdtemp(join(tmpdir(), "bigmotors-color-upgrade-"));
+test("restoring hooks preserves existing data and fixes first publication after regenerated baseline", async () => {
+  const folder = await mkdtemp(join(tmpdir(), "bigmotors-hooks-upgrade-"));
   const db = new PGlite();
   try {
     await mkdir(join(folder, "meta"));
     const journal = JSON.parse(await readFile(new URL("../migrations/meta/_journal.json", import.meta.url), "utf8"));
     await writeFile(join(folder, "meta/_journal.json"), JSON.stringify({ ...journal, entries: journal.entries.slice(0, 1) }));
-    await writeFile(join(folder, "0000_initial_catalog.sql"), await readFile(new URL("../migrations/0000_initial_catalog.sql", import.meta.url)));
+    await writeFile(join(folder, "0000_init.sql"), await readFile(new URL("../migrations/0000_init.sql", import.meta.url)));
     const orm = drizzle(db);
     await migrate(orm, { ...migrationConfig, migrationsFolder: folder });
-    const { rows: [color] } = await db.query<{ id: string }>("INSERT INTO colors (name) VALUES ('Existing color') RETURNING id");
-    const { rows: [branch] } = await db.query<{ id: string }>("INSERT INTO branches (name) VALUES ('Existing company branch') RETURNING id");
-    await db.exec("BEGIN");
-    const { rows: [product] } = await db.query<{ id: string }>("INSERT INTO products (product_type,title) VALUES ('vehicle','Existing vehicle') RETURNING id");
-    await db.query("INSERT INTO vehicles (product_id, exterior_color_id, interior_color_id, branch_id) VALUES ($1, $2, $2, $3)", [product!.id, color!.id, branch!.id]);
-    for (const [type, table] of [["part", "parts"], ["tire", "tires"]] as const) {
-      const { rows: [item] } = await db.query<{ id: string }>("INSERT INTO products (product_type,title) VALUES ($1,'Existing product') RETURNING id", [type]);
-      await db.query(`INSERT INTO ${table} (product_id, branch_id) VALUES ($1, $2)`, [item!.id, branch!.id]);
+    const { rows: [brand] } = await db.query<{ id: string }>("INSERT INTO vehicle_brands (name) VALUES ('Test brand') RETURNING id");
+    const { rows: [model] } = await db.query<{ id: string }>("INSERT INTO vehicle_models (name,brand_id) VALUES ('Test model',$1) RETURNING id", [brand!.id]);
+    const { rows: [body] } = await db.query<{ id: string }>("INSERT INTO vehicle_body_types (name) VALUES ('Test body') RETURNING id");
+    const { rows: [color] } = await db.query<{ id: string }>("INSERT INTO colors (name,hex_code) VALUES ('Existing color','#aBc123') RETURNING id");
+    const { rows: [location] } = await db.query<{ id: string }>("INSERT INTO locations (name) VALUES ('Test location') RETURNING id");
+    const { rows: [file] } = await db.query<{ id: string }>("INSERT INTO files (file_path,original_name,title) VALUES ('uploads/test.jpg','test.jpg','Keep title') RETURNING id");
+    const { rows: [product] } = await db.query<{ id: string }>("INSERT INTO products (product_type,title,main_image_id,price_display_mode,price,currency) VALUES ('vehicle','Existing vehicle',$1,'inquire',20000000,'MNT') RETURNING id", [file!.id]);
+    await db.query(`INSERT INTO vehicles
+      (product_id,brand_id,model_id,manufacture_year,body_type_id,fuel_type,engine_capacity_cc,transmission,
+       drivetrain,steering_position,exterior_color_id,condition,sale_status,arrival_status,mileage_km,location_id)
+      VALUES ($1,$2,$3,2010,$4,'gasoline',2000,'automatic','rwd','left',$5,'used','available','in_stock',100000,$6)`,
+      [product!.id,brand!.id,model!.id,body!.id,color!.id,location!.id]);
+    await db.query("INSERT INTO product_images (product_id,file_id,sort_order) VALUES ($1,$2,7)", [product!.id,file!.id]);
+    await db.query("UPDATE files SET usage=ARRAY[$1::uuid] WHERE id=$2", [product!.id,file!.id]);
+    await assert.rejects(db.query("UPDATE products SET publication_status='published' WHERE id=$1", [product!.id]),
+      (error: unknown) => typeof error === "object" && error !== null && "constraint" in error && error.constraint === "products_published_required");
+    const snapshots = new Map<string, unknown>();
+    for (const table of ["products", "vehicles", "files", "product_images", "colors"]) {
+      snapshots.set(table, (await db.query(`SELECT * FROM ${table} ORDER BY 1`)).rows);
     }
-    await db.exec("COMMIT");
-    const { rows: [image] } = await db.query<{ id: string }>(`INSERT INTO product_images
-      (product_id,file_path,original_name,title,description,sort_order,created_at,updated_at)
-      VALUES ($1,'products/existing.unknown','original.unknown','Existing title','Existing description',7,'2025-01-02Z','2025-02-03Z') RETURNING id`, [product!.id]);
-    const { rows: [gallery] } = await db.query<{ id: string }>(`INSERT INTO product_images
-      (product_id,file_path,original_name,sort_order) VALUES ($1,'products/gallery.bin','gallery.bin',2) RETURNING id`, [product!.id]);
-    await db.query("UPDATE products SET main_image_id=$2,item_image_id=$2 WHERE id=$1", [product!.id, image!.id]);
-    const beforeProduct = await db.query("SELECT main_image_id,item_image_id,updated_at FROM products WHERE id=$1", [product!.id]);
-    const beforeFiles = await db.query("SELECT id,file_path,original_name,title,description,created_at,updated_at,ARRAY[product_id] AS usage FROM product_images ORDER BY id");
     await migrate(orm, migrationConfig);
-    assert.deepEqual((await db.query("SELECT * FROM files ORDER BY id")).rows, beforeFiles.rows);
-    assert.deepEqual((await db.query("SELECT main_image_id,item_image_id,updated_at FROM products WHERE id=$1", [product!.id])).rows, beforeProduct.rows);
-    assert.deepEqual((await db.query("SELECT id,product_id,file_id,sort_order FROM product_images ORDER BY sort_order")).rows, [
-      { id: gallery!.id, product_id: product!.id, file_id: gallery!.id, sort_order: 2 },
-      { id: image!.id, product_id: product!.id, file_id: image!.id, sort_order: 7 },
-    ]);
-    // Removed timestamp columns must not leave a broken gallery update trigger.
-    await db.query("UPDATE product_images SET sort_order=8 WHERE id=$1", [image!.id]);
-    await db.query("UPDATE files SET title='Updated after migration' WHERE id=$1", [image!.id]);
-    const result = await db.query("SELECT c.name, c.hex_code, v.exterior_color_id, v.interior_color_id FROM colors c JOIN vehicles v ON v.exterior_color_id=c.id");
-    assert.deepEqual(result.rows, [{ name: "Existing color", hex_code: null, exterior_color_id: color!.id, interior_color_id: color!.id }]);
-    for (const table of ["vehicles", "parts", "tires"]) {
-      const rows = await db.query(`SELECT branch_id,location_id FROM ${table}`);
-      assert.deepEqual(rows.rows, [{ branch_id: branch!.id, location_id: null }]);
-    }
-    assert.equal((await db.query("SELECT * FROM locations")).rows.length, 0);
-    await db.query("UPDATE colors SET hex_code='#aBc123' WHERE id=$1", [color!.id]);
+    for (const [table, rows] of snapshots) assert.deepEqual((await db.query(`SELECT * FROM ${table} ORDER BY 1`)).rows, rows);
+    const { rows: [published] } = await db.query<{ first_published_at: Date }>(
+      "UPDATE products SET publication_status='published' WHERE id=$1 RETURNING first_published_at", [product!.id]);
+    assert.ok(published!.first_published_at);
+    await db.query("UPDATE products SET publication_status='hidden' WHERE id=$1", [product!.id]);
+    await db.query("UPDATE products SET publication_status='published' WHERE id=$1", [product!.id]);
+    const current = await db.query("SELECT first_published_at FROM products WHERE id=$1", [product!.id]);
+    assert.deepEqual(current.rows, [published]);
     await migrate(orm, migrationConfig);
-    const history = await db.query("SELECT * FROM drizzle.__drizzle_migrations");
-    assert.equal(history.rows.length, readMigrationFiles(migrationConfig).length);
-    assert.equal((await db.query<{ hex_code: string }>("SELECT hex_code FROM colors")).rows[0]?.hex_code, "#aBc123");
+    assert.equal((await db.query("SELECT * FROM drizzle.__drizzle_migrations")).rows.length, readMigrationFiles(migrationConfig).length);
   } finally {
     await db.close();
     await rm(folder, { recursive: true, force: true });

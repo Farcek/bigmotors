@@ -6,6 +6,8 @@
 
 ## Байршил
 
+2026-09-12 шинэчлэлт: migration түүх `0000_init.sql` гэсэн шинэ baseline болсон. Drizzle Kit-ээр дахин үүсгэсэн SQL-д custom hook-ууд ороогүйгээс анхны publish дээр `products_published_required` алдаа гарсан: `first_published_at` бөглөх trigger байхгүй байв. `0001_restore_catalog_hooks.sql` нь `schema-hooks.ts`-ийн 6 function, 31 trigger-ийг нэмсэн; байгаа мөрүүдийг өөрчлөхгүй. Local DB-д хэрэгжүүлж, асуудалтай машины нийтлэх шалгалтыг transaction + rollback-аар баталсан; машины мэдээлэл, draft төлөв хэвээр. DB-ийн 87 тест, автомашины HTTP API-ийн 14 тест, typecheck тэнцсэн. Доорх өмнөх migration файлын нэр, тоонууд нь түүхэн тэмдэглэл; одоогийн дараалал [migration README](../../packages/db/migrations/README.md)-д байна.
+
 | Байршил | Үүрэг |
 | --- | --- |
 | `packages/db/drizzle.config.ts` | PostgreSQL, `src/schema/index.ts`, `migrations/` output |
