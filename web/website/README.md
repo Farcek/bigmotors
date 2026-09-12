@@ -19,9 +19,9 @@ Package дотроос өөр порт сонгох жишээ: `pnpm exec next 
 ## Бүтэц
 
 - `src/app/layout.tsx`: нийтлэг header/main/footer, metadata, 1440px голлуулсан хүрээ.
-- `src/app/page.tsx`: эхний суурь хуудас.
+- `src/app/page.tsx`: Page module/settings-ээс хамаарахгүй өөрийн нүүр хуудас.
 - `src/app/[slug]/page.tsx`: нийтэлсэн Page-ийг slug-аар уншиж content-г JSON string болгон харуулна.
-- `src/server/`: server-only DI/DB холболт, homepage болон slug lookup.
+- `src/server/`: server-only DI/DB холболт, slug lookup.
 - `src/app/vehicles`, `parts`, `tires`: жагсаалт болон `[id]` дэлгэрэнгүй хоосон route-ууд.
 - `src/app/files/[id]/[originalName]/route.ts`: түр 501 хариутай file-read route.
 - `src/app/not-found.tsx`: нийтлэг 404.
@@ -33,7 +33,7 @@ Package дотроос өөр порт сонгох жишээ: `pnpm exec next 
 ## URL routing
 
 2026-09-13: App Router-ийн замууд үүссэн. [URL routing-ийн төлөв](../../docs/features/website-routing.md).
-Нүүр хуудас нь settings.homepage-аас нийтэлсэн Page уншина; байхгүй/нийтлэгдээгүй бол өмнөх нүүр хуудасны fallback харагдана. Header/footer хэвээр.
+Нүүр хуудас нь `src/app/page.tsx` дахь өөрийн агуулгыг харуулна. Settings/Page module-оос уншихгүй; хуучин `homepage` тохиргоог ашиглахгүй. Header/footer хэвээр.
 Page content нь JSON string, каталогийн page-үүдийн үндсэн агуулга хоосон. Builder болон хайлт/шүүлтийн query логик холбоогүй.
 File-read-ийн URL үүссэн боловч бодит уншилт хараахан хэрэгжээгүй.
 

@@ -4,11 +4,13 @@ import { test } from "node:test";
 const baseUrl = process.env.WEBSITE_TEST_URL ?? "http://127.0.0.1:64400";
 const id = "00000000-0000-4000-8000-000000000001";
 
-test("home returns published JSON or the existing fallback inside shared layout", async () => {
+test("home renders its own content instead of Page module JSON inside shared layout", async () => {
   const response = await fetch(new URL("/", baseUrl));
   assert.equal(response.status, 200);
   const html = await response.text();
-  assert.ok(html.includes("Бүтээгдэхүүний каталог") || html.includes("<pre"));
+  assert.match(html, /Бүтээгдэхүүний каталог/);
+  assert.match(html, /Автомашин, сэлбэг хэрэгсэл, дугуй/);
+  assert.doesNotMatch(html, /<pre\b/);
   assert.match(html, /<header\b/); assert.match(html, /<footer\b/);
 });
 

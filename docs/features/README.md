@@ -10,8 +10,8 @@
 
 - [Admin Gallery](admin-gallery.md): gallery/item CRUD, зураг upload, дараалал болон файлын usage холболт.
 - [Admin Page](admin-pages.md): хуудасны CRUD, JSONB content/meta, үндсэн зураг болон нийтлэлийн төлөв.
-- [Admin тохиргоо](admin-settings.md): homepage, siteTitle, adminEmail form болон динамик settings API.
-- [Website URL routing](website-routing.md): homepage болон slug-аар published Page-ийн JSON content харуулах, хоосон каталог route-ууд, 404 болон file-read placeholder.
+- [Admin тохиргоо](admin-settings.md): siteTitle, adminEmail form болон динамик settings API.
+- [Website URL routing](website-routing.md): тусдаа нүүр хуудас, slug-аар published Page-ийн JSON content харуулах, хоосон каталог route-ууд, 404 болон file-read placeholder.
 
 - [Файл upload ба ашиглах дүрэм](file-management.md): нэгдсэн lifecycle, хэмжээний тохиргоо (default 20 MB), FILES_ROOT-оос тооцох зам, form save/cancel, usage болон устгал; POST /api/files/upload болон public GET /files/:id/:originalName contract.
 

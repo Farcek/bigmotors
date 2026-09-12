@@ -89,6 +89,6 @@ BigMotors LLC-ийн автомашин, сэлбэг хэрэгсэл, дугу
 - 2026-09-09: Хэрэглэгчийн тодруулгаар каталогийн үндсэн бүтээгдэхүүнийг автомашин, сэлбэг хэрэгсэл, дугуй гэж тогтоосон. Сайтаар худалдахгүй гэсэн зааг бүх төрөлд хэвээр үйлчилнэ.
 ## Page module
 
-2026-09-13: [Admin тохиргоо](admin-settings.md)-ны гурван талбар болон динамик key/value API нэмсэн. Website тохиргоог хэрэглэх холболт тусдаа.
+2026-09-13: [Admin тохиргоо](admin-settings.md) нь siteTitle, adminEmail хоёр талбар болон динамик key/value API-тай. Homepage тохиргоог хэрэглэхээ больсон; website `/` нь Page module-оос тусдаа нүүр хуудас байна.
 
 2026-09-12: [Admin Page](admin-pages.md)-ийн CRUD, JSONB meta/content, үндсэн зураг болон draft/published/archived төлөвийг нэмсэн. Puck болон website page renderer энэ шатанд орохгүй.
