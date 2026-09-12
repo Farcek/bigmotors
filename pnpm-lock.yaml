@@ -228,6 +228,15 @@ importers:
 
   web/website:
     dependencies:
+      '@bigmotors/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@bigmotors/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@napp/di':
+        specifier: 1.0.10
+        version: 1.0.10
       '@tabler/icons-react':
         specifier: 3.46.0
         version: 3.46.0(react@19.2.8)

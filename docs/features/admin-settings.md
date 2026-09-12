@@ -36,8 +36,8 @@ Path дахь key-г URL encode хийнэ. Unicode, зай, slash зэрэг т
 
 ## Хамрахгүй
 
-- Website-ийн нүүр хуудсыг энэ утгаар render хийх, siteTitle-г metadata-д хэрэглэх, adminEmail-р захиа илгээх холболт тусдаа. Одоогоор тохиргоог хадгалж/уншина.
-- Website холбоход зөвхөн published Page-г харуулна; байхгүй/нийтлэгдээгүй homepage-ийн fallback тусдаа шийдэгдэнэ.
+- Website `/` нь `homepage` утгаар published Page-ийн content-ийг JSON string болгон харуулна. Байхгүй/нийтлэгдээгүй бол анхны нүүр хуудас харагдана. [Website routing](website-routing.md).
+- siteTitle-г metadata-д хэрэглэх, adminEmail-р захиа илгээх холболт тусдаа.
 - Нэвтрэлт/ACL-ийн одоогийн бодлогыг өөрчлөөгүй. Нийтэд бүх тохиргоог задлах public endpoint үүсгээгүй. Нууц түлхүүр/password хадгалах зориулалттай secret store биш.
 
 [DB schema](../db/settings.md).

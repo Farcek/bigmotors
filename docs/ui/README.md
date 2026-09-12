@@ -14,7 +14,7 @@ Admin UI-ийн Mantine/Vite суурь болон demo хэрэгжсэн. 2026
 
 ## Агуулга
 
-- [Website layout](website-layout.md): Tailwind CSS, 1440px дээд өргөн, голлуулалт, responsive зай.
+- [Website layout](website-layout.md): Tailwind CSS, 1440px дээд өргөн, голлуулалт, responsive зай болон 2026-09-13-нд баталсан theme ашиглах дүрэм.
 
 - [Admin UI kit ашиглах дүрэм](admin-ui-kit.md): Mantine/Tabler, theme/token, body box, form/list, үйлдэл/төлөв, хүртээмж болон shared компонентын зааг. Баталсан: 2026-09-12.
 

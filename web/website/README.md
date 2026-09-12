@@ -20,7 +20,8 @@ Package дотроос өөр порт сонгох жишээ: `pnpm exec next 
 
 - `src/app/layout.tsx`: нийтлэг header/main/footer, metadata, 1440px голлуулсан хүрээ.
 - `src/app/page.tsx`: эхний суурь хуудас.
-- `src/app/[slug]/page.tsx`: Page module-ийн хоосон route.
+- `src/app/[slug]/page.tsx`: нийтэлсэн Page-ийг slug-аар уншиж content-г JSON string болгон харуулна.
+- `src/server/`: server-only DI/DB холболт, homepage болон slug lookup.
 - `src/app/vehicles`, `parts`, `tires`: жагсаалт болон `[id]` дэлгэрэнгүй хоосон route-ууд.
 - `src/app/files/[id]/[originalName]/route.ts`: түр 501 хариутай file-read route.
 - `src/app/not-found.tsx`: нийтлэг 404.
@@ -32,8 +33,8 @@ Package дотроос өөр порт сонгох жишээ: `pnpm exec next 
 ## URL routing
 
 2026-09-13: App Router-ийн замууд үүссэн. [URL routing-ийн төлөв](../../docs/features/website-routing.md).
-Нүүр хуудас/header/footer хэвээр; шинэ page-үүдийн үндсэн агуулга хоосон.
-DB/service, settings.homepage, content renderer, хайлт/шүүлтийн query логик холбоогүй.
+Нүүр хуудас нь settings.homepage-аас нийтэлсэн Page уншина; байхгүй/нийтлэгдээгүй бол өмнөх нүүр хуудасны fallback харагдана. Header/footer хэвээр.
+Page content нь JSON string, каталогийн page-үүдийн үндсэн агуулга хоосон. Builder болон хайлт/шүүлтийн query логик холбоогүй.
 File-read-ийн URL үүссэн боловч бодит уншилт хараахан хэрэгжээгүй.
 
 ## Route шалгалт
@@ -41,3 +42,11 @@ File-read-ийн URL үүссэн боловч бодит уншилт хара�
 Dev эсвэл production server ажиллаж байх үед root-оос `pnpm --filter @bigmotors/website test:routes` ажиллуулна.
 Default origin нь http://127.0.0.1:64400; өөр сервер шалгахдаа `WEBSITE_TEST_URL` тохируулна.
 Тест нь зөвхөн HTTP уншилт болон file route-ийн дэмждэггүй method-ийг шалгана; DB-д бичихгүй.
+
+Lookup-ийн unit тест: `pnpm --filter @bigmotors/website test`.
+
+## Database орчин
+
+Website нь өөрийн `.env.local`-ийн `DATABASE_URL`, `DATABASE_POOL_MIN`, `DATABASE_POOL_MAX`-ийг DBConfig-оор уншина. `.env.example` нь placeholder жишээ. Нууц утгуудыг NEXT_PUBLIC_* тохиргоонд оруулахгүй.
+Root-ийн dev/build/typecheck командууд shared dependency-уудыг эхэлж build хийнэ. Package дотроос шууд ажиллуулах бол core/db-ийн dist бэлэн байх шаардлагатай.
+Production-д website-д зориулсан зөвхөн унших эрхтэй DB credential тохируулна. Build үед DB connection шаардахгүй; хүсэлт ирэхэд холбогдоно.

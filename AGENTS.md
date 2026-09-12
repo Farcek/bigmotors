@@ -41,6 +41,10 @@ BigMotors LLC-ийн автомашин, сэлбэг хэрэгсэл, дугу
 - Custom CSS аль болох бичихгүй. Тухайн UI сангийн бэлэн component, layout, props болон theme/token-ийг эхэлж ашиглана. Admin дээр [custom CSS-ийн дүрэм](docs/ui/admin-ui-kit.md#custom-css)-ийг мөрдөнө; public website-д энэ зарчим үйлчлэх боловч Mantine ашиглахыг шаардахгүй.
 - Admin form нь [ADR 0028](docs/adr/0028-use-mantine-form-without-query-cache.md)-ийн дагуу `@mantine/form`-ийн `useForm` ашиглана. TanStack Query, орлуулах cache сан болон өөрсдийн cache давхарга нэмэхгүй. Public website-ийн UI kit/cache шийдвэр тусдаа.
 
+## Website UI
+
+- `web/website`-ийн UI дээр ажиллахдаа [website layout болон theme ашиглах дүрэм](docs/ui/website-layout.md)-ийг мөрдөнө. Font сонголт болон palette-ийн бодит утгыг энэ дүрмээр баталсан гэж үзэхгүй.
+
 ## Диаграм
 
 Диаграм ойлголтыг хялбарчлах үед Mermaid ашиглана.

@@ -4,15 +4,15 @@ import { test } from "node:test";
 const baseUrl = process.env.WEBSITE_TEST_URL ?? "http://127.0.0.1:64400";
 const id = "00000000-0000-4000-8000-000000000001";
 
-test("home retains its existing content and shared layout", async () => {
+test("home returns published JSON or the existing fallback inside shared layout", async () => {
   const response = await fetch(new URL("/", baseUrl));
   assert.equal(response.status, 200);
   const html = await response.text();
-  assert.match(html, /Бүтээгдэхүүний каталог/);
+  assert.ok(html.includes("Бүтээгдэхүүний каталог") || html.includes("<pre"));
   assert.match(html, /<header\b/); assert.match(html, /<footer\b/);
 });
 
-for (const path of ["/about-us", "/services", "/vehicles", `/vehicles/${id}`, "/parts", `/parts/${id}`, "/tires", `/tires/${id}`, "/vehicles?sort=price_asc&page=2"]) {
+for (const path of ["/vehicles", `/vehicles/${id}`, "/parts", `/parts/${id}`, "/tires", `/tires/${id}`, "/vehicles?sort=price_asc&page=2"]) {
   test(`empty route ${path} retains layout without rendering data`, async () => {
     const response = await fetch(new URL(path, baseUrl));
     assert.equal(response.status, 200);
@@ -25,7 +25,7 @@ for (const path of ["/about-us", "/services", "/vehicles", `/vehicles/${id}`, "/
   });
 }
 
-for (const path of ["/missing/nested/path", "/vehicles/example/extra", "/api", "/files"]) {
+for (const path of ["/missing/nested/path", "/vehicles/example/extra", "/api", "/files", `/missing-${crypto.randomUUID()}`]) {
   test(`unmatched or reserved URL ${path} returns 404`, async () => {
     const response = await fetch(new URL(path, baseUrl));
     assert.equal(response.status, 404);

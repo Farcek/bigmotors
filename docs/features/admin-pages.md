@@ -32,6 +32,6 @@ List response нь meta/content-ийг оруулахгүй. PATCH дээр meta
 
 ## Дараагийн холболт
 
-- Website page renderer, public HTTP route, navigation/menu, preview болон Puck энэ ажилд орохгүй.
+- Website `/` болон `/:slug` нь published Page-ийн content-ийг JSON string болгон харуулдаг болсон. [Website routing](website-routing.md). Navigation/menu, preview болон Puck холбоогүй.
 - `meta.seoTitle`, `meta.seoDescription` өгөгдөөгүй бол renderer title/description-оос авна; noIndex болон share image-г website холбоход хэрэглэнэ. Одоогоор JSON-г хадгалж байгаа, website SEO render хийгдээгүй.
 - Content block schema, versioning/migration, JSON доторх asset usage нь builder сонгох үед шийдэгдэнэ.
