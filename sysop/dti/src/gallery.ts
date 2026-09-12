@@ -7,8 +7,8 @@ const dates = { created: z.string().datetime({ offset: true }), updated: z.strin
 const hasFields = (v: object) => Object.values(v).some((field) => field !== undefined);
 
 export namespace Galleries {
-  export const entity = z.object({ id: z.string().uuid(), name: z.string().min(1).max(255), desc: z.string().max(512).nullable(), ...dates }).strict();
-  export const createBody = z.object({ name: z.string().trim().min(1).max(255), desc: optionalText(512) }).strict();
+  export const entity = z.object({ id: z.string().uuid(), key: z.string().min(1).max(255), name: z.string().min(1).max(255), desc: z.string().max(512).nullable(), ...dates }).strict();
+  export const createBody = z.object({ key: z.string().trim().min(1).max(255), name: z.string().trim().min(1).max(255), desc: optionalText(512) }).strict();
   export const updateBody = createBody.partial().refine(hasFields, "At least one field is required.");
   export const listQuery = referenceListQuery.omit({ isActive: true }).extend({ search: z.string().trim().max(255).optional() });
   export const listResult = z.array(entity);

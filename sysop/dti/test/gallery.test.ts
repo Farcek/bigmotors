@@ -4,8 +4,14 @@ import { test } from "node:test";
 import { Galleries, GalleryItems } from "../src/gallery.js";
 
 test("gallery contracts trim and clear text while rejecting invalid fields", () => {
-  assert.deepEqual(Galleries.createBody.parse({ name: " A ", desc: " " }), { name: "A", desc: null });
-  for (const input of [{}, { name: " " }, { name: "a".repeat(256) }, { name: "a", desc: "d".repeat(513) }, { name: "a", created: "fake" }]) assert.equal(Galleries.createBody.safeParse(input).success, false);
+  assert.deepEqual(Galleries.createBody.parse({ key: " banner ", name: " A ", desc: " " }), { key: "banner", name: "A", desc: null });
+  for (const input of [{}, { name: " " }, { name: "a".repeat(256) }, { name: "a", desc: "d".repeat(513) }, { name: "a", created: "fake" }]) assert.equal(Galleries.createBody.safeParse({ key: "valid", ...input }).success, false);
+  for (const key of [undefined, null, "", " ", "a".repeat(256)]) {
+    assert.equal(Galleries.createBody.safeParse({ name: "A", key }).success, false);
+  }
+  assert.equal(Galleries.createBody.safeParse({ name: "A", key: "a".repeat(255) }).success, true);
+  assert.deepEqual(Galleries.updateBody.parse({ key: " changed " }), { key: "changed" });
+  assert.equal(Galleries.updateBody.safeParse({ key: " " }).success, false);
   assert.equal(Galleries.updateBody.safeParse({}).success, false);
   assert.equal(GalleryItems.updateBody.safeParse({ galleryId: randomUUID() }).success, false);
   assert.equal(GalleryItems.updateBody.safeParse({ imageId: randomUUID(), title: "Replacement" }).success, false);

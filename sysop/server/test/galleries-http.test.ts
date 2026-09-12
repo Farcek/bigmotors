@@ -31,10 +31,19 @@ test("gallery HTTP CRUD uses production DI, contracts and file usage triggers", 
     assert.equal(result.success, status === 200); assert.equal(result.stack, undefined);
     return status === 200 ? result.data : result.code;
   }
-  const g = Galleries.entity.parse(await request("POST", "/galleries", { name: "HTTP gallery" }));
+  const g = Galleries.entity.parse(await request("POST", "/galleries", { key: " http-banner ", name: "HTTP gallery" }));
+  assert.equal(g.key, "http-banner");
   assert.deepEqual(Galleries.entity.parse(await request("GET", `/galleries/${g.id}`)), g);
   assert.equal(Galleries.listResult.parse(await request("GET", "/galleries?search=HTTP&limit=1")).length, 1);
   assert.equal((Galleries.entity.parse(await request("PATCH", `/galleries/${g.id}`, { desc: "changed" }))).desc, "changed");
+  await request("POST", "/galleries", { name: "Missing key" }, 400);
+  await request("PATCH", `/galleries/${g.id}`, { key: " " }, 400);
+  assert.equal(await request("POST", "/galleries", { key: g.key, name: "Duplicate" }, 409), "GALLERY_KEY_CONFLICT");
+  const other = Galleries.entity.parse(await request("POST", "/galleries", { key: "other", name: "Other" }));
+  assert.equal(await request("PATCH", `/galleries/${other.id}`, { key: g.key }, 409), "GALLERY_KEY_CONFLICT");
+  assert.equal(Galleries.entity.parse(await request("PATCH", `/galleries/${other.id}`, { key: "renamed" })).key, "renamed");
+  assert.equal(Galleries.listResult.parse(await request("GET", "/galleries?search=renamed"))[0]?.id, other.id);
+  await request("DELETE", `/galleries/${other.id}`);
   await request("POST", "/galleries", { name: " " }, 400);
   await request("GET", "/galleries?offset=-1", undefined, 400);
   const imageId = randomUUID();

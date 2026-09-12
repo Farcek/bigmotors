@@ -24,6 +24,7 @@ export function GalleryForm({ row, itemMode, onSave, onCancel, onBusy }: {
   const lock = useRef(false);
   const form = useForm({
     initialValues: {
+      key: row && "key" in row ? row.key : "",
       name: row && "name" in row ? row.name : "", desc: row?.desc ?? "",
       title: item?.title ?? "", label: item?.label ?? "", imageId: item?.imageId ?? "",
       sortOrder: (item?.sortOrder ?? 0) as number | string,
@@ -31,7 +32,7 @@ export function GalleryForm({ row, itemMode, onSave, onCancel, onBusy }: {
     validate: (values) => {
       const result = itemMode
         ? GalleryItems.createBody.safeParse({ title: values.title, label: values.label, desc: values.desc, imageId: values.imageId, sortOrder: values.sortOrder })
-        : Galleries.createBody.safeParse({ name: values.name, desc: values.desc });
+        : Galleries.createBody.safeParse({ key: values.key, name: values.name, desc: values.desc });
       return result.success ? {} : Object.fromEntries(result.error.issues.map((issue) => [
         String(issue.path[0]),
         issue.path[0] === "imageId" ? "Зураг upload хийнэ үү."
@@ -47,7 +48,7 @@ export function GalleryForm({ row, itemMode, onSave, onCancel, onBusy }: {
       if (lock.current || uploading) return;
       lock.current = true; setSaving(true); onBusy(true); setError("");
       try {
-        const gallery = { name: values.name, desc: values.desc };
+        const gallery = { key: values.key, name: values.name, desc: values.desc };
         const item = { title: values.title, label: values.label, desc: values.desc, imageId: values.imageId, sortOrder: Number(values.sortOrder) };
         await onSave(gallery, item);
       } catch (cause) { setError(galleryError(cause)); }
@@ -55,7 +56,10 @@ export function GalleryForm({ row, itemMode, onSave, onCancel, onBusy }: {
     })}>
       <Stack gap="md">
         {error && <Alert color="red" role="alert">{error}</Alert>}
-        {!itemMode && <TextInput label="Нэр" required maxLength={255} disabled={busy} {...form.getInputProps("name")} />}
+        {!itemMode && <>
+          <TextInput label="Key" required maxLength={255} disabled={busy} {...form.getInputProps("key")} />
+          <TextInput label="Нэр" required maxLength={255} disabled={busy} {...form.getInputProps("name")} />
+        </>}
         {itemMode && <>
           {GalleryItems.createBody.shape.imageId.safeParse(form.values.imageId).success && <Image src={fileUrl({ id: form.values.imageId, originalName: "image" })} h={180} fit="contain" alt={galleryPlainText(form.values.title) || "Gallery зураг"} />}
           {!item && <Group justify="flex-end"><Button variant="light" leftSection={<IconUpload size={18} />} disabled={busy} aria-describedby={form.errors.imageId ? "gallery-image-error" : undefined} onClick={() => setUploadOpen(true)}>Зураг upload</Button></Group>}

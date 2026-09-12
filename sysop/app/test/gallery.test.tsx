@@ -15,9 +15,10 @@ test("gallery pagination is bounded and errors hide internal details", () => {
 test("gallery and item forms render their own labelled fields", () => {
   for (const itemMode of [false, true]) {
     const html = renderToStaticMarkup(<MantineProvider env="test"><GalleryForm itemMode={itemMode} onBusy={() => {}} onSave={async () => {}} onCancel={() => {}} /></MantineProvider>);
-    for (const label of itemMode ? ["Гарчиг", "Label", "Дараалал", "Тайлбар"] : ["Нэр", "Тайлбар"]) assert.ok(html.includes(label));
+    for (const label of itemMode ? ["Гарчиг", "Label", "Дараалал", "Тайлбар"] : ["Key", "Нэр", "Тайлбар"]) assert.ok(html.includes(label));
     assert.ok(!html.includes("Зургийн ID"));
     if (itemMode) {
+      assert.doesNotMatch(html, />Key/);
       assert.ok(html.indexOf("Label") < html.indexOf("Гарчиг"));
       assert.ok(html.indexOf("Гарчиг") < html.indexOf("Тайлбар"));
       assert.doesNotMatch(html, /<textarea/i);

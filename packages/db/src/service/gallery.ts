@@ -1,13 +1,13 @@
 import { defineInject, INJECT, TOKEN, Token } from "@napp/di";
 import { NappError } from "@napp/error";
-import { and, asc, eq, ilike } from "drizzle-orm";
+import { and, asc, eq, ilike, or } from "drizzle-orm";
 import { z } from "zod";
 import { TKN_DB, type BigMotorsDb } from "../db.js";
 import { gallery, galleryItem } from "../schema/gallery.js";
 import { files } from "../schema/files.js";
 
 const optionalText = (length: number) => z.string().trim().max(length).transform((v) => v || null).nullable().optional();
-const fields = z.object({ name: z.string().trim().min(1).max(255), desc: optionalText(512) }).strict();
+const fields = z.object({ key: z.string().trim().min(1).max(255), name: z.string().trim().min(1).max(255), desc: optionalText(512) }).strict();
 const itemFields = z.object({
   title: optionalText(255), label: optionalText(255), desc: optionalText(512),
   imageId: z.string().uuid(), sortOrder: z.number().int().min(-2147483648).max(2147483647).optional(),
@@ -40,6 +40,10 @@ async function storage<T>(action: () => Promise<T>): Promise<T> {
   try { return await action(); } catch (error) {
     if (error instanceof NappError) throw error;
     const cause = error instanceof Error && error.cause ? error.cause : error;
+    if (typeof cause === "object" && cause !== null && "code" in cause && cause.code === "23505"
+      && "constraint" in cause && cause.constraint === "gallery_key_unique") {
+      throw new NappError("Gallery key already exists.", { code: "GALLERY_KEY_CONFLICT", status: 409 });
+    }
     if (typeof cause === "object" && cause !== null && "code" in cause && cause.code === "23503") {
       throw new NappError("Gallery or image no longer exists.", { code: "GALLERY_REFERENCE_NOT_FOUND", status: 409 });
     }
@@ -56,7 +60,7 @@ export class GalleryService {
     const input = parse(listFields, params);
     const pattern = input.search?.replace(/[\\%_]/g, "\\$&");
     return storage(() => this.db.select().from(gallery)
-      .where(pattern ? ilike(gallery.name, `%${pattern}%`) : undefined)
+      .where(pattern ? or(ilike(gallery.name, `%${pattern}%`), ilike(gallery.key, `%${pattern}%`)) : undefined)
       .orderBy(asc(gallery.name), asc(gallery.id)).limit(input.limit).offset(input.offset));
   }
   async findById(id: string) {

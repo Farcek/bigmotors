@@ -9,10 +9,11 @@ const dates = () => ({
 
 export const gallery = pgTable("gallery", {
   id: idColumn(),
+  key: varchar("key", { length: 255 }).notNull().unique("gallery_key_unique"),
   name: varchar("name", { length: 255 }).notNull(),
   desc: varchar("desc", { length: 512 }),
   ...dates(),
-}, (t) => [nonBlank("gallery_name_nonblank", t.name)]);
+}, (t) => [nonBlank("gallery_name_nonblank", t.name), nonBlank("gallery_key_nonblank", t.key)]);
 
 export const galleryItem = pgTable("gallery_item", {
   id: idColumn(),

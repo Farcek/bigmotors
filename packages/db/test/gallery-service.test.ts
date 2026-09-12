@@ -10,8 +10,9 @@ test("gallery CRUD, ordering and shared file usage remain atomic", async () => {
   try {
     const unrelated = randomUUID(); const a = randomUUID(); const b = randomUUID();
     await db.query("INSERT INTO files (id,file_path,original_name,usage) VALUES ($1,'gallery/a','a.svg',ARRAY[$3::uuid]),($2,'gallery/b','b.jpg','{}')", [a,b,unrelated]);
-    const first = await service.create({ name: " First ", desc: " " });
-    const second = await service.create({ name: "Second" });
+    const first = await service.create({ key: " first ", name: " First ", desc: " " });
+    const second = await service.create({ key: "second", name: "Second" });
+    assert.equal(first.key, "first");
     assert.equal(first.name, "First"); assert.equal(first.desc, null);
     assert.ok(first.created instanceof Date);
     assert.equal((await service.list({ search: "irs" }))[0]?.id, first.id);
@@ -49,8 +50,8 @@ test("gallery CRUD, ordering and shared file usage remain atomic", async () => {
 test("gallery validates boundaries and direct SQL follows usage triggers", async () => {
   const db = await testDatabase(); const di = testServiceContainer(db); const service = di.resolve(GalleryService);
   try {
-    for (const input of [{ name: " " }, { name: "a".repeat(256) }, { name: "A", desc: "d".repeat(513) }]) await assert.rejects(service.create(input), { code: "GALLERY_INVALID_INPUT" });
-    const g = await service.create({ name: "A".repeat(255), desc: "d".repeat(512) });
+    for (const input of [{ name: " " }, { name: "a".repeat(256) }, { name: "A", desc: "d".repeat(513) }]) await assert.rejects(service.create({ key: "valid", ...input }), { code: "GALLERY_INVALID_INPUT" });
+    const g = await service.create({ key: "k".repeat(255), name: "A".repeat(255), desc: "d".repeat(512) });
     await assert.rejects(service.update(g.id, {}), { code: "GALLERY_INVALID_INPUT" });
     await assert.rejects(service.createItem(g.id, { imageId: "no" }), { code: "GALLERY_INVALID_INPUT" });
     await assert.rejects(service.createItem(g.id, { imageId: randomUUID(), sortOrder: 0.5 }), { code: "GALLERY_INVALID_INPUT" });
@@ -60,5 +61,27 @@ test("gallery validates boundaries and direct SQL follows usage triggers", async
     assert.equal((await db.query<{usage:string[]}>("SELECT usage FROM files WHERE id=$1", [id])).rows[0]!.usage.length, 1);
     await db.query("DELETE FROM gallery WHERE id=$1", [g.id]);
     assert.deepEqual((await db.query("SELECT usage FROM files WHERE id=$1", [id])).rows, [{ usage: [] }]);
+  } finally { di.destroy(); await db.close(); }
+});
+
+test("gallery keys are required, unique on create/update and searchable", async () => {
+  const db = await testDatabase(); const di = testServiceContainer(db); const service = di.resolve(GalleryService);
+  try {
+    for (const key of ["", " ", "k".repeat(256)]) {
+      await assert.rejects(service.create({ key, name: "Gallery" }), { code: "GALLERY_INVALID_INPUT" });
+    }
+    const first = await service.create({ key: "home-banner", name: "Gallery" });
+    const second = await service.create({ key: "second", name: "Gallery" });
+    await assert.rejects(service.create({ key: " home-banner ", name: "Duplicate" }), { code: "GALLERY_KEY_CONFLICT", status: 409 });
+    await assert.rejects(service.update(second.id, { key: first.key }), { code: "GALLERY_KEY_CONFLICT", status: 409 });
+    assert.equal((await service.findById(second.id)).key, "second");
+    assert.equal((await service.update(first.id, { key: " renamed " })).key, "renamed");
+    assert.equal((await service.update(first.id, { desc: "Changed" })).key, "renamed");
+    assert.deepEqual((await service.list({ search: "renamed" })).map((row) => row.id), [first.id]);
+    await assert.rejects(service.update(first.id, { key: " " }), { code: "GALLERY_INVALID_INPUT" });
+    await assert.rejects(db.query('INSERT INTO gallery (key,name) VALUES ($1,$2)', ["renamed", "SQL duplicate"]));
+    await assert.rejects(db.query('INSERT INTO gallery (name) VALUES ($1)', ["Missing key"]));
+    await assert.rejects(db.query('INSERT INTO gallery (key,name) VALUES ($1,$2)', [" ", "Blank key"]));
+    assert.equal((await service.create({ key: "RENAMED", name: "Case sensitive" })).key, "RENAMED");
   } finally { di.destroy(); await db.close(); }
 });

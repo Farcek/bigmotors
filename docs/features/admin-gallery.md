@@ -4,7 +4,7 @@
 
 ## Admin
 
-- `/galleries`: gallery жагсаалт, нэрээр хайлт, хуудаслалт, шинэчлэх, нэмэх, засах, устгах.
+- `/galleries`: gallery жагсаалт, нэр/key-ээр хайлт, хуудаслалт, шинэчлэх, нэмэх, засах, устгах. Нэрийн доор key харагдана.
 - `/galleries/:id`: тухайн gallery-ийн зурагтай item жагсаалт, хуудаслалт, нэмэх, засах, устгах.
 - Sidebar-ийн Үндсэн хэсэгт Gallery холбоос байна.
 - Item form: **Label → Гарчиг → Тайлбар → Дараалал**. Эхний гурван талбар Mantine RichTextEditor / Tiptap editor бөгөөд HTML string хадгална. Bold, italic, underline, жагсаалт, холбоос, undo/redo дэмжинэ. Хоосон editor optional утга болно. Image preview-тэй, image_id-г хэрэглэгчид харуулахгүй.
@@ -12,7 +12,7 @@
 - Шинэ item дээр зураг upload хийнэ. Edit дээр зураг солих/upload хийхгүй; зөвхөн текст болон дарааллыг засна. Зургийг хасахдаа жагсаалтын item устгах үйлдлийг ашиглана; эх файл устахгүй.
 - Item PATCH contract болон DB service imageId өөрчлөх оролдлогыг 400 алдаагаар буцаана; одоо байгаа өгөгдөл өөрчлөгдөхгүй.
 - Upload нь одоогийн FileUploadDialog, хэмжээ болон FILES_ROOT дүрмийг ашиглана; шинэ upload endpoint үүсгэхгүй.
-- Gallery нэр required; item дээр image required. Бусад текст optional. Нарийвчилсан [schema](../db/gallery.md).
+- Gallery form: Key → Нэр → Тайлбар. Key болон нэр required; key нь trim хийсэн 1–255 тэмдэгт, unique, том/жижиг үсэг ялгана. Key засаж болно; давхардлыг ойлгомжтой алдаагаар харуулна. Item дээр image required. Бусад текст optional. Нарийвчилсан [schema](../db/gallery.md).
 - Мөр бүрийн үйлдэл menu-д; устгах үед confirmation харуулна. Gallery устгахад бүх item хамт устахыг тайлбарлана. Эх файлууд устахгүй.
 - Mantine + useForm, PageBody, Tabler. Custom CSS/cache сан нэмээгүй. Mutation дараа API-гаас дахин уншина.
 - Хайлт/page URL query-д; loading/error/empty/success, давхар submit хамгаалалттай.
@@ -23,7 +23,7 @@
 
 | Method | Path | Үйлдэл |
 | --- | --- | --- |
-| GET | /galleries | name хайлт, limit/offset |
+| GET | /galleries | name/key хайлт, limit/offset |
 | POST | /galleries | Gallery нэмэх |
 | GET | /galleries/:id | Gallery авах |
 | PATCH | /galleries/:id | Gallery засах |
@@ -35,7 +35,9 @@
 
 List limit 1–100, offset non-negative integer. Хайлт 255 тэмдэгтээс ихгүй; SQL wildcard-ийг literal гэж үзнэ. Item жагсаалт originalName-г file URL үүсгэхэд зориулан өгнө; file_path/usage буцаахгүй.
 
-Item өөр gallery-д харьяалагдсан бол засах/устгах 404. Алдаа: 400 invalid input, 404 missing row, 409 missing reference, 500 sanitized storage error. Нэвтрэлт/ACL-ийн одоогийн API тохиргоог өөрчлөөгүй; шинэ эрхийн бодлого баталсан гэсэн үг биш.
+Gallery create body нь `key` заавал авна; PATCH дээр optional боловч хоосон/null болгож болохгүй. Gallery-ийн бүх entity response-д `key` орно. Item contract өөрчлөгдөхгүй.
+
+Item өөр gallery-д харьяалагдсан бол засах/устгах 404. Алдаа: 400 invalid input, 404 missing row, 409 missing reference эсвэл `GALLERY_KEY_CONFLICT`, 500 sanitized storage error. Нэвтрэлт/ACL-ийн одоогийн API тохиргоог өөрчлөөгүй; шинэ эрхийн бодлого баталсан гэсэн үг биш.
 
 ## Хамрахгүй
 
