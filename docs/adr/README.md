@@ -38,6 +38,7 @@ ADR (Architecture Decision Record) нь техникийн чухал шийдв
 | [0029: Зураг болон файлын нэгдсэн бүртгэл](0029-use-shared-files.md) | 2026-09-12 | Баталсан |
 | [0030: Файлын upload ба ашиглалтыг нэгтгэх](0030-unify-file-management.md) | 2026-09-12 | Замын суурийг ADR 0031-ээр орлуулсан |
 | [0031: Файлын замыг FILES_ROOT-оос тооцох](0031-use-files-root-for-storage-paths.md) | 2026-09-12 | Баталсан |
+| [0032: Sysop ба website-ийн public file read route](0032-public-file-read-route.md) | 2026-09-12 | Баталсан |
 
 ## Бүртгэх шийдвэрүүд
 

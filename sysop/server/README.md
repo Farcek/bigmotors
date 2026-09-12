@@ -2,6 +2,10 @@
 
 `@bigmotors/sysop-server`: admin backend-ийн Express + TypeScript суурь.
 
+`GET /files/:id/:originalName` (мөн HEAD): public file read. `FileService.findById`-аар олж, FILES_ROOT + DB file_path-аас эх byte-уудыг stream хийнэ. URL-ийн нэр, нэвтрэлт, ACL, usage болон нийтлэлийн төлөв шалгахгүй; production дээр ч public. [Read contract болон response header](../../docs/features/file-management.md#file-read-route). Sysop app dev `/files` proxy нэмсэн; website route нь Next.js initialize хүртэл холбогдоогүй.
+
+`POST /api/files/upload`: Multer multipart upload, нэг file 20 MB хүртэл, optional title/description; flat 201 response. [Route contract](../../docs/features/file-management.md#upload-route), [FILES_ROOT/FILES_UPLOADS тохиргоо](../../docs/operations/file-storage.md). FileService + UploadStorage DI ашиглана. Userly холболт хүртэл production орчинд route 503 буцаана; development bypass хэвээр. Usage sync, UI болон serve энэ endpoint-д орохгүй.
+
 Repository root-оос `pnpm dev:server` ажиллуулна. Анхны хаяг `http://127.0.0.1:4000`; process health нь `/health` байна.
 
 Ажиллуулах, build, тест болон хэрэгжээгүй хэсгийн заагийг [ашиглалтын заавар](../../docs/operations/sysop-server.md)-аас харна. DI container нь `ConfigSysop`, DB core/service module-уудыг бүртгэнэ. Өнгөний list/create/update/delete handler container-оос `ColorService` авна. Хэрэглэгчийн шийдвэрээр Userly/ACL-ийг түр алгассан: API нэвтрэлт шаардахгүй, зөвхөн хөгжүүлэлтийн орчинд ашиглана; production-д нээхгүй.

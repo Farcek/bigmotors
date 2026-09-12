@@ -28,4 +28,4 @@
 - Gallery холбоос үүсгэхэд product болон file бүртгэл хоёул байна. Харин file upload нь product-оос өмнө байж болно.
 - Gallery мөр устгах нь files мөр/дискний файл устгах үйлдэл биш. Product main/item эсвэл өөр gallery холбоосоор ашигласан хэвээр бол usage key-г хадгална.
 
-Файлын нийтлэг шаардлага, usage transaction болон upload/устгалын lifecycle-ийн үндсэн эх сурвалж нь [File management](../features/file-management.md); DB хамгаалалт [Files](files.md)-д байна. Upload, usage CRUD, serve болон cleanup урсгал тусдаа хэрэгжүүлэлт хэвээр.
+Файлын нийтлэг шаардлага, usage transaction болон upload/устгалын lifecycle-ийн үндсэн эх сурвалж нь [File management](../features/file-management.md); DB хамгаалалт [Files](files.md)-д байна. Upload болон түүний алдааны нөхөн цэвэрлэгээ хэрэгжсэн; gallery/usage CRUD, serve болон ерөнхий delete урсгал тусдаа хэвээр.

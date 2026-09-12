@@ -31,7 +31,7 @@ Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-l
 - [DB schema хөгжүүлэх](db-schema.md): 24 хүснэгтийн TypeScript schema, core тогтмолууд, build/typecheck/test, trigger source болон хэрэгжээгүй integration-ийн зааг.
 - [DB migration ажиллуулах](db-migrations.md): generate/migrate команд, эхний SQL, local тохиргоо, production Docker image, `DB_CONNECTION_STRING`, release job, lock/history болон алдаа сэргээх зааг.
 
-- [Зургийн hard disk хадгалалтын шийдвэр](../adr/0022-store-product-images-on-disk.md): persistent disk, DB + файл backup, serve/access-ийн зааг; бодит хавтас болон upload setup хараахан хийгдээгүй.
+- [Зургийн hard disk хадгалалтын шийдвэр](../adr/0022-store-product-images-on-disk.md): persistent disk, DB + файл backup, serve/access-ийн зааг. Upload код хэрэгжсэн; бодит орчны storage/volume тохиргоо тусдаа.
 - [Sysop server ажиллуулах](sysop-server.md): бодит scaffold, dev/build/start/test, environment, endpoint болон хэрэгжээгүй хэсгийн зааг.
 - [Sysop DTI хөгжүүлэх](sysop-dti.md): contract бүтэц, ESM/declaration build, watch, validation болон тест.
 - [Userly нэвтрэлт ба ACL-ийн ашиглалтын шаардлага](userly-authentication.md): тусдаа client/resource provisioning, runtime config, snapshot cache/recovery, нууц мэдээллийн зааг. Бодит орчны тохиргоо болон deployment хараахан хийгдээгүй.

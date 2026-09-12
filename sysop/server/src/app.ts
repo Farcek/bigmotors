@@ -2,6 +2,7 @@ import type { Container } from "@napp/di";
 import { NappError } from "@napp/error";
 import express, { type ErrorRequestHandler } from "express";
 import { buildAPI } from "./api/index.js";
+import { buildFileReadRouter } from "./files/read.js";
 
 export const errorHandler: ErrorRequestHandler = (error: unknown, _req, res, next) => {
   if (res.headersSent) {
@@ -40,6 +41,8 @@ export function createApp(di: Container) {
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", service: "@bigmotors/sysop-server" });
   });
+
+  app.use(buildFileReadRouter(di));
 
   // Userly/ACL integration must replace this deny gate before any admin routes.
   // app.use("/api", (_req, _res, next) => {

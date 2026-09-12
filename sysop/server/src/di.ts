@@ -1,7 +1,8 @@
 import { Container } from "@napp/di";
-import { TKN_ENV } from "@bigmotors/core";
+import { ConfigFiles, TKN_ENV } from "@bigmotors/core";
 import { diDBCoreProviders, diDBServiceProviders } from "@bigmotors/db";
 import { ConfigSysop } from "./config.js";
+import { UploadStorage } from "./files/upload-storage.js";
 export interface CreateApiContainerOptions {
     env?: NodeJS.ProcessEnv;
 }
@@ -10,6 +11,8 @@ export function createContainer(options: CreateApiContainerOptions = {}) {
     const container = new Container("root");
     container.asValue(TKN_ENV, options.env ?? process.env);
     container.asClass(ConfigSysop);
+    container.asClass(ConfigFiles);
+    container.asClass(UploadStorage);
     container.registryModule(
         diDBCoreProviders(),
         diDBServiceProviders()

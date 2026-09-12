@@ -1,8 +1,8 @@
 # Файл Upload Ба Ашиглах Дүрэм
 
 - Огноо: 2026-09-12
-- Төлөв: Баталсан; upload, usage CRUD, serve болон cleanup хэрэгжүүлэлт хараахан хийгдээгүй.
-- Хэрэглэгч: Admin; public website нь зөвшөөрөгдсөн файлыг харуулах/татах хэрэглэгч.
+- Төлөв: Upload болон sysop public read route, disk хадгалалт, files бүртгэл, contract болон алдааны нөхөн цэвэрлэгээ хэрэгжсэн. Website route, usage CRUD, file сонгох UI болон ерөнхий delete/retry урсгал хараахан хийгдээгүй.
+- Хэрэглэгч: Admin; файл унших нь sysop болон public website дээр нэвтрэлт шаардахгүй.
 - Холбоотой: [Files schema](../db/files.md), [Product images](../db/product-images.md), [Storage тохиргоо](../operations/file-storage.md), [ADR 0030](../adr/0030-unify-file-management.md)
 
 Энэ нь зураг болон бусад бүх файлын upload, ашиглалт, холбоос салгах, устгах дүрмийн нэг үндсэн эх сурвалж. DB баримт нь schema/constraint, operations нь зам/хадгалалт/backup-ийн тохиргоог хариуцна.
@@ -10,7 +10,7 @@
 ## Upload
 
 - Product үүсээгүй байсан ч файл upload хийж болно.
-- Нэг файл хамгийн ихдээ **20 MB**. Хэрэгжүүлэлтэд `20 * 1024 * 1024 = 20,971,520 byte` хэрэглэнэ; яг хязгаартай тэнцүүг зөвшөөрч, түүнээс ихийг буцаана. Энэ нь нэг файлын хэмжээ, нийт файлын тооны хязгаар биш.
+- Нэг файлын хэмжээ `ConfigFiles.FILE_UPLOAD_MAX_BYTES`-оос авна. `FILE_UPLOAD_MAX_BYTES` environment key-ийн default нь **20 MB** (`20 * 1024 * 1024 = 20,971,520 byte`); орчин тус бүрд byte-аар өөрчилж болно. Эерэг safe integer заавал байна. Яг тохируулсан хязгаартай тэнцүүг зөвшөөрч, түүнээс ихийг буцаана. Энэ нь нэг файлын хэмжээ, нийт файлын тооны хязгаар биш.
 - Backend бодитоор хүлээн авч буй byte-ийн хэмжээг шалгана; frontend-ийн урьдчилсан шалгалт дангаараа хангалтгүй.
 - Эх файлыг өөрчлөхгүй. Формат, MIME, өргөтгөл, decode болон браузер харуулж чадах эсэхийг шалгахгүй; хөрвүүлэхгүй. Зургийн тоог хязгаарлахгүй.
 - Дискэнд системээс үүсгэсэн давхцахгүй нэрээр хадгална. Анхны нэрийг `original_name`-д хадгалж, зам үүсгэхэд шууд ашиглахгүй.
@@ -20,7 +20,7 @@
 
 ## Upload-ийн Дараалал
 
-1. Backend request-ийн upload эрх, тохируулсан storage зам болон metadata-ийн утгыг шалгана. Public/private болон permission mapping хараахан тогтоогүй; одоогийн түр ACL bypass-ийг production зөвшөөрөл гэж үзэхгүй.
+1. Backend request-ийн upload эрх, тохируулсан storage зам болон metadata-ийн утгыг шалгана. Upload permission mapping хараахан тогтоогүй; одоогийн түр ACL bypass-ийг production зөвшөөрөл гэж үзэхгүй. Файл унших public дүрэм нь upload эрхэд хамаарахгүй.
 2. Backend file ID болон давхцахгүй хадгалалтын нэр үүсгэнэ. Client file ID, file_path, usage болон timestamps оноохгүй; original_name нь зөвхөн эх нэрийн metadata.
 3. `FILES_UPLOADS` доторх системийн замд эх byte-уудыг stream-ээр бичиж, нэг файлын хэмжээний хязгаарыг хүлээн авах явцад хянана. Байгаа файлыг дарж бичихгүй.
 4. Бичилт бүрэн дуусах хүртэл файл сонгох ID/URL буцаахгүй. Файлын нэрээр формат шалгах, decode/resize/convert хийхгүй.
@@ -31,7 +31,7 @@
 
 ## Upload Route
 
-Хэрэглэгчийн route тодорхойлох хүсэлтийн дагуу доорх HTTP contract-ийг тогтоов. Энэ нь хэрэгжсэн endpoint биш; multipart сан болон DTI adapter-ийн нарийвчлал тусдаа.
+Доорх HTTP contract `sysop/server/src/api/files.ts`-д хэрэгжсэн. Multipart нь Multer 2.3.0 болон тусдаа Express route; JSON DTI envelope-ийг хэрэглэхгүй. Shared schema/төрөл `sysop/dti/src/file.ts`-д байна.
 
 | Асуудал | Contract |
 | --- | --- |
@@ -53,7 +53,7 @@ Content-Type: multipart/form-data; boundary=<browser-generated-boundary>
 
 | Multipart field | Төрөл | Нөхцөл |
 | --- | --- | --- |
-| `file` | Binary file part | Яг нэг; 20 MB хүртэл |
+| `file` | Binary file part | Яг нэг; ConfigFiles.FILE_UPLOAD_MAX_BYTES хүртэл, default 20 MB |
 | `title` | Text part | Сонголттой, 255 тэмдэгт хүртэл |
 | `description` | Text part | Сонголттой, 512 тэмдэгт хүртэл |
 
@@ -76,7 +76,7 @@ Frontend `FormData` ашиглаж, Content-Type/boundary-г browser-оор үү
 }
 ```
 
-`id` UUID; огноо ISO string; title/description nullable. Response нь дээрх шууд JSON object, нэмэлт data wrapper-гүй. Usage болон disk зам буцаахгүй. Serve route/access одоогоор тусдаа учраас download URL зохиож нэмэхгүй. Response төрлийг `sysop/dti`-д тодорхойлно; DB record-ийг бүхлээр нь serialize хийхгүй.
+`id` UUID; огноо ISO string; title/description nullable. Response нь дээрх шууд JSON object, нэмэлт data wrapper-гүй. Usage болон disk зам буцаахгүй. URL-ийг доорх File Read Route дүрмээр байгуулна; upload response-д URL талбар нэмэхгүй. Response төрлийг `sysop/dti`-д тодорхойлно; DB record-ийг бүхлээр нь serialize хийхгүй.
 
 ### Алдаа
 
@@ -85,13 +85,33 @@ Frontend `FormData` ашиглаж, Content-Type/boundary-г browser-оор үү
 | HTTP | Code | Нөхцөл |
 | --- | --- | --- |
 | 400 | `FILE_UPLOAD_INVALID_INPUT` | Файл дутуу/нэгээс олон, metadata буруу, давхардсан/нэмэлт field, эвдэрсэн multipart |
-| 413 | `FILE_UPLOAD_TOO_LARGE` | Файлын хэмжээ 20,971,520 byte-аас их |
+| 413 | `FILE_UPLOAD_TOO_LARGE` | Файлын хэмжээ ConfigFiles.FILE_UPLOAD_MAX_BYTES-аас их; message нь тохируулсан byte хязгаарыг хэлнэ |
 | 415 | `FILE_UPLOAD_UNSUPPORTED_MEDIA_TYPE` | Request нь multipart/form-data биш; энэ нь файлын MIME/форматын шалгалт биш |
 | 500 | `FILE_UPLOAD_STORAGE_ERROR` | Disk бичилт эсвэл DB бүртгэлийн алдаа |
 
-Production-д admin нэвтрэлт/эрхийн шалгалтын 401/403 урсгал үйлчилнэ; одоогийн bypass-ийг permanent public upload болгож батлаагүй. Request тасарсан үед response хүрэхгүй байж болох ч upload цэвэрлэгээний дүрэм хэвээр.
+Userly нэвтрэлт/эрхийн шалгалт хараахан холбогдоогүй тул `NODE_ENV=production` үед upload нь 503 `AUTH_ACL_UNAVAILABLE` буцаана. Бусад орчинд өмнөх түр bypass хэрэглэнэ; public production upload биш. Цаашид Userly 401/403 урсгалаар солино. Request тасарсан үед response хүрэхгүй байж болох ч upload цэвэрлэгээний дүрэм хэвээр.
 
-Сангийн сонголт, empty file, хадгалалтын нэрэнд extension үлдээх эсэх, өдрөөр дэд хавтас үүсгэх эсэхийг implementation хийхээс өмнө нарийвчилна. Эдгээр нь файлын форматыг зөвшөөрөх жагсаалт үүсгэх үндэслэл болохгүй.
+Хэрэгжүүлэлтийн нарийвчлал: 0 byte файл зөвшөөрнө; UUID нэртэй, extension-гүй эх файл нь request бүрийн шинэ private дэд хавтаст хадгалагдана. Анхны UTF-8 нэр originalName-д үлдэнэ. Өдрөөр ангилах/форматаар шүүхгүй. Нэг request-д file 1, text field 2; metadata part бүрийн byte limit 4096, field нэрийн limit 32, nested field зөвшөөрөхгүй. Энэ нь текстийн 255/512 тэмдэгтийн шалгалтыг орлохгүй.
+
+## File Read Route
+
+2026-09-12-нд баталсан; [ADR 0032](../adr/0032-public-file-read-route.md). Sysop endpoint нь [read.ts](../../sysop/server/src/files/read.ts)-д хэрэгжсэн; `FileService.findById`-г DI-ээр ашиглана. `sysop/app`-ийн Vite `/files` proxy backend рүү дамжуулна. Website одоогоор хоосон package тул Next.js route холболт хийгдээгүй; нийтлэг URL contract хэвээр.
+
+- Sysop болон website ижил `GET /files/:id/:originalName` route ашиглана; `/api` prefix-гүй. Domain нь тухайн app-ийн domain байна.
+- `files` хүснэгтээс зөвхөн `id`-гаар бүртгэлийг олно.
+- `originalName` нь URL-ийн нэрийн хэсэг төдий. DB дахь нэртэй тулгах, формат/өргөтгөл шалгах, зөрсөн нэрийг redirect хийхгүй. Нэр өөр байсан ч ижил ID нь ижил файлыг буцаана.
+- URL байгуулахдаа эх нэрийг `encodeURIComponent(originalName)`-ээр encode хийнэ. Request-ийн нэрийг disk зам эсвэл файлын төрлийг шийдэхэд ашиглахгүй.
+- Дискний замыг олдсон мөрийн `file_path` болон `FILES_ROOT`-оос тооцно. Storage хүрээнээс гарах зам болон symlink-ийг хориглох хамгаалалт хэвээр; энэ нь хэрэглэгчийн access шалгалт биш.
+- Нэвтрэлт, token, ACL, signed URL, usage болон бүтээгдэхүүний нийтлэгдсэн эсэхийг шалгахгүй. URL-ийг мэдсэн хүн ноорог, нуусан эсвэл ашиглагдаагүй файлыг ч уншиж болно. Энэ нь файлын жагсаалт болон бүтээгдэхүүний мэдээллийг нийтэд нээх шийдвэр биш.
+- Эх файлыг өөрчлөхгүй буцаана. Файлын бүртгэл эсвэл дискний файл байхгүй бол 404; дотоод disk замыг response-д задруулахгүй.
+- Upload, metadata засах, холбоос/usage өөрчлөх болон устгах эрхийн дүрэм хэвээр байна. Public read шийдвэр нь эдгээр үйлдлийг нийтэд нээхгүй.
+
+### Read Response
+
+- GET нь эх byte-уудыг stream-ээр буцаана; HEAD нь ижил header-тай, body-гүй. UUID биш ID 400 `FILE_INVALID_ID`; байхгүй мөр, дискний файл эсвэл directory нь 404 `FILE_NOT_FOUND`. Дотоод алдаа 500, storage зам задруулахгүй.
+- Одоогийн хэрэгжүүлэлт DB дахь original_name-ийн jpg/jpeg, png, gif, webp, avif, bmp, ico өргөтгөлд харгалзах image Content-Type өгч inline харуулна. Бусад формат, HTML/SVG нь `application/octet-stream` болон `Content-Disposition: attachment`-тай; татах нэрийг DB metadata-аас авна. Энэ нь byte/MIME validation биш, ямар ч файлыг форматаар хориглохгүй.
+- Request-ийн originalName нь header болон disk path-д нөлөөлөхгүй. `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, `Content-Security-Policy: sandbox; default-src 'none'` хэрэглэнэ. Одоогоор Range болон Last-Modified/conditional cache идэвхжүүлэхгүй.
+- Read-д production upload gate үйлчлэхгүй. Production deployment дээр `/files`-ийг admin authorization middleware-ээс гадуур холбоно; upload API-ийн эрхийг сулруулахгүй.
 
 ## Form Дээр Ашиглах
 
@@ -99,7 +119,7 @@ Production-д admin нэвтрэлт/эрхийн шалгалтын 401/403 у�
 - Form хадгалах үед л тухайн хэрэглээний холбоос болон usage-г хамтад нь шинэчилнэ.
 - Form цуцлахад өмнөх холбоосууд өөрчлөгдөхгүй. Шинээр upload хийсэн файл ашиглагдаагүй хэвээр үлдэнэ.
 - Frontend нь file ID дамжуулна; `file_path` эсвэл usage array-г шууд засахгүй. Backend хандах эрх болон холбоосын өөрчлөлтийг хариуцна.
-- Файлын URL нь ID-д суурилсан байна; frontend дискний замаар URL байгуулахгүй. URL байгаа нь public access зөвшөөрөгдсөн гэсэн үг биш.
+- Файлын URL нь `/files/:id/:originalName`; frontend дискний замаар URL байгуулахгүй. Файл унших нь public байна.
 
 ## Usage
 
@@ -124,11 +144,12 @@ Production-д admin нэвтрэлт/эрхийн шалгалтын 401/403 у�
 | Хэсэг | Үүрэг |
 | --- | --- |
 | `packages/db` | Files бүртгэл, metadata, usage ажиллагаа болон хэрэглээний холбоостой хамтарсан transaction |
-| `sysop/server` | Upload, disk бичих/устгах, file URL/serve болон хандах эрх |
+| `sysop/server` | Upload, disk бичих/устгах, public file read; өөрчлөх үйлдлийн хандах эрх |
+| `web/website` | Sysop-той ижил URL болон дүрэмтэй public file read |
 | `sysop/dti` | Admin файлын response/error төрөл; multipart request-ийн contract |
 | `sysop/app` | Нийтлэг upload/select компонент, form save/cancel урсгал |
 
-Schema/guard байгаа нь эдгээр service, API болон UI хэрэгжсэн гэсэн үг биш. Нийтлэх үеийн бүтээгдэхүүний дүрэм, main/item fallback болон gallery дарааллыг [product images](../db/product-images.md)-ээс баримтална.
+`FileService.createUploadedFile`, `FileService.findById`, `UploadStorage`, multipart upload, sysop public read болон DI холболт бэлэн. Upload нь usage-г зөвхөн хоосон default-оор үүсгэнэ; form save/холбоос/usage sync, metadata edit, file delete, UI болон website read route хийгдээгүй. Нийтлэх үеийн бүтээгдэхүүний дүрэм, main/item fallback болон gallery дарааллыг [product images](../db/product-images.md)-ээс баримтална.
 
 ## Хүлээн Авах Шалгуур
 
@@ -138,9 +159,12 @@ Schema/guard байгаа нь эдгээр service, API болон UI хэрэ�
 4. Form цуцлахад холбоос өөрчлөгдөхгүй; амжилттай хадгалахад холбоос/usage хамт шинэчлэгдэнэ, алдахад хоёул буцна.
 5. Main/item/gallery нэг файл ашиглах, хэсэгчилж салгах, хоёр product хамтран ашиглах болон давтан хүсэлтэд usage зөв байна.
 6. Ашиглагдсан файл устахгүй; ашиглагдаагүй файл зөвхөн explicit delete-ээр устна. Disk алдааны үлдэгдлийг илрүүлэх/цэвэрлэх боломжтой байна.
+7. Sysop болон website дээр нэвтрээгүй хүсэлт ижил ID-тай файлыг уншина. Original name өөрчлөгдсөн ч ижил эх byte буцаана; usage болон бүтээгдэхүүний төлөв нөлөөлөхгүй.
+8. Байхгүй бүртгэл/дискний файл 404 буцаана; URL-ийн нэрээр өөр disk файл нээхгүй, storage хүрээнээс гарахгүй.
 
 ## Нээлттэй Асуултууд
 
-- Public/private хандалт болон upload/serve permission-ийн нарийвчлал.
-- Multipart upload сан/DTI adapter, empty file, хадгалах нэр/дэд хавтасны загвар. Route нь дээрх contract-аар тодорхой болсон; тохиргооны нэр FILES_ROOT, FILES_UPLOADS гэж кодод байна.
+- Upload болон өөрчлөх/устгах үйлдлийн permission mapping; read нь public гэж батлагдсан.
+- Production serve domain/cache-ийн нэмэлт хэрэгцээ; одоогийн хамгаалсан response header дээрх Read Response хэсэгт байна.
+- Form upload/select UI, хэрэглээний холбоос/usage CRUD болон website read implementation.
 - Production persistent volume, backup/restore болон disk cleanup retry-ийн бодит механизм.

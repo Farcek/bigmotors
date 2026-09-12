@@ -31,7 +31,7 @@ Schema нь `uuid[]`, хоосон array default болон NOT NULL-ийг ха
 - `usage` хоосон биш бол DB delete trigger files мөрийн устгалыг хориглоно. Usage хоосон байсан ч бодит FK үлдвэл устгахгүй.
 - Metadata шинэчлэгдэхэд `files.updated_at` trigger ажиллана. Файлын агуулга солих, form save/cancel, холбоос салгах болон physical delete-ийн lifecycle нь [нэгдсэн дүрэмд](../features/file-management.md) байна.
 
-Upload endpoint, usage CRUD, file serve/access, cleanup/retry одоогоор хэрэгжээгүй. Замын root зарчим батлагдсан; [storage тохиргооны](../operations/file-storage.md) дэд хавтас/сан/access/persistence нарийвчлал тусдаа хэвээр.
+`FileService.createUploadedFile`, `FileService.findById`, upload болон sysop read endpoint хэрэгжсэн; usage CRUD, website read route, ерөнхий delete/retry урсгал хийгдээгүй. Upload-ийн алдааны нөхөн цэвэрлэгээ болон commit reconciliation [storage зааварт](../operations/file-storage.md#upload-хэрэгжүүлэлт) байна. [File read](../features/file-management.md#file-read-route) нь `/files/:id/:originalName`, ID-аар lookup хийдэг, нэр болон access шалгахгүй public route; schema өөрчлөх шаардлагагүй. Persistence болон өөрчлөх үйлдлийн эрхийн нарийвчлал тусдаа хэвээр.
 
 ## Шилжилт
 

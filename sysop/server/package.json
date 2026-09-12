@@ -19,11 +19,13 @@
     "@napp/dti-server": "6.1.2",
     "@napp/error": "1.1.0",
     "express": "5.2.1",
+    "multer": "2.3.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
     "@types/express": "5.0.6",
+    "@types/multer": "2.2.0",
     "@types/node": "24.13.3",
     "drizzle-orm": "0.45.2",
     "tsdown": "0.23.0",

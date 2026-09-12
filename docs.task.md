@@ -149,15 +149,17 @@ packages/db
 
 **Нэмэлт баталсан:** [ADR 0030](docs/adr/0030-unify-file-management.md)-ийн дагуу upload нь backend, DB/usage нь shared repository, сонголт/upload UI нь нийтлэг компонент байна. Нэг файл 20 MB; нэрийг backend үүсгэнэ, client path/usage array засахгүй. [ADR 0031](docs/adr/0031-use-files-root-for-storage-paths.md)-ээр DB path-ийг FILES_ROOT-оос тооцож, FILES_UPLOADS-д бичихээр тодруулсан; repository root гэсэн өмнөх тайлбар хүчингүй. Lifecycle болон upload API-ийн тусдаа санал [нэгдсэн дүрэмд](docs/features/file-management.md) байна.
 
-**Upload route тодорхойлсон:** `POST /api/files/upload`, multipart/form-data, нэг file болон optional title/description; 201 response/error contract [Upload Route](docs/features/file-management.md#upload-route)-д байна. Өмнөх API саналыг энэ нарийвчилсан contract-аар шинэчилсэн; endpoint код хэрэгжээгүй.
+**Upload route хэрэгжсэн:** `POST /api/files/upload`, multipart/form-data, нэг file болон optional title/description; 201 response/error contract [Upload Route](docs/features/file-management.md#upload-route)-д байна. Хэрэглэгчийн upload код хийх хүсэлтээр Multer 2.3.0, Express multipart route, DTI shared schema, FileService, UploadStorage болон DI/HTTP тест хэрэгжсэн. Path validation, 20 MB, тасарсан upload-ийн cleanup, тодорхойгүй DB commit-ийн хамгаалалт бэлэн. Userly холбогдоогүй тул production-д 503, development bypass хэвээр.
 
-**Үлдсэн шийдвэр:** Multipart upload сан/DTI adapter, empty file, хадгалах нэр/дэд хавтасны загвар, upload/serve access control, persistent volume, файл/DB-ийн алдааны retry/цэвэрлэгээний бодит механизм болон backup/restore. Config key нь FILES_ROOT, FILES_UPLOADS гэж кодод тогтсон; default derive болон validation хэрэгжүүлэлт дутуу.
+**Read route баталсан:** Sysop болон website `GET /files/:id/:originalName` ашиглана. Зөвхөн ID-аар files бүртгэлийг олно; originalName болон access шалгахгүй, usage/нийтлэлийн төлөвөөс үл хамаарах public read байна. [ADR 0032](docs/adr/0032-public-file-read-route.md). Sysop read, shared FileService.findById, admin dev proxy болон HTTP тест хэрэгжсэн. Website нь хоосон package тул Next.js route холболт үлдсэн. Одоогийн response нь no-store/nosniff, түгээмэл raster image inline, бусад файл attachment байна.
 
-**Миний санал:** Үлдсэн tooling-ийг [батлагдсан storage зарчимд](docs/operations/file-storage.md) тааруулж сонгоно. Сангийн сонголт хараахан батлаагүй. Өмнөх S3 болон `sharp` боловсруулалтын санал энэ урсгалд үйлчлэхгүй; эх файл өөрчлөхгүй, формат/browser render шалгахгүй байх батлагдсан дүрмийг хадгална.
+**Үлдсэн шийдвэр:** Upload болон өөрчлөх/устгах access control, read response header/domain/cache, persistent volume, crash recovery/ерөнхий delete retry болон backup/restore. Config key нь FILES_ROOT, FILES_UPLOADS; тус тусын default хэвээр, хоёуланг нь нийцүүлж тохируулна. Empty file зөвшөөрч, UUID нэртэй extension-гүй эх файлыг шинэ private request directory-д хадгална. TASK-06 хэсэгчлэн батлагдсан хэвээр; upload код нь бүх storage integration бэлэн гэсэн үг биш.
+
+**Миний санал:** Үлдсэн tooling-ийг [батлагдсан storage зарчимд](docs/operations/file-storage.md) тааруулж сонгоно. Multipart нь Multer 2.3.0 болсон. Өмнөх S3 болон `sharp` боловсруулалтын санал энэ урсгалд үйлчлэхгүй; эх файл өөрчлөхгүй, формат/browser render шалгахгүй байх батлагдсан дүрмийг хадгална.
 
 **Үндэслэл ба сул тал:** External object storage хэрэггүй. Disk persistence, багтаамж, DB + файл backup болон олон instance-ийн файлын хандалтыг хариуцах шаардлагатай.
 
-**Батлах шалгуур:** Disk config/persistence, upload сан/transport, аюулгүй хадгалах/serve, эрхийн шалгалт болон алдааны цэвэрлэгээний техник батлагдсан байна. Image conversion шаардахгүй.
+**Батлах шалгуур:** Disk config/persistence, upload сан/transport, аюулгүй хадгалах/serve, өөрчлөх үйлдлийн эрхийн шалгалт болон алдааны цэвэрлэгээний техник батлагдсан байна. File read эрхийн шалгалт болон image conversion шаардахгүй.
 
 **Гарах баримт:** Storage ADR, `docs/operations/` холболтын тохиргоо.
 

@@ -8,7 +8,7 @@
 
 ## Каталог ба агуулгын нарийвчлах санал
 
-- [Файл upload ба ашиглах дүрэм](file-management.md): нэгдсэн lifecycle, нэг файл 20 MB, FILES_ROOT-оос тооцох зам, form save/cancel, usage болон устгал; POST /api/files/upload contract.
+- [Файл upload ба ашиглах дүрэм](file-management.md): нэгдсэн lifecycle, хэмжээний тохиргоо (default 20 MB), FILES_ROOT-оос тооцох зам, form save/cancel, usage болон устгал; POST /api/files/upload болон public GET /files/:id/:originalName contract.
 
 - [Admin UI demo](admin-ui-demo.md): `/demo`, `/demo/list`, `/demo/form` тусгаарласан жишээ; бодит API/DB-д хүрэхгүй.
 - [Admin өнгөний CRUD](admin-colors.md): `/references/colors`, бодит DTI API-д холбогдсон жагсаалт, нэмэх/засах form болон устгах баталгаажуулалт.

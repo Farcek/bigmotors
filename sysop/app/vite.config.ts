@@ -8,6 +8,7 @@ export default defineConfig({
     port: 64403,
     proxy: {
       "/api": { target: "http://127.0.0.1:64402", changeOrigin: true },
+      "/files": { target: "http://127.0.0.1:64402", changeOrigin: true },
     },
   },
 });

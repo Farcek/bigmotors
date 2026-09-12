@@ -12,6 +12,8 @@ import { buildVehicleModelsApi } from "./vehicle-models.js";
 import { buildVehicleVariantsApi } from "./vehicle-variants.js";
 import { buildTireModelsApi } from "./tire-models.js";
 import { buildPartCategoriesApi } from "./part-categories.js";
+import { Router } from "express";
+import { buildFilesApi } from "./files.js";
 
 export function buildAPI(di:Container) {
     const dti = buildDTI(di);
@@ -30,5 +32,5 @@ export function buildAPI(di:Container) {
 
 
 
-    return dti.router();
+    return Router().use(buildFilesApi(di)).use(dti.router());
 }
