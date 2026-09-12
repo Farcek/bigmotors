@@ -16,7 +16,7 @@ Drizzle-д суурилсан **`packages/db` shared package** нь DB schema б
 
 Бүх workspace package-ийн scope нь `@bigmotors/*`. Migration болон seed-ийн файл, логик, командыг мөн `packages/db` хариуцна. [ADR 0014](../adr/0014-use-bigmotors-scope-and-db-owned-migrations.md)-д баталсан.
 
-Package exports, workspace dependency, schema файлын зам болон driver-ийн одоогийн хэрэгжүүлэлтийг [package README](../../packages/db/README.md)-д бүртгэсэн. CRUD, seed болон production pool/job-ийн нарийвчлал дараагийн ажил. Schema, CRUD, migration болон seed-ийг app бүрд давхар хөтлөхгүй.
+Package exports, workspace dependency, schema файлын зам болон driver-ийн одоогийн хэрэгжүүлэлтийг [package README](../../packages/db/README.md)-д бүртгэсэн. [Лавлах seed](../operations/db-seeds.md)-ийн суурь өгөгдөл, команд хэрэгжсэн; компанийн бодит салбар/байршил болон production job-ийн тохиргоо тусдаа. Schema, CRUD, migration болон seed-ийг app бүрд давхар хөтлөхгүй.
 
 ## Сервер талын хандалтын зааг
 

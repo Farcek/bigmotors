@@ -9,6 +9,7 @@
 - `src/service/color.ts`: `ColorService(db)` нь өнгөний list/create/update/delete, Zod validation болон `@napp/error` алдааны mapping-ийг хариуцна. `@bigmotors/db`-ээс импортлоно; [ашиглах дүрэм](../../docs/operations/db-schema.md#colorservice).
 - `src/service/branch.ts`: `BranchService(db)` нь компанийн салбарын list/create/update/delete; өнгөтэй ижил validation, pagination, алдааны бүтэцтэй. [Ашиглах дүрэм](../../docs/operations/db-schema.md#branchservice).
 - `drizzle.config.ts`, `migrations/`, `src/migrate.ts`: schema generate, versioned SQL болон тусдаа migration runner.
+- `src/seeds/data.ts`, `src/seeds/run.ts`, `src/seed.ts`: лавлахын 241 суурь бичлэг, transaction бүхий давтан run болон CLI. Салбар/байршлын бодит мэдээлэл хүлээж байгаа. [Seed заавар](../../docs/operations/db-seeds.md).
 - `Dockerfile`: production migration-ийн one-shot image; repository root build context ашиглана. Runtime нь `DATABASE_URL` шаарддаг.
 - `test/`: PGlite санах ойн PostgreSQL тест; бодит DB болон файлд schema үүсгэхгүй. Service тестүүд `diDBServiceProviders()`-ийг бүртгүүлж, PGlite Drizzle adapter-ийг `TKN_DB`-д холбоод container-оос service авна. `diDBCoreProviders()`-ийн config/pool/DB бүртгэлийг холболт нээхгүйгээр тусдаа шалгана; тест бүр container болон өөрийн DB/pool-оо хаана.
 
@@ -20,4 +21,6 @@ Root-оос `pnpm db:generate --name=change_name` нь SQL migration үүсгэ�
 
 Root-оос `pnpm db:reset` (эсвэл `pnpm --filter @bigmotors/db db:reset`) нь `public`, `drizzle` schema дахь бүх хүснэгт, өгөгдөл, function, trigger болон migration түүхийг **баталгаажуулах асуултгүй устгана**. `public` schema-г хоосноор дахин үүсгэнэ. `DBConfig.DATABASE_URL` болон package-ийн `.env` ашиглана; эхлээд build шаардлагатай. Migration/seed автоматаар ажиллуулахгүй, upload дискний файлуудад хүрэхгүй. [Reset заавар](../../docs/operations/db-migrations.md#db-reset).
 
-Бүх 12 лавлахын shared CRUD, DTI болон API холболт хэрэгжсэн. [Энгийн лавлахууд](../../docs/operations/db-schema.md#flat-reference-services), [эцэгтэй лавлахууд](../../docs/operations/db-schema.md#parent-reference-services). Бүтээгдэхүүний CRUD, seed, upload болон admin form дараагийн ажил.
+Root-оос `pnpm build:db` дараа `pnpm db:seed` ажиллуулна. `DBConfig.DATABASE_URL` болон package-ийн `.env` ашиглана. Migration-ууд урьдчилан хэрэгжсэн байх ёстой. Байгаа лавлахыг өөрчлөхгүй; зөвхөн байхгүй мөр нэмнэ. Migration/app startup seed-ийг автоматаар дуудахгүй.
+
+Бүх 12 лавлахын shared CRUD, DTI болон API холболт хэрэгжсэн. [Энгийн лавлахууд](../../docs/operations/db-schema.md#flat-reference-services), [эцэгтэй лавлахууд](../../docs/operations/db-schema.md#parent-reference-services).

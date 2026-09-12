@@ -25,7 +25,8 @@
     "test:db": "pnpm build:core && pnpm --filter @bigmotors/db test",
     "db:generate": "pnpm --filter @bigmotors/db db:generate",
     "db:migrate": "pnpm --filter @bigmotors/db db:migrate",
-    "db:reset": "pnpm --filter @bigmotors/db db:reset"
+    "db:reset": "pnpm --filter @bigmotors/db db:reset",
+    "db:seed": "pnpm --filter @bigmotors/db db:seed"
   },
   "engines": {
     "node": ">=24.11.0 <25"
