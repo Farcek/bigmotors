@@ -55,7 +55,9 @@ Upload тасрах болон DB бүртгэл бүтэлгүйтэхэд ду
 
 ## File Read
 
-Sysop болон website-ийн нийтлэг URL нь `GET /files/:id/:originalName`; зөвхөн ID-аар DB бүртгэлийг олно. Нэр болон access шалгахгүй. Үндсэн contract, header болон үр дагавар нь [File Read Route](../features/file-management.md#file-read-route), шийдвэр нь [ADR 0032](../adr/0032-public-file-read-route.md)-д байна. Sysop read runtime хэрэгжсэн; website нь хоосон package тул route холболт хараахан хийгдээгүй.
+Sysop болон website-ийн нийтлэг URL нь `GET /files/:id/:originalName`; зөвхөн ID-аар DB бүртгэлийг олно. Нэр болон access шалгахгүй. Үндсэн contract, header болон үр дагавар нь [File Read Route](../features/file-management.md#file-read-route), шийдвэр нь [ADR 0032](../adr/0032-public-file-read-route.md)-д байна. Хоёр app-ийн GET/HEAD хэрэгжсэн; shared Node-only `@bigmotors/core/file-storage` нь path containment болон header дүрмийг эзэмшинэ.
+
+Website-ийн `FILES_ROOT` нь sysop upload хийдэг ижил storage-г заана. Container-уудын зам өөр байж болно; файлын volume ижил байх ёстой. Website тал read-only mount ашиглана. Website өөрийн DBConfig/DI болон FileService-ээр шууд уншина; sysop API proxy эсвэл access шалгалт нэмээгүй. `FILES_UPLOADS` нь website read-д ашиглагдахгүй.
 
 Sysop серверийн origin дээр `/files/...`-аар шууд уншина. Admin dev Vite `/files` proxy нь `http://127.0.0.1:64402` рүү дамжуулна; proxy тохиргоо ачаалагдаагүй бол dev app-ийг дахин асаана. Production reverse proxy мөн `/files`-ийг backend рүү дамжуулах шаардлагатай; Vite dev proxy нь production тохиргоо биш. FILES_ROOT доторх файлуудыг унших OS permission шаардлагатай, FILES_UPLOADS-тай дахин нийлүүлэхгүй.
 

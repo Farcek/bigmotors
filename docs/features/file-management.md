@@ -1,7 +1,7 @@
 # Файл Upload Ба Ашиглах Дүрэм
 
 - Огноо: 2026-09-12
-- Төлөв: Upload болон sysop public read route, disk хадгалалт, files бүртгэл, автомашины холбоос/usage transaction, [автомашины form дахь upload/select UI](admin-vehicles.md) болон алдааны нөхөн цэвэрлэгээ хэрэгжсэн. Website route, бусад ашиглагчийн usage CRUD, бүх файлын нэгдсэн browser болон ерөнхий delete/retry урсгал хараахан хийгдээгүй.
+- Төлөв: Upload, sysop/website public read route, disk хадгалалт, files бүртгэл, автомашины холбоос/usage transaction, [автомашины form дахь upload/select UI](admin-vehicles.md) болон алдааны нөхөн цэвэрлэгээ хэрэгжсэн. Бүх файлын нэгдсэн browser болон ерөнхий delete/retry урсгал хараахан хийгдээгүй.
 - Хэрэглэгч: Admin; файл унших нь sysop болон public website дээр нэвтрэлт шаардахгүй.
 - Холбоотой: [Files schema](../db/files.md), [Product images](../db/product-images.md), [Storage тохиргоо](../operations/file-storage.md), [ADR 0030](../adr/0030-unify-file-management.md)
 
@@ -95,7 +95,7 @@ Userly нэвтрэлт/эрхийн шалгалт хараахан холбо�
 
 ## File Read Route
 
-2026-09-12-нд баталсан; [ADR 0032](../adr/0032-public-file-read-route.md). Sysop endpoint нь [read.ts](../../sysop/server/src/files/read.ts)-д хэрэгжсэн; `FileService.findById`-г DI-ээр ашиглана. `sysop/app`-ийн Vite `/files` proxy backend рүү дамжуулна. Website одоогоор хоосон package тул Next.js route холболт хийгдээгүй; нийтлэг URL contract хэвээр.
+2026-09-12-нд баталсан; [ADR 0032](../adr/0032-public-file-read-route.md). Sysop endpoint нь [read.ts](../../sysop/server/src/files/read.ts)-д хэрэгжсэн; `FileService.findById`-г DI-ээр ашиглана. `sysop/app`-ийн Vite `/files` proxy backend рүү дамжуулна. Website-ийн Next.js GET/HEAD route мөн өөрийн DI/FileService-ээр уншина. Хоёр app path/header дүрмээ `@bigmotors/core/file-storage`-оос авна.
 
 - Sysop болон website ижил `GET /files/:id/:originalName` route ашиглана; `/api` prefix-гүй. Domain нь тухайн app-ийн domain байна.
 - `files` хүснэгтээс зөвхөн `id`-гаар бүртгэлийг олно.
@@ -151,7 +151,7 @@ Userly нэвтрэлт/эрхийн шалгалт хараахан холбо�
 | `sysop/dti` | Admin файлын response/error төрөл; multipart request-ийн contract |
 | `sysop/app` | Нийтлэг upload/select компонент, form save/cancel урсгал |
 
-`FileService.createUploadedFile`, `FileService.findById`, `UploadStorage`, multipart upload, sysop public read болон DI холболт бэлэн. Upload нь usage-г зөвхөн хоосон default-оор үүсгэнэ; автомашины save/холбоос/usage sync нь VehicleService/backend API-д хэрэгжсэн. Автомашины form upload, metadata оруулах, холбоотой файлаа main/item/gallery-д сонгох UI бэлэн. Бусад ашиглагчийн sync, metadata edit, file delete, нэгдсэн file browser болон website read route хийгдээгүй. Нийтлэх үеийн бүтээгдэхүүний дүрэм, main/item fallback болон gallery дарааллыг [product images](../db/product-images.md)-ээс баримтална.
+`FileService.createUploadedFile`, `FileService.findById`, `UploadStorage`, multipart upload, sysop/website public read болон DI холболт бэлэн. Upload нь usage-г зөвхөн хоосон default-оор үүсгэнэ; автомашины save/холбоос/usage sync нь VehicleService/backend API-д хэрэгжсэн. Автомашины form upload, metadata оруулах, холбоотой файлаа main/item/gallery-д сонгох UI бэлэн. Metadata edit, file delete, нэгдсэн file browser хийгдээгүй. Нийтлэх үеийн бүтээгдэхүүний дүрэм, main/item fallback болон gallery дарааллыг [product images](../db/product-images.md)-ээс баримтална.
 
 ## Хүлээн Авах Шалгуур
 
@@ -168,5 +168,5 @@ Userly нэвтрэлт/эрхийн шалгалт хараахан холбо�
 
 - Upload болон өөрчлөх/устгах үйлдлийн permission mapping; read нь public гэж батлагдсан.
 - Production serve domain/cache-ийн нэмэлт хэрэгцээ; одоогийн хамгаалсан response header дээрх Read Response хэсэгт байна.
-- Нэгдсэн file browser, сэлбэг/дугуй болон бусад хэрэглээний холбоос/usage CRUD, website read implementation. Автомашины form upload/select UI хэрэгжсэн.
+- Нэгдсэн file browser, сэлбэг/дугуй болон бусад хэрэглээний холбоос/usage CRUD. Автомашины form upload/select UI болон website read хэрэгжсэн.
 - Production persistent volume, backup/restore болон disk cleanup retry-ийн бодит механизм.

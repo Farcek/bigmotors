@@ -1,7 +1,7 @@
 # Каталогийн DB диаграм
 
 - Огноо: 2026-09-13
-- Хамрах хүрээ: одоогийн Drizzle schema-ийн бүх **28 хүснэгт, 245 багана, 38 FK холбоос**. Gallery unique key, Page болон Settings module багтсан.
+- Хамрах хүрээ: одоогийн Drizzle schema-ийн бүх **28 хүснэгт, 247 багана, 38 FK холбоос**. Gallery unique key болон item холбоос, Page болон Settings module багтсан.
 - Кодын эх сурвалж: [schema/index.ts](../../packages/db/src/schema/index.ts).
 - Бизнес дүрэм, CHECK, index, trigger-ийн тайлбар: [батлагдсан schema](catalog-schema-proposal.md), [хэрэгжүүлэлтийн зааг](../operations/db-schema.md).
 - Энэ нь кодын бүтцийн зураглал; бодит DB-д migration хэрэгжсэн гэсэн үг биш.
@@ -69,6 +69,8 @@ erDiagram
         varchar255 label "NULL"
         varchar512 desc "NULL"
         uuid image_id FK "NN"
+        varchar2048 link_url "NULL"
+        varchar255 link_label "NULL"
     }
 
     products ||--o| vehicles : "product_id, product_type"

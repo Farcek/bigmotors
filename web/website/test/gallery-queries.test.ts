@@ -4,7 +4,7 @@ import type { GalleryService } from "@bigmotors/db";
 import { readGalleryByKey } from "../src/server/gallery-queries.ts";
 
 const gallery = { id: "00000000-0000-4000-8000-000000000001", key: "home", name: "Home", desc: null, created: new Date(), updated: new Date() };
-const item = { id: "item", galleryId: gallery.id, imageId: "image", sortOrder: 0, title: "<script>example</script>", label: null, desc: null, originalName: "image.png", created: new Date(), updated: new Date() };
+const item = { id: "item", galleryId: gallery.id, imageId: "image", sortOrder: 0, title: "<script>example</script>", label: null, desc: null, linkUrl: "/vehicles", linkLabel: "Catalog", originalName: "image.png", created: new Date(), updated: new Date() };
 type GalleryReader = Pick<GalleryService, "findByKey" | "listItems">;
 
 test("gallery lookup passes the exact key and loads all ordered item pages", async () => {

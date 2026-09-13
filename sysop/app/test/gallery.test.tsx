@@ -15,7 +15,7 @@ test("gallery pagination is bounded and errors hide internal details", () => {
 test("gallery and item forms render their own labelled fields", () => {
   for (const itemMode of [false, true]) {
     const html = renderToStaticMarkup(<MantineProvider env="test"><GalleryForm itemMode={itemMode} onBusy={() => {}} onSave={async () => {}} onCancel={() => {}} /></MantineProvider>);
-    for (const label of itemMode ? ["Гарчиг", "Label", "Дараалал", "Тайлбар"] : ["Key", "Нэр", "Тайлбар"]) assert.ok(html.includes(label));
+    for (const label of itemMode ? ["Гарчиг", "Label", "Дараалал", "Тайлбар", "Холбоосын URL", "Холбоосын текст"] : ["Key", "Нэр", "Тайлбар"]) assert.ok(html.includes(label));
     assert.ok(!html.includes("Зургийн ID"));
     if (itemMode) {
       assert.doesNotMatch(html, />Key/);
@@ -32,7 +32,8 @@ test("gallery and item forms render their own labelled fields", () => {
 
 test("editing an item shows its image without upload or editable image ID", () => {
   const row = { id: "00000000-0000-4000-8000-000000000001", galleryId: "00000000-0000-4000-8000-000000000002", imageId: "00000000-0000-4000-8000-000000000003", originalName: "image.png", title: "Photo", label: "Label text", desc: "Description", sortOrder: 0, created: "2026-09-12T00:00:00Z", updated: "2026-09-12T00:00:00Z" };
-  const html = renderToStaticMarkup(<MantineProvider env="test"><GalleryForm row={row} itemMode onBusy={() => {}} onSave={async () => {}} onCancel={() => {}} /></MantineProvider>);
+  const html = renderToStaticMarkup(<MantineProvider env="test"><GalleryForm row={{ ...row, linkUrl: "/vehicles", linkLabel: "Catalog" }} itemMode onBusy={() => {}} onSave={async () => {}} onCancel={() => {}} /></MantineProvider>);
+  assert.match(html, /value="\/vehicles"/); assert.match(html, /value="Catalog"/);
   assert.match(html, /<img/);
   assert.doesNotMatch(html, /Зураг upload|Зургийн ID|<textarea/);
 });

@@ -27,11 +27,12 @@ export function GalleryForm({ row, itemMode, onSave, onCancel, onBusy }: {
       key: row && "key" in row ? row.key : "",
       name: row && "name" in row ? row.name : "", desc: row?.desc ?? "",
       title: item?.title ?? "", label: item?.label ?? "", imageId: item?.imageId ?? "",
+      linkUrl: item?.linkUrl ?? "", linkLabel: item?.linkLabel ?? "",
       sortOrder: (item?.sortOrder ?? 0) as number | string,
     },
     validate: (values) => {
       const result = itemMode
-        ? GalleryItems.createBody.safeParse({ title: values.title, label: values.label, desc: values.desc, imageId: values.imageId, sortOrder: values.sortOrder })
+        ? GalleryItems.createBody.safeParse({ title: values.title, label: values.label, desc: values.desc, imageId: values.imageId, sortOrder: values.sortOrder, linkUrl: values.linkUrl, linkLabel: values.linkLabel })
         : Galleries.createBody.safeParse({ key: values.key, name: values.name, desc: values.desc });
       return result.success ? {} : Object.fromEntries(result.error.issues.map((issue) => [
         String(issue.path[0]),
@@ -49,7 +50,7 @@ export function GalleryForm({ row, itemMode, onSave, onCancel, onBusy }: {
       lock.current = true; setSaving(true); onBusy(true); setError("");
       try {
         const gallery = { key: values.key, name: values.name, desc: values.desc };
-        const item = { title: values.title, label: values.label, desc: values.desc, imageId: values.imageId, sortOrder: Number(values.sortOrder) };
+        const item = { title: values.title, label: values.label, desc: values.desc, imageId: values.imageId, sortOrder: Number(values.sortOrder), linkUrl: values.linkUrl, linkLabel: values.linkLabel };
         await onSave(gallery, item);
       } catch (cause) { setError(galleryError(cause)); }
       finally { lock.current = false; setSaving(false); onBusy(false); }
@@ -68,6 +69,8 @@ export function GalleryForm({ row, itemMode, onSave, onCancel, onBusy }: {
           <HtmlEditor label="Гарчиг" value={form.values.title} onChange={(html) => form.setFieldValue("title", html)} disabled={busy} error={form.errors.title} />
           <HtmlEditor label="Тайлбар" value={form.values.desc} onChange={(html) => form.setFieldValue("desc", html)} disabled={busy} error={form.errors.desc} />
           <NumberInput label="Дараалал" required min={-2147483648} max={2147483647} allowDecimal={false} disabled={busy} {...form.getInputProps("sortOrder")} />
+          <TextInput label="Холбоосын URL" maxLength={2048} disabled={busy} {...form.getInputProps("linkUrl")} />
+          <TextInput label="Холбоосын текст" maxLength={255} disabled={busy} {...form.getInputProps("linkLabel")} />
         </>}
         {!itemMode && <Textarea label="Тайлбар" maxLength={512} rows={3} disabled={busy} {...form.getInputProps("desc")} />}
         <Group justify="flex-end"><Button variant="default" disabled={busy} onClick={onCancel}>Болих</Button><Button type="submit" loading={saving} disabled={uploading} leftSection={<IconDeviceFloppy size={17} />}>Хадгалах</Button></Group>

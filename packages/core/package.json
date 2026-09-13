@@ -6,7 +6,8 @@
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
-    ".": { "types": "./dist/index.d.mts", "import": "./dist/index.mjs", "default": "./dist/index.mjs" }
+    ".": { "types": "./dist/index.d.mts", "import": "./dist/index.mjs", "default": "./dist/index.mjs" },
+    "./file-storage": { "types": "./dist/file-storage.d.mts", "import": "./dist/file-storage.mjs" }
   },
   "files": ["dist"],
   "sideEffects": false,

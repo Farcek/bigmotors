@@ -49,10 +49,16 @@ test("gallery HTTP CRUD uses production DI, contracts and file usage triggers", 
   const imageId = randomUUID();
   await db.query("INSERT INTO files (id,file_path,original_name) VALUES ($1,'gallery/http','http.jpg')", [imageId]);
   const path = `/galleries/${g.id}/items`;
-  const item = GalleryItems.entity.parse(await request("POST", path, { imageId, title: "Photo" }));
+  const item = GalleryItems.entity.parse(await request("POST", path, { imageId, title: "Photo", linkUrl: "/vehicles", linkLabel: "Catalog" }));
+  assert.equal(item.linkUrl, "/vehicles"); assert.equal(item.linkLabel, "Catalog");
+  assert.equal(GalleryItems.listResult.parse(await request("GET", path))[0]?.linkUrl, "/vehicles");
   assert.equal(GalleryItems.listResult.parse(await request("GET", path))[0]?.originalName, "http.jpg");
   const updated = GalleryItems.entity.parse(await request("PATCH", `${path}/${item.id}`, { sortOrder: 9, label: "New" }));
   assert.equal(updated.sortOrder, 9);
+  assert.equal(updated.linkUrl, "/vehicles");
+  await request("PATCH", `${path}/${item.id}`, { linkUrl: "javascript:alert(1)" }, 400);
+  const cleared = GalleryItems.entity.parse(await request("PATCH", `${path}/${item.id}`, { linkUrl: "", linkLabel: null }));
+  assert.equal(cleared.linkUrl, null); assert.equal(cleared.linkLabel, null);
   await request("PATCH", `${path}/${item.id}`, { imageId: randomUUID(), title: "Replacement" }, 400);
   assert.equal(GalleryItems.listResult.parse(await request("GET", path))[0]?.imageId, imageId);
   await request("PATCH", `/galleries/${randomUUID()}/items/${item.id}`, { label: "Wrong" }, 404);

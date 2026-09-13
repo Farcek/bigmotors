@@ -1,16 +1,10 @@
-import path from "node:path";
 import { ConfigFiles } from "@bigmotors/core";
+import { storedFileHeaders } from "@bigmotors/core/file-storage";
 import { FileService } from "@bigmotors/db";
 import type { Container } from "@napp/di";
 import { NappError } from "@napp/error";
 import { Router } from "express";
 import { resolveStoredFile } from "./storage-path.js";
-
-const inlineTypes: Readonly<Record<string, string>> = {
-  ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
-  ".gif": "image/gif", ".webp": "image/webp", ".avif": "image/avif",
-  ".bmp": "image/bmp", ".ico": "image/x-icon",
-};
 
 function readError(error: unknown): NappError {
   if (error instanceof NappError) return error;
@@ -31,12 +25,7 @@ export function buildFileReadRouter(di: Container): Router {
       const diskPath = await resolveStoredFile(root, file.filePath);
 
       // Only stored metadata affects presentation; the URL name is never inspected.
-      const type = inlineTypes[path.extname(file.originalName).toLowerCase()];
-      if (type) res.type(type);
-      else res.attachment(file.originalName).type("application/octet-stream");
-      res.setHeader("Cache-Control", "no-store");
-      res.setHeader("X-Content-Type-Options", "nosniff");
-      res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'");
+      res.set(storedFileHeaders(file.originalName));
       res.sendFile(diskPath, { dotfiles: "allow", cacheControl: false, lastModified: false, acceptRanges: false }, (error) => {
         if (!error) return;
         if (!res.headersSent) {

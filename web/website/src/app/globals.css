@@ -12,6 +12,9 @@
     --color-border: #e4e4e7; */
 
     --color-primary: #4aeeb6;
+
+    --color-section-dark-bg: #1B1B1B;
+    --color-section-dark-text: #FFFFFF;
     /* --color-primary-hover: #2bc99a;
     --color-on-primary: #18181b; */
 }

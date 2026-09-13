@@ -1,5 +1,6 @@
 import { createAction } from "@napp/dti-core";
 import { z } from "zod";
+import { isGalleryLinkUrl } from "@bigmotors/core";
 import { idParams, referenceListQuery } from "./common.js";
 
 const optionalText = (length: number) => z.string().trim().max(length).transform((v) => v || null).nullable().optional();
@@ -26,10 +27,12 @@ export namespace GalleryItems {
     id: z.string().uuid(), galleryId: z.string().uuid(), imageId: z.string().uuid(),
     sortOrder: z.number().int().min(-2147483648).max(2147483647),
     title: z.string().max(255).nullable(), label: z.string().max(255).nullable(), desc: z.string().max(512).nullable(), ...dates,
+    linkUrl: z.string().max(2048).nullable(), linkLabel: z.string().max(255).nullable(),
   }).strict();
   export const createBody = z.object({
     imageId: z.string().uuid(), sortOrder: z.number().int().min(-2147483648).max(2147483647).optional(),
     title: optionalText(255), label: optionalText(255), desc: optionalText(512),
+    linkUrl: optionalText(2048).refine(isGalleryLinkUrl), linkLabel: optionalText(255),
   }).strict();
   export const updateBody = createBody.omit({ imageId: true }).partial().refine(hasFields, "At least one field is required.");
   export const ownerParams = z.object({ galleryId: z.string().uuid() }).strict();

@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             Үндсэн агуулга руу очих
           </a>
           <SiteHeader />
-          <main id="main-content" className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-8">
+          <main id="main-content" className="min-w-0 flex-1">
             {children}
           </main>
           <footer className="border-t border-zinc-200 px-4 py-5 text-sm text-zinc-600 sm:px-6 lg:px-8">

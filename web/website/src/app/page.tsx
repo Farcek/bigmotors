@@ -1,5 +1,7 @@
+import { BodyContainer, SectionDark } from "../components/helper";
 import HomeCarousel from "../components/home.carousel";
 import { getGalleryByKey } from "../server/galleries";
+import { toHomeSlides } from "../server/home-slides";
 
 export default async function HomePage() {
   const gallery = await getGalleryByKey("home");
@@ -12,10 +14,12 @@ export default async function HomePage() {
 
   return (
     <div>
-      <HomeCarousel />
-
-      <pre className="max-w-full whitespace-pre-wrap break-all font-mono text-sm">{JSON.stringify(gallery, null, 2)}</pre>
+      <h1 className="sr-only">BigMotors LLC</h1>
+      <SectionDark>
+        <BodyContainer>
+          <HomeCarousel slides={toHomeSlides(gallery.items)} />
+        </BodyContainer>
+      </SectionDark>
     </div>
-    
   );
 }

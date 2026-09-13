@@ -24,6 +24,8 @@ export const galleryItem = pgTable("gallery_item", {
   label: varchar("label", { length: 255 }),
   desc: varchar("desc", { length: 512 }),
   imageId: uuid("image_id").notNull().references(() => files.id, { onDelete: "restrict" }),
+  linkUrl: varchar("link_url", { length: 2048 }),
+  linkLabel: varchar("link_label", { length: 255 }),
 }, (t) => [
   index("gallery_item_order_idx").on(t.galleryId, t.sortOrder, t.id),
   index("gallery_item_image_idx").on(t.imageId),

@@ -2,6 +2,7 @@ import { defineInject, INJECT, TOKEN, Token } from "@napp/di";
 import { NappError } from "@napp/error";
 import { and, asc, eq, ilike, or } from "drizzle-orm";
 import { z } from "zod";
+import { isGalleryLinkUrl } from "@bigmotors/core";
 import { TKN_DB, type BigMotorsDb } from "../db.js";
 import { gallery, galleryItem } from "../schema/gallery.js";
 import { files } from "../schema/files.js";
@@ -10,6 +11,7 @@ const optionalText = (length: number) => z.string().trim().max(length).transform
 const fields = z.object({ key: z.string().trim().min(1).max(255), name: z.string().trim().min(1).max(255), desc: optionalText(512) }).strict();
 const itemFields = z.object({
   title: optionalText(255), label: optionalText(255), desc: optionalText(512),
+  linkUrl: optionalText(2048).refine(isGalleryLinkUrl), linkLabel: optionalText(255),
   imageId: z.string().uuid(), sortOrder: z.number().int().min(-2147483648).max(2147483647).optional(),
 }).strict();
 const hasFields = (v: object) => Object.values(v).some((field) => field !== undefined);
@@ -89,6 +91,7 @@ export class GalleryService {
     return storage(() => this.db.select({
       id: galleryItem.id, galleryId: galleryItem.galleryId, sortOrder: galleryItem.sortOrder,
       title: galleryItem.title, label: galleryItem.label, desc: galleryItem.desc, imageId: galleryItem.imageId,
+      linkUrl: galleryItem.linkUrl, linkLabel: galleryItem.linkLabel,
       created: galleryItem.created, updated: galleryItem.updated, originalName: files.originalName,
     }).from(galleryItem).innerJoin(files, eq(files.id, galleryItem.imageId))
       .where(eq(galleryItem.galleryId, galleryId))

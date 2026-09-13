@@ -43,6 +43,13 @@
       "when": 1789236528135,
       "tag": "0005_gallery_key",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789240412492,
+      "tag": "0006_gallery_item_links",
+      "breakpoints": true
     }
   ]
 }

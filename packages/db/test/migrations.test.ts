@@ -42,7 +42,7 @@ test("migration history contains every current trigger definition", () => {
   const migrations = readMigrationFiles(migrationConfig);
   const definitions = migrations.flatMap((migration) => migration.sql).join("\n").replaceAll("CREATE OR REPLACE FUNCTION", "CREATE FUNCTION");
   for (const hook of schemaHooks) assert.ok(definitions.includes(new PgDialect().sqlToQuery(hook).sql));
-  assert.equal(migrations.length, 6);
+  assert.equal(migrations.length, 7);
 });
 
 test("migrating twice does not reapply SQL or duplicate the migration history", async () => {
@@ -122,13 +122,13 @@ test("gallery key migration backfills existing rows without losing items", async
     const old = (await db.query<{ id: string; name: string }>("INSERT INTO gallery (name) VALUES ('Same name'),('Same name') RETURNING id,name")).rows;
     const file = (await db.query<{ id: string }>("INSERT INTO files (file_path,original_name) VALUES ('upgrade/image','image') RETURNING id")).rows[0]!;
     await db.query("INSERT INTO gallery_item (gallery_id,image_id) VALUES ($1,$2)", [old[0]!.id, file.id]);
-    const items = (await db.query("SELECT * FROM gallery_item")).rows;
+    const items = (await db.query<Record<string, unknown>>("SELECT * FROM gallery_item")).rows;
     const usage = (await db.query("SELECT usage FROM files")).rows;
     await migrate(orm, migrationConfig);
     for (const row of old) {
       assert.deepEqual((await db.query('SELECT id,name,key FROM gallery WHERE id=$1', [row.id])).rows, [{ ...row, key: `gallery-${row.id}` }]);
     }
-    assert.deepEqual((await db.query("SELECT * FROM gallery_item")).rows, items);
+    assert.deepEqual((await db.query("SELECT * FROM gallery_item")).rows, items.map((item) => ({ ...item, link_url: null, link_label: null })));
     assert.deepEqual((await db.query("SELECT usage FROM files")).rows, usage);
     await migrate(orm, migrationConfig);
     assert.equal((await db.query("SELECT * FROM gallery")).rows.length, 2);

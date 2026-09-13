@@ -23,3 +23,15 @@ test("item contracts preserve zero and enforce UUID and integer boundaries", () 
   assert.equal(GalleryItems.listQuery.parse({ limit: "21", offset: "20" }).limit, 21);
   for (const query of [{ limit: 101 }, { offset: -1 }, { limit: "bad" }]) assert.equal(Galleries.listQuery.safeParse(query).success, false);
 });
+
+test("gallery item links accept local and HTTP URLs, clear optional values and reject unsafe links", () => {
+  for (const linkUrl of ["/vehicles", "/vehicles?brand=toyota#list", "https://example.com/a", "http://example.com", "/", null, ""]) {
+    assert.equal(GalleryItems.updateBody.safeParse({ linkUrl }).success, true);
+  }
+  for (const linkUrl of ["javascript:alert(1)", "data:text/html,test", "//example.com", "/\\example.com", "/a\nb", "https://user:pass@example.com", "/" + "a".repeat(2048)]) {
+    assert.equal(GalleryItems.updateBody.safeParse({ linkUrl }).success, false, String(linkUrl));
+  }
+  assert.deepEqual(GalleryItems.updateBody.parse({ linkUrl: " ", linkLabel: " " }), { linkUrl: null, linkLabel: null });
+  assert.equal(GalleryItems.updateBody.safeParse({ linkLabel: "x".repeat(256) }).success, false);
+  assert.equal(GalleryItems.updateBody.safeParse({ linkLabel: "x".repeat(255) }).success, true);
+});

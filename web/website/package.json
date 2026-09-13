@@ -9,7 +9,7 @@
     "start": "next start --hostname 127.0.0.1 --port 64400",
     "typecheck": "next typegen && tsc --noEmit",
     "test:routes": "node --test test/routes.test.ts",
-    "test": "node --test test/page-queries.test.ts test/gallery-queries.test.ts"
+    "test": "node --import=tsx --test test/page-queries.test.ts test/gallery-queries.test.ts test/file-response.test.ts test/home-carousel.test.tsx"
   },
   "postcss": {
     "plugins": {
@@ -24,8 +24,10 @@
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
+    "@types/sanitize-html": "2.16.1",
     "postcss": "^8.5.28",
     "tailwindcss": "4.3.3",
+    "tsx": "4.23.13",
     "typescript": "6.0.3"
   },
   "dependencies": {
@@ -33,8 +35,10 @@
     "@bigmotors/db": "workspace:*",
     "@napp/di": "1.0.10",
     "@tabler/icons-react": "3.46.0",
+    "embla-carousel-react": "8.6.0",
     "next": "16.3.4",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "sanitize-html": "2.17.7"
   }
 }
