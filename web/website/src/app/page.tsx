@@ -1,6 +1,7 @@
 import { BodyContainer, SectionDark } from "../components/helper";
 import HomeCarousel from "../components/home.carousel";
 import HomeSearch from "../components/home.search";
+import { HomeFinancingCalculator } from "../components/home.financing.calculator";
 import { getGalleryByKey } from "../server/galleries";
 import { toHomeSlides } from "../server/home-slides";
 import { getHomeVehicleData } from "../server/public-vehicles";
@@ -25,6 +26,7 @@ export default async function HomePage() {
           <HomeSearch {...vehicleData} />
         </BodyContainer>
       </SectionDark>
+      <HomeFinancingCalculator imageUrl={vehicleData.initialResult.items.find((item) => item.imageUrl)?.imageUrl} />
     </div>
   );
 }
