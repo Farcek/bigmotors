@@ -32,12 +32,13 @@
 
 - Компонент: `src/components/home.carousel/index.tsx`; өгөгдөл бэлтгэх: `src/server/home-slides.ts`.
 - Embla Carousel React 8.6.0, Tailwind utility болон Tabler icon ашиглана. Header, SectionDark, BodyContainer болон 1440px гадна хүрээг хэвээр хадгална; carousel-ийн хамгийн их өргөн 1200px.
-- Slide бүр эх зургийг дэвсгэрт, label → title → description → холбоос дарааллаар харуулна. Responsive хамгийн бага өндөр 440/520/580px; урт агуулгад өсөх бөгөөд бүх slide ижил өндөртэй. Текст болон control давхцахгүй.
+- Desktop дээр зүүн талд label → title → description, төвд идэвхтэй зураг, баруун ард дараагийн зургийн томруулсан бүдэг preview байрлана. CTA нь идэвхтэй зургийн доод хэсэгт, navigation баруун доор байна. Desktop хамгийн бага өндөр 600/640px; текстийн хэсэг бүх slide-ийн агуулгаар тогтвортой өндөр авна.
+- Mobile дээр текст дээрээ, идэвхтэй зураг доороо, дараагийн зургийн хэсэг баруун талд харагдана. Navigation зургийн доор байрлана. Арын preview нь тусдаа гоёлын давхарга тул сүүлийн slide дээр ч эхний зураг баруун талд харагдана.
 - `label`, `title`, `desc` HTML-ийг `sanitize-html` 2.17.7-оор server талд цэвэрлэнэ. Paragraph, line break, bold, italic, underline, strike, list болон зөвшөөрсөн холбоос үлдэнэ. Script, iframe, SVG, image, event handler, style/class attribute ажиллуулахгүй; DB дахь эх HTML өөрчлөгдөхгүй.
 - Зураг `/files/:imageId/:originalName` route-оор эх byte-аар ирнэ; originalName URL encode хийнэ. Next image optimizer, crop файл үүсгэх болон формат шалгахгүй. `object-cover` нь зөвхөн дэлгэц дээрх багтаалт. Эхний зураг eager/high priority, дараагийнх lazy. Ачаалж чадаагүй зураг placeholder-той; carousel болон текст хэвээр.
 - `linkUrl` байхгүй/аюултай бол CTA харагдахгүй. URL байгаа боловч `linkLabel` хоосон бол **Дэлгэрэнгүй**. Холбоос нь тухайн tab-д нээгдэнэ; текстийг HTML гэж ажиллуулахгүй.
 - Autoplay байхгүй. Swipe/drag, өмнөх/дараах сум, indicator, keyboard Left/Right/Home/End дэмжинэ. Олон зурагтай үед loop хийнэ; нэг зурагтай үед navigation нуугдана.
-- 5 хүртэл зурагт indicator; түүнээс олонд хэт урт toolbar үүсгэхгүйгээр native select ашиглана. Mobile дээр текст, зураг нэг full-width slide байна.
+- 5 хүртэл зурагт indicator; түүнээс олонд хэт урт toolbar үүсгэхгүйгээр native select ашиглана.
 - Идэвхгүй slide нь `inert`/`aria-hidden`; холбоос нь tab дараалалд орохгүй. Идэвхтэй дугаарыг screen reader-д мэдэгдэнэ. Reduced-motion үед шилжилтийн animation байхгүй.
 - Unit/SSR тест: mapping, HTML safety, optional CTA, empty/single/many slide. Route тест carousel SSR болон JSON preview арилсныг шалгана. Mobile/desktop дээр navigation, keyboard, drag болон зураг ачаалалтыг нягтална.
 

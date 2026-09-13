@@ -42,7 +42,8 @@ test("carousel SSR renders real images, sanitized HTML, CTA and hides inactive s
   const html = renderToStaticMarkup(<HomeCarousel slides={slides} />);
   assert.match(html, /aria-roledescription="carousel"/);
   assert.equal((html.match(/aria-roledescription="slide"/g) ?? []).length, 2);
-  assert.equal((html.match(/inert=""/g) ?? []).length, 1);
+  assert.equal((html.match(/inert=""/g) ?? []).length, 2);
+  assert.match(html, /data-carousel-preview/);
   assert.match(html, /loading="eager"/); assert.match(html, /loading="lazy"/);
   assert.match(html, /fetchPriority="high"/i);
   assert.match(html, /<strong>каталог<\/strong>/);
@@ -54,6 +55,7 @@ test("empty, single and large galleries render appropriate controls and optional
   assert.equal(renderToStaticMarkup(<HomeCarousel slides={[]} />), "");
   const single = renderToStaticMarkup(<HomeCarousel slides={toHomeSlides([{ ...item, linkUrl: null, title: null, label: null, desc: null }])} />);
   assert.doesNotMatch(single, /<button|<a\s|<select|role="heading"/);
+  assert.doesNotMatch(single, /data-carousel-preview/);
   assert.match(single, /<img/);
   const many = renderToStaticMarkup(<HomeCarousel slides={toHomeSlides(Array.from({ length: 10 }, (_, i) => ({ ...item, id: String(i) })))} />);
   assert.match(many, /<select[^>]+aria-label="Зураг сонгох"/);
