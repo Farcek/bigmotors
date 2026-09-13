@@ -5,6 +5,21 @@ const baseUrl = process.env.WEBSITE_TEST_URL ?? "http://127.0.0.1:64400";
 const expectHomeError = process.env.WEBSITE_TEST_HOME_ERROR === "1";
 const id = "00000000-0000-4000-8000-000000000001";
 
+test("public lookup endpoint returns only public reference fields without caching", async () => {
+  const response = await fetch(new URL("/api/vehicles/lookups", baseUrl));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  const data = await response.json();
+  assert.deepEqual(Object.keys(data).sort(), ["brands", "categories", "colors", "models", "variants"]);
+  for (const [key, rows] of Object.entries(data)) {
+    assert.ok(Array.isArray(rows));
+    for (const row of rows) {
+      const expected = key === "models" ? ["brandId", "id", "name"] : key === "variants" ? ["id", "modelId", "name"] : ["id", "name"];
+      assert.deepEqual(Object.keys(row).sort(), expected);
+    }
+  }
+});
+
 test("home renders gallery carousel or the explicitly expected production error", async () => {
   const response = await fetch(new URL("/", baseUrl));
   assert.equal(response.status, expectHomeError ? 500 : 200);

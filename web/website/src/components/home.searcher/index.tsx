@@ -37,10 +37,11 @@ function RangeField({ label, name, maxLength = 10, values, onChange }: { label: 
   </fieldset>;
 }
 
-export default function HomeSearcher({ filters, lookups = EMPTY_LOOKUPS, onFiltersChange, onSearch, busy = false }: {
+export default function HomeSearcher({ filters, lookups = EMPTY_LOOKUPS, onFiltersChange, onSearch, busy = false, basicOnly = false }: {
   filters?: HomeSearchFilters;
   lookups?: HomeSearchLookups;
   busy?: boolean;
+  basicOnly?: boolean;
   onFiltersChange?: (filters: HomeSearchFilters) => void;
   onSearch?: (filters: HomeSearchFilters) => void;
 }) {
@@ -80,7 +81,7 @@ export default function HomeSearcher({ filters, lookups = EMPTY_LOOKUPS, onFilte
       </button>
     </div>
 
-    <div className="mt-4 flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1">
+    {!basicOnly && <div className="mt-4 flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1">
       <button type="button" aria-expanded={expanded} aria-controls={detailsId} onClick={() => setExpanded((value) => !value)} className="flex min-h-11 items-center gap-2 rounded text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
         {expanded ? <IconMinus size={18} aria-hidden="true" /> : <IconPlus size={18} aria-hidden="true" />}
         {expanded ? "Хураах" : "Дэлгэрэнгүй хайлт"}
@@ -89,9 +90,9 @@ export default function HomeSearcher({ filters, lookups = EMPTY_LOOKUPS, onFilte
       <button type="reset" className="flex min-h-11 items-center gap-1.5 rounded text-sm text-search-muted hover:text-search-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
         <IconX size={16} aria-hidden="true" />Цэвэрлэх
       </button>
-    </div>
+    </div>}
 
-    <div id={detailsId} hidden={!expanded} className="mt-4 border-t border-search-border pt-6">
+    {!basicOnly && <div id={detailsId} hidden={!expanded} className="mt-4 border-t border-search-border pt-6">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <RangeField label="Үйлдвэрлэсэн он" name="year" maxLength={4} values={values} onChange={changeField} />
         <RangeField label="Үнэ (₮)" name="price" maxLength={11} values={values} onChange={changeField} />
@@ -104,6 +105,6 @@ export default function HomeSearcher({ filters, lookups = EMPTY_LOOKUPS, onFilte
         {select("Жолооны байрлал", "steering", [["left", "Зүүн"], ["right", "Баруун"]])}
         {select("Гадна өнгө", "color", choices(lookups.colors), !lookups.colors.length)}
       </div>
-    </div>
+    </div>}
   </form>;
 }

@@ -1,6 +1,7 @@
 import { getVehicleSearchHref } from "@bigmotors/core";
 import { IconMapPin } from "@tabler/icons-react";
 import { BodyContainer } from "../helper";
+import { COMPANY_ADDRESS, COMPANY_DESCRIPTION } from "../company-info";
 
 const sections = [
   { title: "Каталог", links: [
@@ -44,10 +45,10 @@ export function SiteFooter() {
       </div>
       <address id="footer-address" className="mt-5 flex scroll-mt-6 items-start gap-2 text-xs leading-6 text-section-dark-text/65 not-italic">
         <IconMapPin size={16} className="mt-1 shrink-0" aria-hidden="true" />
-        <span>БЗД 16-р хороолол. Да Хүрээ явах зам дагуу BIG Motors auto showroom., Ulaanbaatar, Mongolia</span>
+        <span>{COMPANY_ADDRESS}</span>
       </address>
       <p id="footer-about" className="mt-5 scroll-mt-6 text-xs leading-6 text-section-dark-text/65">
-        BigMotors LLC компани нь автомашины дилер компани бөгөөд бид автомашин авах, зарах, сольж сайжруулах хүсэлтэй харилцагчдадаа мэргэжлийн үйлчилгээг үзүүлж байна.
+        {COMPANY_DESCRIPTION}
       </p>
     </BodyContainer>
   </footer>;
