@@ -1,6 +1,6 @@
 import { defineInject, INJECT, TOKEN, Token } from "@napp/di";
 import { NappError } from "@napp/error";
-import { CATALOG_LIMITS, DRIVETRAINS, FUEL_TYPES, STEERING_POSITIONS, TRANSMISSIONS, VEHICLE_CONDITIONS } from "@bigmotors/core";
+import { vehicleFilterFields, vehicleQueryNumber, validateVehicleRanges } from "@bigmotors/core";
 import { and, asc, count, desc, eq, gte, lte, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
@@ -11,24 +11,7 @@ import { files } from "../schema/files.js";
 import { colors, vehicleBrands, vehicleModels, vehicleVariants, vehicleBodyTypes } from "../schema/references.js";
 
 export const HOME_VEHICLE_PAGE_SIZE = 12;
-const number = (min: number, max: number) => z.union([z.number(), z.string().regex(/^\d{1,11}$/).transform(Number)]).pipe(z.number().int().min(min).max(max));
-const uuid = z.string().uuid().transform((value) => value.toLowerCase()).optional();
-export const publicVehicleQuery = z.object({
-  brand: uuid, model: uuid, variant: uuid, category: uuid, color: uuid,
-  condition: z.enum(VEHICLE_CONDITIONS).optional(), fuel: z.enum(FUEL_TYPES).optional(),
-  transmission: z.enum(TRANSMISSIONS).optional(), drivetrain: z.enum(DRIVETRAINS).optional(), steering: z.enum(STEERING_POSITIONS).optional(),
-  mileage_min: number(0, CATALOG_LIMITS.mileageMax).optional(), mileage_max: number(0, CATALOG_LIMITS.mileageMax).optional(),
-  engine_min: number(0, CATALOG_LIMITS.engineCapacityMax).optional(), engine_max: number(0, CATALOG_LIMITS.engineCapacityMax).optional(),
-  year_min: number(CATALOG_LIMITS.yearMin, 32767).optional(), year_max: number(CATALOG_LIMITS.yearMin, 32767).optional(),
-  price_min: number(0, CATALOG_LIMITS.priceMax).optional(), price_max: number(0, CATALOG_LIMITS.priceMax).optional(),
-  page: number(1, 3).default(1),
-}).strict().superRefine((value, ctx) => {
-  for (const prefix of ["mileage", "engine", "year", "price"] as const) {
-    const min = value[`${prefix}_min`]; const max = value[`${prefix}_max`];
-    if (min !== undefined && max !== undefined && min > max) ctx.addIssue({ code: "custom", path: [`${prefix}_max`], message: "Invalid range." });
-  }
-  for (const key of ["year_min", "year_max"] as const) if (value[key] !== undefined && value[key] > new Date().getUTCFullYear()) ctx.addIssue({ code: "custom", path: [key], message: "Future year." });
-});
+export const publicVehicleQuery = vehicleFilterFields.extend({ page: vehicleQueryNumber(1, 3).default(1) }).superRefine(validateVehicleRanges);
 export type PublicVehicleQuery = z.input<typeof publicVehicleQuery>;
 export class PublicVehicleQueryError extends NappError {
   constructor() { super("Invalid vehicle search.", { code: "INVALID_VEHICLE_SEARCH", status: 400 }); }

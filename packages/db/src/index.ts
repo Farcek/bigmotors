@@ -1,5 +1,6 @@
 export * from "./db.js";
 export * from "./service/gallery.js";
+export * from "./service/home-product-group.js";
 export * from "./schema/index.js";
 export * from "./service/color.js";
 export * from "./service/file.js";

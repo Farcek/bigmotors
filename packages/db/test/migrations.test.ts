@@ -42,7 +42,7 @@ test("migration history contains every current trigger definition", () => {
   const migrations = readMigrationFiles(migrationConfig);
   const definitions = migrations.flatMap((migration) => migration.sql).join("\n").replaceAll("CREATE OR REPLACE FUNCTION", "CREATE FUNCTION");
   for (const hook of schemaHooks) assert.ok(definitions.includes(new PgDialect().sqlToQuery(hook).sql));
-  assert.equal(migrations.length, 8);
+  assert.equal(migrations.length, 9);
 });
 
 test("migrating twice does not reapply SQL or duplicate the migration history", async () => {

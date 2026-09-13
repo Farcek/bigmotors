@@ -13,6 +13,9 @@ importers:
       '@napp/di':
         specifier: 1.0.10
         version: 1.0.10
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: 24.13.3

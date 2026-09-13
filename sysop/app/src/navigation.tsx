@@ -47,6 +47,12 @@ export const navigationSections = [
     ],
   },
   {
+    label: "Website",
+    items: [
+      { label: "Нүүр хуудас", href: "/website/home", icon: IconHome },
+    ],
+  },
+  {
     label: "Систем",
     items: [
       { label: "UI Demo", href: "/demo", icon: IconLayoutDashboard },

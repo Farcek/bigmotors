@@ -1,6 +1,7 @@
 import { sql, type SQL } from "drizzle-orm";
 import { galleryHooks } from "./gallery-hooks.js";
 import { pageHooks } from "./page-hooks.js";
+import { homeProductGroupHooks } from "./home-product-group-hooks.js";
 
 // Source definitions only. Importing this module never changes a database.
 // Drizzle's table metadata cannot represent PostgreSQL triggers. The initial SQL
@@ -8,6 +9,7 @@ import { pageHooks } from "./page-hooks.js";
 export const schemaHooks: readonly SQL[] = [
   ...galleryHooks,
   ...pageHooks,
+  ...homeProductGroupHooks,
   sql.raw(`CREATE FUNCTION bm_set_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN NEW.updated_at := clock_timestamp(); RETURN NEW; END $$`),
   sql.raw(`CREATE FUNCTION bm_guard_product() RETURNS trigger LANGUAGE plpgsql AS $$

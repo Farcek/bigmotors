@@ -1,5 +1,7 @@
 # Өгөгдлийн сан
 
+- [Нүүр хуудасны бүлэг](home-product-group.md): хадгалсан автомашины хайлтын нөхцөл, зураг, дараалал.
+
 - [Page schema](pages.md): JSONB агуулга/meta, нийтлэлийн төлөв болон files usage.
 - [Settings schema](settings.md): динамик key/value тохиргоо.
 

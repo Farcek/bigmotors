@@ -12,7 +12,7 @@
   "files": ["dist"],
   "sideEffects": false,
   "scripts": { "build": "tsdown", "dev": "tsdown --watch", "typecheck": "tsc --noEmit" },
-  "dependencies": { "@napp/di": "1.0.10" },
+  "dependencies": { "@napp/di": "1.0.10", "zod": "4.4.3" },
   "devDependencies": { "@types/node": "24.13.3", "tsdown": "0.23.0", "typescript": "6.0.3" },
   "engines": {
     "node": ">=24.11.0 <25"

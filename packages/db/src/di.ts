@@ -6,6 +6,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema/index.js";
 import { ColorService } from "./service/color.js";
 import { GalleryService } from "./service/gallery.js";
+import { HomeProductGroupService } from "./service/home-product-group.js";
 import { PageService } from "./service/page.js";
 import { SettingsService } from "./service/settings.js";
 import { FileService } from "./service/file.js";
@@ -52,6 +53,7 @@ export function diDBServiceProviders() {
         providers: [
             asClass(ColorService),
             asClass(GalleryService),
+            asClass(HomeProductGroupService),
             asClass(PageService),
             asClass(SettingsService),
             asClass(FileService),

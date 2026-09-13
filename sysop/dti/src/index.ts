@@ -1,5 +1,6 @@
 export * from "./health.js";
 export * from "./gallery.js";
+export * from "./home-product-group.js";
 export * from "./file.js";
 export * from "./vehicle.js";
 export * from "./color.js";

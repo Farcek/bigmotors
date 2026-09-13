@@ -2,6 +2,7 @@ import type { Container } from "@napp/di";
 import { buildDTI } from "./dti.js";
 import { buildColorsApi } from "./colors.js";
 import { buildGalleriesApi } from "./galleries.js";
+import { buildHomeProductGroupsApi } from "./home-product-groups.js";
 import { buildPagesApi } from "./pages.js";
 import { buildSettingsApi } from "./settings.js";
 import { buildBranchesApi } from "./branches.js";
@@ -23,6 +24,7 @@ export function buildAPI(di:Container) {
     const dti = buildDTI(di);
     buildColorsApi(dti);
     buildGalleriesApi(dti);
+    buildHomeProductGroupsApi(dti);
     buildPagesApi(dti);
     buildSettingsApi(dti);
     buildBranchesApi(dti);

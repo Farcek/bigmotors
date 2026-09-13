@@ -1,5 +1,6 @@
 export * from "./branches.js";
 export * from "./gallery.js";
+export * from "./home-product-group.js";
 export * from "./locations.js";
 export * from "./references.js";
 export * from "./files.js";
