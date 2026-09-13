@@ -177,6 +177,7 @@ erDiagram
         text sale_status "NULL; CHECK"
         text arrival_status "NULL; CHECK"
         boolean financing_available "NULL"
+        varchar youtube_url "NULL, max 2048, one YouTube video"
     }
 
     vehicle_feature_links {

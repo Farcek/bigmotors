@@ -42,7 +42,7 @@ test("migration history contains every current trigger definition", () => {
   const migrations = readMigrationFiles(migrationConfig);
   const definitions = migrations.flatMap((migration) => migration.sql).join("\n").replaceAll("CREATE OR REPLACE FUNCTION", "CREATE FUNCTION");
   for (const hook of schemaHooks) assert.ok(definitions.includes(new PgDialect().sqlToQuery(hook).sql));
-  assert.equal(migrations.length, 7);
+  assert.equal(migrations.length, 8);
 });
 
 test("migrating twice does not reapply SQL or duplicate the migration history", async () => {
@@ -85,12 +85,13 @@ test("restoring hooks preserves existing data and fixes first publication after 
     await db.query("UPDATE files SET usage=ARRAY[$1::uuid] WHERE id=$2", [product!.id,file!.id]);
     await assert.rejects(db.query("UPDATE products SET publication_status='published' WHERE id=$1", [product!.id]),
       (error: unknown) => typeof error === "object" && error !== null && "constraint" in error && error.constraint === "products_published_required");
-    const snapshots = new Map<string, unknown>();
+    const snapshots = new Map<string, Record<string, unknown>[]>();
     for (const table of ["products", "vehicles", "files", "product_images", "colors"]) {
       snapshots.set(table, (await db.query(`SELECT * FROM ${table} ORDER BY 1`)).rows);
     }
     await migrate(orm, migrationConfig);
-    for (const [table, rows] of snapshots) assert.deepEqual((await db.query(`SELECT * FROM ${table} ORDER BY 1`)).rows, rows);
+    for (const [table, rows] of snapshots) assert.deepEqual((await db.query(`SELECT * FROM ${table} ORDER BY 1`)).rows,
+      table === "vehicles" ? rows.map((row) => ({ ...row, youtube_url: null })) : rows);
     const { rows: [published] } = await db.query<{ first_published_at: Date }>(
       "UPDATE products SET publication_status='published' WHERE id=$1 RETURNING first_published_at", [product!.id]);
     assert.ok(published!.first_published_at);

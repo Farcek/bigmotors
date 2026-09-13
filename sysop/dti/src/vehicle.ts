@@ -1,7 +1,7 @@
 import {
   CATALOG_LIMITS, CURRENCIES, DRIVETRAINS, FUEL_TYPES, PRICE_DISPLAY_MODES,
   PUBLICATION_STATUSES, STEERING_POSITIONS, TRANSMISSIONS,
-  VEHICLE_ARRIVAL_STATUSES, VEHICLE_CONDITIONS, VEHICLE_SALE_STATUSES,
+  VEHICLE_ARRIVAL_STATUSES, VEHICLE_CONDITIONS, VEHICLE_SALE_STATUSES, getYouTubeVideoUrl,
 } from "@bigmotors/core";
 import { createAction } from "@napp/dti-core";
 import { z } from "zod";
@@ -33,6 +33,7 @@ const vehicleFields = {
   branchId: uuid.nullable(), locationId: uuid.nullable(), conditionDescription: shortText.nullable(),
   saleStatus: z.enum(VEHICLE_SALE_STATUSES).nullable(), arrivalStatus: z.enum(VEHICLE_ARRIVAL_STATUSES).nullable(),
   financingAvailable: z.boolean().nullable(),
+  youtubeUrl: z.string().max(2048).nullable(),
 };
 
 export namespace Vehicles {
@@ -67,6 +68,7 @@ export namespace Vehicles {
     isFeatured: z.boolean(), internalNote: z.string().nullable(),
     manufactureYear: inputYear.nullable(), importYear: inputYear.nullable(),
     conditionDescription: optionalText(CATALOG_LIMITS.description),
+    youtubeUrl: optionalText(2048).refine((value) => value == null || getYouTubeVideoUrl(value) !== null, "YouTube video URL is required."),
     images: imagesInput, featureIds: uniqueIds,
   }).strict().partial();
 

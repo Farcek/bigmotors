@@ -22,6 +22,7 @@ export const vehicles = pgTable("vehicles", {
   locationId: uuid("location_id").references(() => locations.id, { onDelete: "restrict" }),
   saleStatus: text("sale_status", { enum: VEHICLE_SALE_STATUSES }), arrivalStatus: text("arrival_status", { enum: VEHICLE_ARRIVAL_STATUSES }),
   financingAvailable: boolean("financing_available"),
+  youtubeUrl: varchar("youtube_url", { length: 2048 }),
 }, (t) => [
   foreignKey({ name: "vehicles_product_type_fk", columns: [t.productId, t.productType], foreignColumns: [products.id, products.productType] }).onDelete("restrict"),
   check("vehicles_type_check", sql`${t.productType} = 'vehicle'`),

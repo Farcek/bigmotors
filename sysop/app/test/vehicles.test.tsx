@@ -13,7 +13,7 @@ test("saved tab state preserves valid tabs and defaults invalid navigation state
 });
 
 test("seven tabs assign every editable vehicle field exactly once", () => {
-  assert.deepEqual(vehicleTabs.map((tab) => tab.label), ["Үндсэн", "Автомашин", "Үзүүлэлт", "Борлуулалт", "Зураг", "Агуулга", "Карт"]);
+  assert.deepEqual(vehicleTabs.map((tab) => tab.label), ["Үндсэн", "Автомашин", "Үзүүлэлт", "Борлуулалт", "Зураг / Видео", "Агуулга", "Карт"]);
   const fields = vehicleTabs.flatMap((tab) => [...tab.fields]);
   assert.equal(fields.length, new Set(fields).size);
   assert.deepEqual([...fields].sort(), Object.keys(initialValues()).sort());
@@ -23,6 +23,14 @@ test("seven tabs assign every editable vehicle field exactly once", () => {
 
 const id = "00000000-0000-4000-8000-000000000001";
 const timestamp = "2026-09-12T00:00:00.000Z";
+
+test("one optional YouTube video validates and clears in the media tab", () => {
+  const values = { ...initialValues(), title: "Video", youtubeUrl: "https://youtu.be/abcdefghijk" };
+  assert.equal(vehiclePayload(values).youtubeUrl, values.youtubeUrl);
+  assert.equal(vehiclePayload({ ...values, youtubeUrl: " " }).youtubeUrl, null);
+  assert.ok(validateVehicle({ ...values, youtubeUrl: "https://example.test/video" }).youtubeUrl);
+  assert.equal(vehicleFieldTab("youtubeUrl"), "images");
+});
 test("draft permits title only and preserves zero, false and optional nulls", () => {
   const values = { ...initialValues(), title: " Test ", mileageKm: 0, financingAvailable: "false" };
   assert.deepEqual(validateVehicle(values), {});

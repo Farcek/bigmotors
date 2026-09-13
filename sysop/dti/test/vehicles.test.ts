@@ -14,7 +14,7 @@ const entity: Vehicles.Entity = {
   bodyTypeId: null, fuelType: null, engineCapacityCc: null, transmission: null, drivetrain: null,
   steeringPosition: null, exteriorColorId: null, interiorColorId: null, seatCount: null,
   condition: null, mileageKm: null, branchId: null, locationId: null, conditionDescription: null,
-  saleStatus: null, arrivalStatus: null, financingAvailable: null,
+  saleStatus: null, arrivalStatus: null, financingAvailable: null, youtubeUrl: null,
   mainImage: null, itemImage: null, images: [], featureIds: [],
 };
 

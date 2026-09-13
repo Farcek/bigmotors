@@ -5,7 +5,7 @@ export const vehicleTabs = [
   { value: "vehicle", label: "Автомашин", fields: ["brandId", "modelId", "variantId", "bodyTypeId", "manufactureYear", "importYear", "vin", "condition", "mileageKm", "conditionDescription"] },
   { value: "specs", label: "Үзүүлэлт", fields: ["fuelType", "engineCapacityCc", "transmission", "drivetrain", "steeringPosition", "seatCount", "exteriorColorId", "interiorColorId", "featureIds"] },
   { value: "sales", label: "Борлуулалт", fields: ["priceDisplayMode", "price", "currency", "financingAvailable", "saleStatus", "arrivalStatus", "branchId", "locationId", "internalNote"] },
-  { value: "images", label: "Зураг", fields: ["images"] },
+  { value: "images", label: "Зураг / Видео", fields: ["images", "youtubeUrl"] },
   { value: "content", label: "Агуулга", fields: ["content"] },
   { value: "card", label: "Карт", fields: ["itemTitle", "itemDesc", "itemImageId", "isFeatured"] },
 ] as const satisfies readonly { value: string; label: string; fields: readonly (keyof VehicleValues)[] }[];

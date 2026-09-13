@@ -127,6 +127,7 @@ export function VehicleForm({ row, lookups, back, tab, onTabChange: setTab, onSa
               </SimpleGrid><Textarea label={labels.internalNote} minRows={3} {...form.getInputProps("internalNote")} />
             </Stack></Tabs.Panel>
             <Tabs.Panel value="images"><Stack>
+              <TextInput label={labels.youtubeUrl} type="url" maxLength={2048} placeholder="https://www.youtube.com/watch?v=..." {...form.getInputProps("youtubeUrl")} />
               <Group justify="space-between"><Text fw={600}>Зургууд ({form.values.images.length})</Text><Button leftSection={<IconPhotoPlus size={18} />} onClick={() => setUploadTarget("images")}>Файл нэмэх</Button></Group>
               {galleryOptions.length > 0 && <Select label="Галерейд нэмэх" searchable data={galleryOptions} value={null} onChange={(fileId) => { if (fileId) form.setFieldValue("images", [...form.values.images, { fileId, sortOrder: form.values.images.length }]); }} />}
               {form.errors.images && <Text c="red" size="sm">{form.errors.images}</Text>}

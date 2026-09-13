@@ -111,6 +111,15 @@ test("vehicle API runs DTI, DI and transactional DB service with original upload
     assert.equal(changed.content, null);
     assert.equal(changed.createdAt, row.createdAt);
     assert.ok(Date.parse(changed.updatedAt) >= Date.parse(row.updatedAt));
+    assert.equal(row.youtubeUrl, null);
+    const video = await patch(row.id, { youtubeUrl: "https://youtu.be/abcdefghijk" });
+    assert.equal(video.youtubeUrl, "https://youtu.be/abcdefghijk");
+    assert.equal((await get(row.id)).youtubeUrl, video.youtubeUrl);
+    assert.equal((await list("?limit=1")).items[0]!.youtubeUrl, video.youtubeUrl);
+    failure(await request("PATCH", `/${row.id}`, { youtubeUrl: "https://example.test/video" }), 400, "DTI_BODY_VALIDATE_ERROR");
+    assert.equal((await patch(row.id, { youtubeUrl: " " })).youtubeUrl, null);
+    await patch(row.id, { youtubeUrl: "https://www.youtube.com/shorts/abcdefghijk" });
+    assert.equal((await patch(row.id, { youtubeUrl: null })).youtubeUrl, null);
   });
 
   await t.test("invalid input, missing identities and non-vehicle products do not write", async () => {

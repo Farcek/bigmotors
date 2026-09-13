@@ -44,6 +44,23 @@
 
 Сангийн заавар: [Embla React](https://www.embla-carousel.com/docs/v8/get-started/react), [sanitize-html](https://github.com/apostrophecms/apostrophe/tree/main/packages/sanitize-html).
 
+## Нүүр хуудасны хайлтын UI
+
+- `src/components/home.searcher/index.tsx`: carousel-ийн доорх цагаан form. Марк, загвар, гүйлт болон хөдөлгүүрийн багтаамж үндсэн мөрөнд байна.
+- Дэлгэрэнгүй товч нь form дотроо нэмэлт шүүлтүүдийг нээнэ/хураана. Хураахад утгууд хадгалагдана; нэмэлт идэвхтэй шүүлтийн тоо харагдана. Цэвэрлэх нь бүх утгыг анхны төлөвт оруулна.
+- Mobile нэг, `sm` хоёр багана; `lg` дээр үндсэн мөр хэвтээ, нэмэлт шүүлтүүд дөрвөн багана. Доод/дээд утгууд хосоороо байна.
+- Одоогоор зөвхөн UI: лавлах өгөгдөл, API, үр дүнгийн жагсаалт холбоогүй. DB лавлахын select-ууд disabled; enum сонголтууд ажиллана. Хайх нь navigation/request хийхгүй.
+- Дараагийн шатанд Хайх дарахад нүүр хуудсан дотор үр дүн шинэчилнэ; `/vehicles` рүү шилжүүлэхгүй.
+
+### Grid удирдлага
+
+- `src/components/homer.search.grid/index.tsx`: Хуучин / Шинэ / Бүгд шүүлт, хуудасны зураасан indicator, desktop 2/3/4/6 баганын сонголт, Бүгдийг харах холбоос. Машины card энэ component-д байхгүй.
+- Нүүр хуудсанд хамгийн ихдээ 3 хуудас. Бодит query холбох үед нийт хуудасны тоогоор 0–3 indicator харуулна; одоогоор UI туршилтад 3 сонголттой. Хуудас/баганын сонголт зөвхөн төлөв шинэчилнэ, өгөгдөл ачаалахгүй.
+- `src/components/home.search/index.tsx` нь form/grid-ийн нийтлэг төлөвийг эзэмшинэ. Шинэ/хуучин сонголт хоёр талдаа ижил байна. Шүүлт, баганын тоо өөрчлөх эсвэл Хайх дарахад нүүрийн хуудасны дугаар 1 болно.
+- Бүгдийг харах нь `/vehicles` рүү одоогийн form-ийн утгуудыг URL query-гаар дамжуулна. Хоосон утга, нүүрийн page болон баганын тоог дамжуулахгүй. `/vehicles` талын form/үр дүн эдгээрийг унших ажиллагаа дараагийн шатанд хийгдэнэ.
+- Query нэрүүд: brand, model, mileage_min/max, engine_min/max, year_min/max, price_min/max, variant, category, condition, fuel, transmission, drivetrain, steering, color.
+- Mobile дээр баганын сонголт нуугдаж, үлдсэн удирдлагууд мөрлөж байрлана. Card responsive бүтэц тусдаа component-д хийгдэнэ.
+
 ## Алдааны дэлгэц
 
 - `src/app/error.tsx` нь page болон nested route-ийн runtime алдааг барьж, header/footer дотор ерөнхий алдааны дэлгэц харуулна. Тусдаа `/error` URL биш.

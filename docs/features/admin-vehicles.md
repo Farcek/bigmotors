@@ -6,6 +6,8 @@
 
 ## Дэлгэцүүд
 
+- 2026-09-13: Зураг / Видео tab-д сонголттой `youtubeUrl` нэмсэн. Нэг YouTube видеоны URL хадгална, солих/хоослох боломжтой. Create/update/get/list contract болон DB service-д ижил талбартай; input validation-ийн дүрэм [автомашины талбар](vehicle-fields.md)-т байна. Migration: `0007_vehicle_youtube_url.sql`.
+
 | URL | Зориулалт |
 | --- | --- |
 | `/vehicles` | Хайлт, шүүлт, эрэмбэ, хуудаслалт, бүртгэлийн үйлдлүүд |

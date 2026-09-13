@@ -9,7 +9,7 @@ export const labels: Record<string, string> = {
   steeringPosition: "Жолооны байрлал", exteriorColorId: "Гадна өнгө", interiorColorId: "Салоны өнгө", seatCount: "Суудлын тоо",
   condition: "Шинэ / хуучин", mileageKm: "Гүйлт (км)", conditionDescription: "Нөхцөл байдлын тайлбар", branchId: "Компанийн салбар", locationId: "Бүтээгдэхүүний байршил",
   saleStatus: "Борлуулалтын төлөв", arrivalStatus: "Ирэлтийн төлөв", financingAvailable: "Зээлээр авах боломж", price: "Үнэ (₮)", currency: "Валют", priceDisplayMode: "Үнэ харуулах хэлбэр",
-  images: "Зургууд", featureIds: "Тоноглол", publicationStatus: "Нийтлэлийн төлөв",
+  images: "Зургууд", youtubeUrl: "YouTube видео холбоос", featureIds: "Тоноглол", publicationStatus: "Нийтлэлийн төлөв",
 };
 export const valueLabels: Record<string, string> = {
   draft: "Ноорог", published: "Нийтэлсэн", hidden: "Нуусан", archived: "Архивласан", available: "Борлуулах", sold: "Зарагдсан",
@@ -27,7 +27,7 @@ export function availableCommands(status: Vehicles.Entity["publicationStatus"]):
   return status === "draft" ? ["publish", "archive"] : status === "published" ? ["hide", "archive"] : status === "hidden" ? ["publish", "archive"] : ["restore"];
 }
 export const emptyValues = {
-  title: "", description: "", content: "", itemTitle: "", itemDesc: "", internalNote: "", vin: "", conditionDescription: "",
+  title: "", description: "", content: "", itemTitle: "", itemDesc: "", internalNote: "", vin: "", conditionDescription: "", youtubeUrl: "",
   brandId: null as string | null, modelId: null as string | null, variantId: null as string | null, bodyTypeId: null as string | null,
   exteriorColorId: null as string | null, interiorColorId: null as string | null, branchId: null as string | null, locationId: null as string | null,
   mainImageId: null as string | null, itemImageId: null as string | null,

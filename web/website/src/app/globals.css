@@ -13,6 +13,14 @@
 
     --color-primary: #4aeeb6;
 
+    --color-search-surface: #ffffff;
+    --color-search-text: #18181b;
+    --color-search-muted: #71717a;
+    --color-search-border: #e4e4e7;
+    --color-card-subtle: #f4f4f5;
+    --color-card-overlay: #18181b99;
+    --color-card-accent: #087f5b;
+
     --color-section-dark-bg: #1B1B1B;
     --color-section-dark-text: #FFFFFF;
     /* --color-primary-hover: #2bc99a;

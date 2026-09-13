@@ -1,7 +1,7 @@
 import {
   CATALOG_LIMITS as L, CURRENCIES, DRIVETRAINS, FUEL_TYPES, PRICE_DISPLAY_MODES,
   PUBLICATION_STATUSES, STEERING_POSITIONS, TRANSMISSIONS,
-  VEHICLE_ARRIVAL_STATUSES, VEHICLE_CONDITIONS, VEHICLE_SALE_STATUSES,
+  VEHICLE_ARRIVAL_STATUSES, VEHICLE_CONDITIONS, VEHICLE_SALE_STATUSES, getYouTubeVideoUrl,
 } from "@bigmotors/core";
 import { z } from "zod";
 
@@ -28,6 +28,7 @@ export const vehicleDetailFields = z.object({
   mileageKm: mileage.nullable(), branchId: id.nullable(), locationId: id.nullable(), conditionDescription: short(L.description),
   saleStatus: z.enum(VEHICLE_SALE_STATUSES).nullable(), arrivalStatus: z.enum(VEHICLE_ARRIVAL_STATUSES).nullable(),
   financingAvailable: z.boolean().nullable(),
+  youtubeUrl: short(2048).refine((value) => value === null || getYouTubeVideoUrl(value) !== null, "YouTube video URL is required."),
 }).strict();
 const fields = vehicleProductFields.extend(vehicleDetailFields.shape).extend({
   images: z.array(z.object({ fileId: id, sortOrder: z.number().int().min(0).max(2147483647) }).strict())

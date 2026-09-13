@@ -1,0 +1,1 @@
+ALTER TABLE "vehicles" ADD COLUMN "youtube_url" varchar(2048);

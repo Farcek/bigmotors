@@ -50,6 +50,13 @@
       "when": 1789240412492,
       "tag": "0006_gallery_item_links",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789295660803,
+      "tag": "0007_vehicle_youtube_url",
+      "breakpoints": true
     }
   ]
 }

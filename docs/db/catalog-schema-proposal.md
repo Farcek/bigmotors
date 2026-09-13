@@ -71,6 +71,7 @@
 | `sale_status` | text | V24; available/sold |
 | `arrival_status` | text | V25; expected/in_transit/in_stock |
 | `financing_available` | boolean | V26; nullable, default false тавихгүй |
+| `youtube_url` | varchar(2048) | Сонголттой, нэг YouTube видеоны HTTPS холбоос; хоосон бол NULL |
 
 V29 тоноглол нь `vehicle_feature_links(product_id, feature_id)`-д байна. Composite PK `(product_id, feature_id)`, FK нь `vehicles.product_id`, `vehicle_features.id`. Ингэснээр сэлбэг/дугуйд машины тоноглол холбохгүй.
 
