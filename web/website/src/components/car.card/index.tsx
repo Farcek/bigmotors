@@ -10,6 +10,8 @@ export type CarCardItemProps = {
   item: CarCardData;
   compactPrice?: boolean;
   favorite?: { selected: boolean; onToggle: () => void; disabled?: boolean };
+  maxSpecCount?: number;
+  showBadges?: boolean;
 };
 
 const focusClass = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
@@ -27,7 +29,7 @@ function CardImage({ src, title }: { src: string | null; title: string }) {
     : <div role="img" aria-label={`${title}: зураг байхгүй`} className="flex h-full w-full items-center justify-center bg-card-subtle text-search-muted"><IconPhotoOff size={40} stroke={1.5} aria-hidden="true" /></div>;
 }
 
-export default function CarCardItem({ item, compactPrice = false, favorite }: CarCardItemProps) {
+export default function CarCardItem({ item, compactPrice = false, favorite, maxSpecCount, showBadges = true }: CarCardItemProps) {
   const { title, description, imageUrl, href } = resolveCarCard(item);
   const youtubeUrl = getYouTubeVideoUrl(item.youtubeUrl);
   const fuel = item.fuelType ? fuelLabels[item.fuelType] : null;
@@ -38,7 +40,7 @@ export default function CarCardItem({ item, compactPrice = false, favorite }: Ca
     { label: "Гүйлт", value: item.mileageKm != null ? `${number.format(item.mileageKm)} км` : null, Icon: IconGauge },
     { label: "Хурдны хайрцаг", value: item.transmission ? transmissionLabels[item.transmission] : null, Icon: IconAutomaticGearbox },
     { label: "Хөдөлгүүр", value: item.fuelType !== "electric" && item.engineCapacityCc != null ? `${number.format(item.engineCapacityCc)} cc` : null, Icon: IconEngine },
-  ].filter((spec) => spec.value !== null);
+  ].filter((spec) => spec.value !== null).slice(0, maxSpecCount === undefined ? undefined : Math.max(0, Math.floor(maxSpecCount)));
 
   return <article className="flex h-full min-w-0 flex-col overflow-hidden rounded-lg bg-search-surface text-search-text">
     <div className="relative aspect-[4/3] shrink-0">
@@ -65,9 +67,9 @@ export default function CarCardItem({ item, compactPrice = false, favorite }: Ca
       </div>}
     </div>
 
-    {(item.financingAvailable === true || fuel || favorite) && <div className="flex flex-wrap items-center gap-1.5 bg-card-subtle px-4 py-3">
-      {item.financingAvailable === true && <span className="max-w-full rounded bg-search-text px-2 py-2 text-[11px] leading-4 text-search-surface [overflow-wrap:anywhere]">Лизингтэй</span>}
-      {fuel && <span title="Хөдөлгүүрийн төрөл" className="max-w-full rounded bg-search-text px-2 py-2 text-[11px] leading-4 text-search-surface [overflow-wrap:anywhere]">{fuel}</span>}
+    {((showBadges && (item.financingAvailable === true || fuel)) || favorite) && <div className="flex flex-wrap items-center gap-1.5 bg-card-subtle px-4 py-3">
+      {showBadges && item.financingAvailable === true && <span className="max-w-full rounded bg-search-text px-2 py-2 text-[11px] leading-4 text-search-surface [overflow-wrap:anywhere]">Лизингтэй</span>}
+      {showBadges && fuel && <span title="Хөдөлгүүрийн төрөл" className="max-w-full rounded bg-search-text px-2 py-2 text-[11px] leading-4 text-search-surface [overflow-wrap:anywhere]">{fuel}</span>}
       {favorite && <button type="button" aria-pressed={favorite.selected} aria-label={favorite.selected ? `${title}: хадгалснаас хасах` : `${title}: хадгалах`} title={favorite.selected ? "Хадгалснаас хасах" : "Хадгалах"} disabled={favorite.disabled} onClick={favorite.onToggle} className={`ml-auto flex size-11 shrink-0 items-center justify-center rounded bg-search-surface disabled:cursor-not-allowed disabled:opacity-50 ${focusClass} ${favorite.selected ? "text-card-accent" : "text-search-muted"}`}>
         {favorite.selected ? <IconHeartFilled size={18} aria-hidden="true" /> : <IconHeart size={18} aria-hidden="true" />}
       </button>}

@@ -34,6 +34,30 @@ test("price format is opt-in and inquiry mode never exposes the stored price", (
   assert.doesNotMatch(inquiry, /84,500,000|84.5/);
 });
 
+test("spec limits apply after missing values are omitted and zero removes the section", () => {
+  const data: CarCardData = { ...item, manufactureYear: 2020, mileageKm: 0, transmission: "automatic", engineCapacityCc: 2000 };
+  for (const count of [0, 2, 3, 4]) {
+    const html = renderToStaticMarkup(<CarCardItem item={data} maxSpecCount={count} />);
+    assert.equal((html.match(/<dt>/g) ?? []).length, count);
+    if (count === 0) assert.doesNotMatch(html, /<dl/);
+  }
+  const sparse = renderToStaticMarkup(<CarCardItem item={{ ...data, manufactureYear: null }} maxSpecCount={2} />);
+  assert.match(sparse, /0 км/);
+  assert.match(sparse, /Хурдны хайрцаг/);
+  assert.doesNotMatch(sparse, /2,000 cc/);
+  assert.equal((renderToStaticMarkup(<CarCardItem item={data} />).match(/<dt>/g) ?? []).length, 4);
+});
+
+test("hiding badges removes the empty footer but preserves favorite and price", () => {
+  const data: CarCardData = { ...item, fuelType: "hybrid", financingAvailable: true, priceDisplayMode: "inquire" };
+  const html = renderToStaticMarkup(<CarCardItem item={data} showBadges={false} />);
+  assert.doesNotMatch(html, /Лизингтэй|Хайбрид|bg-card-subtle px-4 py-3/);
+  assert.match(html, /Үнэ асуух/);
+  const favorite = renderToStaticMarkup(<CarCardItem item={data} showBadges={false} favorite={{ selected: true, onToggle() {} }} />);
+  assert.match(favorite, /aria-pressed="true"/);
+  assert.doesNotMatch(favorite, /Лизингтэй|Хайбрид/);
+});
+
 test("fuel badge replaces barter; media and favorite actions are independent links/buttons", () => {
   const html = renderToStaticMarkup(<CarCardItem item={{ ...item, fuelType: "hybrid", imageCount: 8, financingAvailable: true, youtubeUrl: "https://youtu.be/abcdefghijk" }} favorite={{ selected: true, onToggle() {} }} />);
   assert.match(html, /Лизингтэй/); assert.match(html, /Хайбрид/);

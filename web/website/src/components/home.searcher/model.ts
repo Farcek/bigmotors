@@ -1,3 +1,10 @@
+import type { PublicVehicleLookups } from "@bigmotors/db";
+import type { CarCardData } from "../car.card/model";
+
+export type HomeSearchLookups = PublicVehicleLookups;
+export type HomeVehicleResult = { items: CarCardData[]; total: number; page: number; pageCount: number; pageSize: number };
+export const EMPTY_LOOKUPS: HomeSearchLookups = { brands: [], models: [], variants: [], categories: [], colors: [] };
+
 export const SEARCH_FIELDS = [
   "brand", "model", "mileage_min", "mileage_max", "engine_min", "engine_max",
   "year_min", "year_max", "price_min", "price_max", "variant", "category",

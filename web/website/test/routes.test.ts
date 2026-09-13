@@ -18,6 +18,21 @@ test("home renders gallery carousel or the explicitly expected production error"
   assert.match(html, /aria-roledescription="slide"/);
   assert.match(html, /<img[^>]+src="\/files\//);
   assert.doesNotMatch(html, /<pre\b/);
+  assert.match(html, /Автомашины хайлтын үр дүн/);
+});
+
+test("public vehicle API is bounded, uncached and never accepts admin visibility overrides", async () => {
+  const response = await fetch(new URL("/api/vehicles", baseUrl));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  const data = await response.json();
+  assert.ok(data.items.length <= 12); assert.ok(data.pageCount <= 3); assert.equal(data.pageSize, 12);
+  for (const item of data.items) {
+    for (const key of ["vin", "internalNote", "filePath", "usage", "publicationStatus", "content"]) assert.equal(key in item, false);
+    if (item.priceDisplayMode === "inquire") assert.equal(item.price, null);
+  }
+  for (const query of ["page=4", "page=1&page=2", "publicationStatus=draft", "price_min=10&price_max=1", "limit=1000", "brand=invalid"]) assert.equal((await fetch(new URL(`/api/vehicles?${query}`, baseUrl))).status, 400);
+  assert.equal((await fetch(new URL("/api/vehicles", baseUrl), { method: "POST" })).status, 405);
 });
 
 for (const path of ["/vehicles", `/vehicles/${id}`, "/parts", `/parts/${id}`, "/tires", `/tires/${id}`, "/vehicles?sort=price_asc&page=2"]) {

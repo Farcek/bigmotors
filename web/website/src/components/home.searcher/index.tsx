@@ -2,7 +2,7 @@
 
 import { IconChevronDown, IconMinus, IconPlus, IconSearch, IconX } from "@tabler/icons-react";
 import { useId, useState } from "react";
-import { readHomeSearchFilters, type HomeSearchFilters, type VehicleConditionFilter } from "./model";
+import { EMPTY_LOOKUPS, type HomeSearchFilters, type HomeSearchLookups } from "./model";
 
 const controlClass = "h-11 w-full min-w-0 rounded border border-search-border bg-search-surface px-3 text-sm text-search-text placeholder:text-search-muted focus:border-search-text focus:outline-2 focus:outline-offset-2 focus:outline-primary disabled:cursor-not-allowed disabled:text-search-muted";
 const labelClass = "mb-2 block text-xs leading-5 font-semibold";
@@ -27,54 +27,55 @@ function SelectField({ label, name, options = [], disabled = false, value, onCha
   </label>;
 }
 
-function RangeField({ label, name, maxLength = 10 }: { label: string; name: string; maxLength?: number }) {
+function RangeField({ label, name, maxLength = 10, values, onChange }: { label: string; name: "year" | "price" | "mileage" | "engine"; maxLength?: number; values: HomeSearchFilters; onChange: (name: keyof HomeSearchFilters, value: string) => void }) {
   return <fieldset className="min-w-0">
     <legend className={labelClass}>{label}</legend>
     <div className="grid grid-cols-2 gap-2">
-      <input type="text" inputMode="numeric" name={`${name}_min`} maxLength={maxLength} aria-label={`${label}: доод`} placeholder="Доод" className={controlClass} />
-      <input type="text" inputMode="numeric" name={`${name}_max`} maxLength={maxLength} aria-label={`${label}: дээд`} placeholder="Дээд" className={controlClass} />
+      <input type="text" inputMode="numeric" name={`${name}_min`} value={values[`${name}_min`] ?? ""} onChange={(event) => onChange(`${name}_min`, event.currentTarget.value)} maxLength={maxLength} aria-label={`${label}: доод`} placeholder="Доод" className={controlClass} />
+      <input type="text" inputMode="numeric" name={`${name}_max`} value={values[`${name}_max`] ?? ""} onChange={(event) => onChange(`${name}_max`, event.currentTarget.value)} maxLength={maxLength} aria-label={`${label}: дээд`} placeholder="Дээд" className={controlClass} />
     </div>
   </fieldset>;
 }
 
-export default function HomeSearcher({ condition, onConditionChange, onFiltersChange, onSearch }: {
-  condition?: VehicleConditionFilter;
-  onConditionChange?: (value: VehicleConditionFilter) => void;
+export default function HomeSearcher({ filters, lookups = EMPTY_LOOKUPS, onFiltersChange, onSearch, busy = false }: {
+  filters?: HomeSearchFilters;
+  lookups?: HomeSearchLookups;
+  busy?: boolean;
   onFiltersChange?: (filters: HomeSearchFilters) => void;
   onSearch?: (filters: HomeSearchFilters) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [extraCount, setExtraCount] = useState(0);
-  const [localCondition, setLocalCondition] = useState<VehicleConditionFilter>("");
-  const selectedCondition = condition ?? localCondition;
-  const activeCount = extraCount + (selectedCondition ? 1 : 0);
+  const [localFilters, setLocalFilters] = useState<HomeSearchFilters>({});
+  const values = filters ?? localFilters;
+  const activeCount = ["year", "price", "variant", "category", "condition", "fuel", "transmission", "drivetrain", "steering", "color"].filter((key) => [key, `${key}_min`, `${key}_max`].some((name) => values[name as keyof HomeSearchFilters]?.trim())).length;
   const detailsId = useId();
+  function change(next: HomeSearchFilters) { setLocalFilters(next); onFiltersChange?.(next); }
+  function changeField(name: keyof HomeSearchFilters, value: string) {
+    const next = { ...values, [name]: value };
+    if (name === "brand") { delete next.model; delete next.variant; }
+    if (name === "model") delete next.variant;
+    change(next);
+  }
+  function select(label: string, name: keyof HomeSearchFilters, options: readonly (readonly [string, string])[], disabled = false) {
+    return <SelectField label={label} name={name} options={options} value={values[name] ?? ""} disabled={disabled} onChange={(value) => changeField(name, value)} />;
+  }
+  const choices = (rows: readonly { id: string; name: string }[]) => rows.map((row) => [row.id, row.name] as const);
 
   return <form
     aria-label="Автомашин хайх"
     className="relative z-30 mx-auto w-full max-w-[1040px] rounded-lg bg-search-surface p-5 text-search-text"
     onSubmit={(event) => {
       event.preventDefault();
-      onSearch?.(readHomeSearchFilters(new FormData(event.currentTarget)));
+      onSearch?.(values);
     }}
-    onReset={() => {
-      setExtraCount(0);
-      setLocalCondition("");
-      onFiltersChange?.({});
-    }}
-    onChange={(event) => {
-      const values = new FormData(event.currentTarget);
-      const groups = ["year", "price", "variant", "category", "fuel", "transmission", "drivetrain", "steering", "color"];
-      setExtraCount(groups.filter((key) => [key, `${key}_min`, `${key}_max`].some((name) => String(values.get(name) ?? "").trim())).length);
-      onFiltersChange?.(readHomeSearchFilters(values));
-    }}
+    onReset={(event) => { event.preventDefault(); change({}); }}
   >
     <div className="grid min-w-0 grid-cols-1 items-end gap-5 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.1fr_1.1fr_auto] lg:gap-4">
-      <SelectField label="Машины марк" name="brand" disabled />
-      <SelectField label="Машины загвар" name="model" disabled />
-      <RangeField label="Гүйлт (км)" name="mileage" />
-      <RangeField label="Хөдөлгүүр (cc)" name="engine" maxLength={5} />
-      <button type="submit" className="flex h-11 items-center justify-center gap-2 rounded bg-primary px-7 text-sm font-semibold transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:col-span-2 lg:col-span-1">
+      {select("Машины марк", "brand", choices(lookups.brands), !lookups.brands.length)}
+      {select("Машины загвар", "model", choices(lookups.models.filter((row) => row.brandId === values.brand)), !values.brand)}
+      <RangeField label="Гүйлт (км)" name="mileage" values={values} onChange={changeField} />
+      <RangeField label="Хөдөлгүүр (cc)" name="engine" maxLength={5} values={values} onChange={changeField} />
+      <button type="submit" aria-busy={busy} className="flex h-11 items-center justify-center gap-2 rounded bg-primary px-7 text-sm font-semibold transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:col-span-2 lg:col-span-1">
         <IconSearch size={18} aria-hidden="true" />Хайх
       </button>
     </div>
@@ -92,20 +93,16 @@ export default function HomeSearcher({ condition, onConditionChange, onFiltersCh
 
     <div id={detailsId} hidden={!expanded} className="mt-4 border-t border-search-border pt-6">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <RangeField label="Үйлдвэрлэсэн он" name="year" maxLength={4} />
-        <RangeField label="Үнэ (₮)" name="price" maxLength={11} />
-        <SelectField label="Хувилбар" name="variant" disabled />
-        <SelectField label="Машины төрөл" name="category" disabled />
-        <SelectField label="Шинэ / хуучин" name="condition" value={selectedCondition} onChange={(value) => {
-          const next = value as VehicleConditionFilter;
-          setLocalCondition(next);
-          onConditionChange?.(next);
-        }} options={[["new", "Шинэ"], ["used", "Хуучин"]]} />
-        <SelectField label="Түлш" name="fuel" options={[["gasoline", "Бензин"], ["diesel", "Дизель"], ["hybrid", "Хайбрид"], ["plug_in_hybrid", "Plug-in hybrid"], ["electric", "Цахилгаан"], ["lpg", "LPG"], ["cng", "CNG"]]} />
-        <SelectField label="Хурдны хайрцаг" name="transmission" options={[["manual", "Механик"], ["automatic", "Автомат"], ["cvt", "CVT"], ["e_cvt", "E-CVT"], ["dct", "DCT"], ["amt", "AMT"]]} />
-        <SelectField label="Хөтлөгч" name="drivetrain" options={[["fwd", "Урд (FWD)"], ["rwd", "Хойд (RWD)"], ["awd", "Бүх дугуй (AWD)"], ["four_wheel_drive", "Дөрвөн дугуй (4WD)"]]} />
-        <SelectField label="Жолооны байрлал" name="steering" options={[["left", "Зүүн"], ["right", "Баруун"]]} />
-        <SelectField label="Гадна өнгө" name="color" disabled />
+        <RangeField label="Үйлдвэрлэсэн он" name="year" maxLength={4} values={values} onChange={changeField} />
+        <RangeField label="Үнэ (₮)" name="price" maxLength={11} values={values} onChange={changeField} />
+        {select("Хувилбар", "variant", choices(lookups.variants.filter((row) => row.modelId === values.model)), !values.model)}
+        {select("Машины төрөл", "category", choices(lookups.categories), !lookups.categories.length)}
+        {select("Шинэ / хуучин", "condition", [["new", "Шинэ"], ["used", "Хуучин"]])}
+        {select("Түлш", "fuel", [["gasoline", "Бензин"], ["diesel", "Дизель"], ["hybrid", "Хайбрид"], ["plug_in_hybrid", "Plug-in hybrid"], ["electric", "Цахилгаан"], ["lpg", "LPG"], ["cng", "CNG"]])}
+        {select("Хурдны хайрцаг", "transmission", [["manual", "Механик"], ["automatic", "Автомат"], ["cvt", "CVT"], ["e_cvt", "E-CVT"], ["dct", "DCT"], ["amt", "AMT"]])}
+        {select("Хөтлөгч", "drivetrain", [["fwd", "Урд (FWD)"], ["rwd", "Хойд (RWD)"], ["awd", "Бүх дугуй (AWD)"], ["four_wheel_drive", "Дөрвөн дугуй (4WD)"]])}
+        {select("Жолооны байрлал", "steering", [["left", "Зүүн"], ["right", "Баруун"]])}
+        {select("Гадна өнгө", "color", choices(lookups.colors), !lookups.colors.length)}
       </div>
     </div>
   </form>;

@@ -4,6 +4,7 @@ export * from "./schema/index.js";
 export * from "./service/color.js";
 export * from "./service/file.js";
 export * from "./service/vehicle.js";
+export * from "./service/public-vehicle.js";
 export * from "./service/branch.js";
 export * from "./service/vehicle-brand.js";
 export * from "./service/vehicle-body-type.js";

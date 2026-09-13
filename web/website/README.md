@@ -21,6 +21,8 @@ Package дотроос өөр порт сонгох жишээ: `pnpm exec next 
 - `src/app/layout.tsx`: нийтлэг header/main/footer, metadata, 1440px голлуулсан хүрээ.
 - `src/app/page.tsx`: Page module/settings-ээс хамаарахгүй нүүр хуудас; `key="home"` Gallery-ийн HomeCarousel.
 - `src/components/home.carousel/`: Embla + Tailwind carousel, responsive зураг/HTML текст/CTA, swipe болон keyboard navigation.
+- `src/components/home.search/`: SSR анхны автомашин/лавлах, дараагийн API хайлт, 12 машин/хуудас, хамгийн ихдээ 3 хуудас. Card нь `car.card`, toolbar нь `home.search.grid`.
+- `src/app/api/vehicles/route.ts`: public read-only хайлт; SSR-тэй ижил `PublicVehicleService` query ашиглана, admin API-аар дамжихгүй.
 - `src/app/[slug]/page.tsx`: нийтэлсэн Page-ийг slug-аар уншиж content-г JSON string болгон харуулна.
 - `src/server/`: server-only DI/DB холболт, Page slug болон Gallery key lookup.
 - `src/app/vehicles`, `parts`, `tires`: жагсаалт болон `[id]` дэлгэрэнгүй хоосон route-ууд.
@@ -30,13 +32,13 @@ Package дотроос өөр порт сонгох жишээ: `pnpm exec next 
 - `src/app/globals.css`: Tailwind import.
 - `package.json`: PostCSS plugin болон ажиллуулах командууд.
 
-[Layout дүрэм](../../docs/ui/website-layout.md). Каталогийн өгөгдөл болон PWA хараахан хэрэгжээгүй.
+[Layout дүрэм](../../docs/ui/website-layout.md). Нүүрийн автомашины хайлт өгөгдөлтэй холбогдсон; PWA хараахан хэрэгжээгүй.
 
 ## URL routing
 
 2026-09-13: App Router-ийн замууд үүссэн. [URL routing-ийн төлөв](../../docs/features/website-routing.md).
 Нүүр хуудас нь `key="home"` Gallery-г HomeCarousel-д харуулна. Gallery байхгүй эсвэл зураггүй бол ерөнхий алдааны дэлгэц харуулна. Settings/Page module-оос уншихгүй; хуучин `homepage` тохиргоог ашиглахгүй. Header/footer хэвээр. [Carousel дүрэм](../../docs/features/website-routing.md#homecarousel).
-Page content нь JSON string, каталогийн page-үүдийн үндсэн агуулга хоосон. Builder болон хайлт/шүүлтийн query логик холбоогүй.
+Page content нь JSON string, `/vehicles`, `/parts`, `/tires` page-үүдийн үндсэн агуулга хоосон. Нүүрийн хайлт ажиллана; Бүгдийг харах нь `/vehicles` рүү query-гаа авч явна, тухайн дэлгэц болон builder хараахан холбоогүй.
 File-read нь ID-аар DB-ээс олоод FILES_ROOT-оос эх файлыг stream хийнэ. URL-ийн originalName болон access шалгахгүй; sysop-той ижил header/алдааны дүрэмтэй. Зургийн URL: `/files/${imageId}/${encodeURIComponent(originalName)}`.
 
 ## Route шалгалт

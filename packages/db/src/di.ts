@@ -10,6 +10,7 @@ import { PageService } from "./service/page.js";
 import { SettingsService } from "./service/settings.js";
 import { FileService } from "./service/file.js";
 import { VehicleService } from "./service/vehicle.js";
+import { PublicVehicleService } from "./service/public-vehicle.js";
 import { BranchService } from "./service/branch.js";
 import { VehicleBrandService } from "./service/vehicle-brand.js";
 import { VehicleBodyTypeService } from "./service/vehicle-body-type.js";
@@ -55,6 +56,7 @@ export function diDBServiceProviders() {
             asClass(SettingsService),
             asClass(FileService),
             asClass(VehicleService),
+            asClass(PublicVehicleService),
             asClass(BranchService),
             asClass(VehicleBrandService),
             asClass(VehicleBodyTypeService),

@@ -3,6 +3,7 @@ import HomeCarousel from "../components/home.carousel";
 import HomeSearch from "../components/home.search";
 import { getGalleryByKey } from "../server/galleries";
 import { toHomeSlides } from "../server/home-slides";
+import { getHomeVehicleData } from "../server/public-vehicles";
 
 export default async function HomePage() {
   const gallery = await getGalleryByKey("home");
@@ -13,7 +14,7 @@ export default async function HomePage() {
     throw new Error("Gallery is empty. gallery key: home");
   }
 
-  
+  const vehicleData = await getHomeVehicleData();
 
   return (
     <div>
@@ -21,7 +22,7 @@ export default async function HomePage() {
       <SectionDark>
         <BodyContainer>
           <HomeCarousel slides={toHomeSlides(gallery.items)} />
-          <HomeSearch />
+          <HomeSearch {...vehicleData} />
         </BodyContainer>
       </SectionDark>
     </div>
