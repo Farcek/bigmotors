@@ -1,7 +1,8 @@
-import { getVehicleSearchHref, type HomeSearchFilters, type HomeVehicleResult } from "../home.searcher/model";
+import { vehicleSearchToQuery } from "@bigmotors/core";
+import type { HomeSearchFilters, HomeVehicleResult } from "../home.searcher/model";
 
 export async function fetchHomeVehicles(filters: HomeSearchFilters, page: number, signal: AbortSignal, fetcher: typeof fetch = fetch): Promise<HomeVehicleResult> {
-  const params = new URLSearchParams(getVehicleSearchHref(filters).split("?")[1]);
+  const params = vehicleSearchToQuery(filters);
   params.set("page", String(page));
   let response: Response;
   try { response = await fetcher(`/api/vehicles?${params}`, { signal, cache: "no-store" }); }

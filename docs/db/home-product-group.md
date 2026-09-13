@@ -8,7 +8,7 @@
 | title | varchar(255) | NOT NULL, хоосон биш |
 | description | varchar(512) | NULL зөвшөөрнө |
 | image_id | uuid | NULL зөвшөөрнө, files.id FK, DELETE RESTRICT |
-| filters | jsonb | NOT NULL, default `{}`, JSON object |
+| filters | jsonb | NOT NULL, default `{}`, утгууд нь string бүхий JSON object |
 | sort_order | integer | NOT NULL, default 0 |
 | is_active | boolean | NOT NULL, default true |
 | created_at | timestamptz | NOT NULL, default now, өөрчлөхгүй |
@@ -20,4 +20,6 @@
 - Зураг холбоход `files.usage`-д бүлгийн id нэмнэ; солих/хасах/бүлэг устгахад хуучин холбоосыг хасна. Trigger нэг transaction дотор файлд lock авч, давхар usage нэмэхгүй. Эх файлыг устгахгүй.
 - Идэвхгүй болгосон бүлэг мөн зураг ашиглаж буйд тооцогдоно.
 - Migration: `0008_home_product_group.sql`, table/index/FK болон timestamp/file usage trigger. Өмнөх бүтээгдэхүүний өгөгдлийг өөрчлөхгүй.
+- `0009_home_product_group_string_filters.sql` нь өмнө хадгалсан тоон filter утгуудыг string болгоно. Жишээ: `2000` → `"2000"`, `0` → `"0"`. Бусад талбар, зураг болон usage холбоос хэвээр үлдэнэ.
+- Website form, URL, DTI, admin form, JSONB нь `@bigmotors/core`-ийн `VehicleSearchParams` төрлийг ашиглана. DB query хийх үед л `parsedVehicleFilters` тоон хязгаарыг шалгаж number болгон хөрвүүлнэ.
 - [Admin боломж, contract](../features/admin-home-product-groups.md).

@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { boolean, check, index, integer, jsonb, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
-import type { VehicleFilters } from "@bigmotors/core";
+import type { VehicleSearchParams } from "@bigmotors/core";
 import { idColumn, nonBlank, timestamps } from "./common.js";
 import { files } from "./files.js";
 
@@ -9,7 +9,7 @@ export const homeProductGroup = pgTable("home_product_group", {
   title: varchar("title", { length: 255 }).notNull(),
   description: varchar("description", { length: 512 }),
   imageId: uuid("image_id").references(() => files.id, { onDelete: "restrict" }),
-  filters: jsonb("filters").$type<VehicleFilters>().notNull().default({}),
+  filters: jsonb("filters").$type<VehicleSearchParams>().notNull().default({}),
   sortOrder: integer("sort_order").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
   ...timestamps(),

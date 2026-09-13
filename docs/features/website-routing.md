@@ -60,6 +60,7 @@
 - `HomeSearch` form/grid-ийн нийтлэг төлөвийг эзэмшинэ. Toolbar-ийн Шинэ/Хуучин/Бүгд болон Хайх нь 1-р хуудаснаас API хайлт хийнэ. Хуудаслалт нь хэрэглэсэн query-гаар явна; form өөрчлөгдсөн бол шинэ шүүлтээр 1-р хуудаснаас эхэлнэ.
 - Бүгдийг харах нь `/vehicles` рүү одоогийн form-ийн утгуудыг URL query-гаар дамжуулна. Хоосон утга, нүүрийн page болон баганын тоог дамжуулахгүй. `/vehicles` талын form/үр дүн эдгээрийг унших ажиллагаа дараагийн шатанд хийгдэнэ.
 - Query нэрүүд: brand, model, mileage_min/max, engine_min/max, year_min/max, price_min/max, variant, category, condition, fuel, transmission, drivetrain, steering, color.
+- `@bigmotors/core`-ийн `VehicleSearchParams` нь website form, URL, [нүүрний бүтээгдэхүүний бүлэг](admin-home-product-groups.md)-ийн admin/DTI/JSONB-д shared байна. Filter утгууд string; хоосныг орхиж `"0"`-г хадгална. URL болон form хөрвүүлэлтийг core helper-уудаар хийнэ; SQL query-д л тоон утгад хөрвүүлнэ. `page` filter object-д орохгүй.
 - Mobile дээр баганын сонголт нуугдаж, үлдсэн удирдлагууд мөрлөж байрлана.
 
 ### Public query ба төлөв

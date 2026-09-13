@@ -1,4 +1,4 @@
-import { DRIVETRAINS, FUEL_TYPES, STEERING_POSITIONS, TRANSMISSIONS, VEHICLE_CONDITIONS } from "@bigmotors/core";
+import { DRIVETRAINS, FUEL_TYPES, STEERING_POSITIONS, TRANSMISSIONS, VEHICLE_CONDITIONS, type VehicleSearchField } from "@bigmotors/core";
 import { HomeProductGroups } from "@bigmotors/sysop-dti";
 import { Alert, Button, Divider, Group, Image, Loader, NumberInput, Select, SimpleGrid, Stack, Switch, Text, Textarea, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -26,7 +26,7 @@ export function GroupForm({ row, onSave, onCancel, onBusy }: {
   const data = lookups.data;
   const brand = data?.["vehicle-brands"].find((item) => item.id === filters.brand);
   const model = data?.["vehicle-models"].find((item) => item.id === filters.model);
-  const sourceOptions = (key: "vehicle-brands" | "vehicle-models" | "vehicle-variants" | "vehicle-body-types" | "colors", field: string) => {
+  const sourceOptions = (key: "vehicle-brands" | "vehicle-models" | "vehicle-variants" | "vehicle-body-types" | "colors", field: VehicleSearchField) => {
     let rows = data?.[key] ?? [];
     if (field === "model" && filters.brand) rows = rows.filter((item) => item.brandId === filters.brand);
     if (field === "variant") {
@@ -60,12 +60,12 @@ export function GroupForm({ row, onSave, onCancel, onBusy }: {
         {lookups.error ? <Alert color="red" role="alert">{lookups.error}<Button variant="subtle" onClick={() => setRevision((v) => v + 1)}>Дахин оролдох</Button></Alert> : !data && <Group justify="center"><Loader size="sm" /></Group>}
         <SimpleGrid cols={{ base: 1, sm: 2 }}>
           {([ ["brand", "vehicle-brands"], ["model", "vehicle-models"], ["variant", "vehicle-variants"], ["category", "vehicle-body-types"], ["color", "colors"] ] as const).map(([field, source]) => <Select key={field} label={filterLabels[field]} placeholder="Бүгд" searchable clearable disabled={busy || !data} data={sourceOptions(source, field)} value={String(filters[field] || "") || null} error={form.errors[`filters.${field}`]} onChange={(value) => {
-            form.setFieldValue(`filters.${field}`, value);
+            form.setFieldValue(`filters.${field}`, value ?? "");
             if (field === "brand") { form.setFieldValue("filters.model", ""); form.setFieldValue("filters.variant", ""); }
             if (field === "model") form.setFieldValue("filters.variant", "");
           }} />)}
-          {([ ["condition", VEHICLE_CONDITIONS], ["fuel", FUEL_TYPES], ["transmission", TRANSMISSIONS], ["drivetrain", DRIVETRAINS], ["steering", STEERING_POSITIONS] ] as const).map(([field, values]) => <Select key={field} label={filterLabels[field]} placeholder="Бүгд" clearable disabled={busy} data={options(values)} value={String(filters[field] || "") || null} error={form.errors[`filters.${field}`]} onChange={(value) => form.setFieldValue(`filters.${field}`, value)} />)}
-          {rangeFields.flatMap(({ key, min, max }) => (["min", "max"] as const).map((bound) => <NumberInput key={`${key}_${bound}`} label={filterLabels[`${key}_${bound}`]} min={min} max={max} allowNegative={false} allowDecimal={false} thousandSeparator={key !== "year" ? "," : undefined} disabled={busy} {...form.getInputProps(`filters.${key}_${bound}`)} />))}
+          {([ ["condition", VEHICLE_CONDITIONS], ["fuel", FUEL_TYPES], ["transmission", TRANSMISSIONS], ["drivetrain", DRIVETRAINS], ["steering", STEERING_POSITIONS] ] as const).map(([field, values]) => <Select key={field} label={filterLabels[field]} placeholder="Бүгд" clearable disabled={busy} data={options(values)} value={filters[field] || null} error={form.errors[`filters.${field}`]} onChange={(value) => form.setFieldValue(`filters.${field}`, value ?? "")} />)}
+          {rangeFields.flatMap(({ key, min, max }) => (["min", "max"] as const).map((bound) => <NumberInput key={`${key}_${bound}`} label={filterLabels[`${key}_${bound}`]} min={min} max={max} allowNegative={false} allowDecimal={false} thousandSeparator={key !== "year" ? "," : undefined} disabled={busy} {...form.getInputProps(`filters.${key}_${bound}`)} value={filters[`${key}_${bound}`] ?? ""} onChange={(value) => form.setFieldValue(`filters.${key}_${bound}`, String(value))} />))}
         </SimpleGrid>
         <Group justify="flex-end"><Button variant="default" disabled={busy} onClick={onCancel}>Болих</Button><Button type="submit" loading={saving} disabled={uploading || !data || !!lookups.error} leftSection={<IconDeviceFloppy size={17} />}>Хадгалах</Button></Group>
       </Stack>

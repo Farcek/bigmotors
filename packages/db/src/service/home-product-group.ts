@@ -1,6 +1,6 @@
 import { defineInject, INJECT, TOKEN, Token } from "@napp/di";
 import { NappError } from "@napp/error";
-import { vehicleFilters, type VehicleFilters } from "@bigmotors/core";
+import { vehicleSearchParams, type VehicleSearchParams } from "@bigmotors/core";
 import { and, asc, eq, ilike } from "drizzle-orm";
 import { z } from "zod";
 import { TKN_DB, type BigMotorsDb } from "../db.js";
@@ -11,7 +11,7 @@ const fields = z.object({
   title: z.string().trim().min(1).max(255),
   description: z.string().trim().max(512).transform((v) => v || null).nullable().optional(),
   imageId: z.string().uuid().nullable().optional(),
-  filters: vehicleFilters,
+  filters: vehicleSearchParams,
   sortOrder: z.number().int().min(-2147483648).max(2147483647).optional(),
   isActive: z.boolean().optional(),
 }).strict();
@@ -38,7 +38,7 @@ async function storage<T>(action: () => Promise<T>) {
   }
 }
 type Transaction = Parameters<Parameters<BigMotorsDb["transaction"]>[0]>[0];
-async function checkReferences(tx: Transaction, filters: VehicleFilters) {
+async function checkReferences(tx: Transaction, filters: VehicleSearchParams) {
   const invalid = () => new NappError("Invalid filter reference or hierarchy.", { code: "HOME_GROUP_INVALID_REFERENCE", status: 400 });
   for (const [key, table] of [["brand", vehicleBrands], ["category", vehicleBodyTypes], ["color", colors]] as const) {
     if (filters[key] && !(await tx.select({ id: table.id }).from(table).where(eq(table.id, filters[key]!)).for("share"))[0]) throw invalid();

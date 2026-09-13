@@ -1,13 +1,13 @@
 import { createAction } from "@napp/dti-core";
-import { vehicleFilters } from "@bigmotors/core";
+import { vehicleSearchParams } from "@bigmotors/core";
 import { z } from "zod";
 import { idParams, referenceEntityFields, referenceCreateFields, referenceListQuery } from "./common.js";
 
 export namespace HomeProductGroups {
   const { name: _entityName, ...entityFields } = referenceEntityFields;
   const { name: _createName, ...createFields } = referenceCreateFields;
-  export const entity = z.object({ ...entityFields, title: z.string().min(1).max(255), imageId: z.string().uuid().nullable(), filters: vehicleFilters }).strict();
-  export const createBody = z.object({ ...createFields, title: z.string().trim().min(1).max(255), imageId: z.string().uuid().nullable().optional(), filters: vehicleFilters }).strict();
+  export const entity = z.object({ ...entityFields, title: z.string().min(1).max(255), imageId: z.string().uuid().nullable(), filters: vehicleSearchParams }).strict();
+  export const createBody = z.object({ ...createFields, title: z.string().trim().min(1).max(255), imageId: z.string().uuid().nullable().optional(), filters: vehicleSearchParams }).strict();
   export const updateBody = createBody.partial().refine((v) => Object.values(v).some((value) => value !== undefined), "At least one field is required.");
   export const listQuery = referenceListQuery.extend({ search: z.string().trim().max(255).optional() });
   export const listResult = z.array(entity);

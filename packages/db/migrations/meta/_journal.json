@@ -64,6 +64,13 @@
       "when": 1789310910162,
       "tag": "0008_home_product_group",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789312930394,
+      "tag": "0009_home_product_group_string_filters",
+      "breakpoints": true
     }
   ]
 }

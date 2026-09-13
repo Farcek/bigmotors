@@ -20,8 +20,9 @@ test("home groups CRUD validates filters and tracks image usage transactionally"
     const [variant] = await orm.insert(s.vehicleVariants).values({ name: "Variant", modelId: model!.id }).returning();
     const [image] = await orm.insert(s.files).values({ filePath: "groups/1", originalName: "image.jpg" }).returning();
     const [image2] = await orm.insert(s.files).values({ filePath: "groups/2", originalName: "second.jpg" }).returning();
-    const row = await service.create({ title: " Group ", imageId: image!.id, filters: { brand: brand!.id, model: model!.id, variant: variant!.id, fuel: "gasoline", engine_max: "2000", mileage_min: 0 }, sortOrder: 2 });
-    assert.equal(row.title, "Group"); assert.equal(row.filters.engine_max, 2000);
+    const row = await service.create({ title: " Group ", imageId: image!.id, filters: { brand: brand!.id, model: model!.id, variant: variant!.id, fuel: "gasoline", engine_max: "2000", mileage_min: "0" }, sortOrder: 2 });
+    assert.equal(row.title, "Group"); assert.equal(row.filters.engine_max, "2000");
+    assert.equal((await service.findById(row.id)).filters.mileage_min, "0");
     assert.deepEqual((await orm.select().from(s.files).where(eq(s.files.id, image!.id)))[0]!.usage, [row.id]);
     await assert.rejects(service.update(row.id, { imageId: randomUUID() }), { code: "HOME_GROUP_REFERENCE_NOT_FOUND" });
     assert.equal((await service.findById(row.id)).imageId, image!.id);
@@ -33,7 +34,7 @@ test("home groups CRUD validates filters and tracks image usage transactionally"
     assert.equal((await service.list({ isActive: true })).length, 0);
     assert.equal((await service.list({ search: "Grou", isActive: false })).length, 1);
     for (const filters of [{ brand: randomUUID() }, { brand: otherBrand!.id, model: model!.id }, { brand: otherBrand!.id, variant: variant!.id }]) await assert.rejects(service.create({ title: "Invalid", filters }), { code: "HOME_GROUP_INVALID_REFERENCE" });
-    for (const filters of [{ page: 1 }, { sql: "select *" }, { engine_min: 3000, engine_max: 1000 }, { price_min: -1 }]) await assert.rejects(service.create({ title: "Invalid", filters } as never), { code: "HOME_GROUP_INVALID_INPUT" });
+    for (const filters of [{ page: "1" }, { sql: "select *" }, { engine_min: "3000", engine_max: "1000" }, { price_min: "-1" }, { mileage_min: 0 }]) await assert.rejects(service.create({ title: "Invalid", filters } as never), { code: "HOME_GROUP_INVALID_INPUT" });
     await assert.rejects(service.update(row.id, {}), { code: "HOME_GROUP_INVALID_INPUT" });
     const all = await service.create({ title: "All vehicles", filters: {}, sortOrder: -1 });
     assert.equal((await service.list())[0]!.id, all.id);

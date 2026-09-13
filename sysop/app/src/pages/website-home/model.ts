@@ -1,8 +1,8 @@
 import { HomeProductGroups } from "@bigmotors/sysop-dti";
 import { DTIError } from "@napp/dti-core";
-import { CATALOG_LIMITS } from "@bigmotors/core";
+import { CATALOG_LIMITS, normalizeVehicleSearchParams, type VehicleSearchField, type VehicleSearchParams } from "@bigmotors/core";
 
-export const filterLabels: Record<string, string> = {
+export const filterLabels: Record<VehicleSearchField, string> = {
   brand: "Марк", model: "Загвар", variant: "Хувилбар", category: "Кузовын төрөл", color: "Гадна өнгө",
   condition: "Шинэ / хуучин", fuel: "Түлш", transmission: "Хурдны хайрцаг", drivetrain: "Хөтлөгч", steering: "Жолооны байрлал",
   mileage_min: "Гүйлт: доод (км)", mileage_max: "Гүйлт: дээд (км)", engine_min: "Хөдөлгүүр: доод (cc)", engine_max: "Хөдөлгүүр: дээд (cc)",
@@ -17,12 +17,12 @@ export const rangeFields = [
 export function groupInitialValues(row?: HomeProductGroups.Entity) {
   return { title: row?.title ?? "", description: row?.description ?? "", imageId: row?.imageId ?? null,
     sortOrder: (row?.sortOrder ?? 0) as number | string, isActive: row?.isActive ?? true,
-    filters: { ...Object.fromEntries(Object.keys(filterLabels).map((key) => [key, ""])), ...row?.filters } as Record<string, string | number | null>,
+    filters: { ...row?.filters } as VehicleSearchParams,
   };
 }
 export type GroupValues = ReturnType<typeof groupInitialValues>;
 export function groupRawBody(values: GroupValues) {
-  return { ...values, filters: Object.fromEntries(Object.entries(values.filters).filter(([, value]) => value !== "" && value !== null && value !== undefined)) };
+  return { ...values, filters: normalizeVehicleSearchParams(values.filters) };
 }
 export function groupErrors(values: GroupValues) {
   const result = HomeProductGroups.createBody.safeParse(groupRawBody(values));

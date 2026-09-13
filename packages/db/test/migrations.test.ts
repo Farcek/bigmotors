@@ -42,7 +42,7 @@ test("migration history contains every current trigger definition", () => {
   const migrations = readMigrationFiles(migrationConfig);
   const definitions = migrations.flatMap((migration) => migration.sql).join("\n").replaceAll("CREATE OR REPLACE FUNCTION", "CREATE FUNCTION");
   for (const hook of schemaHooks) assert.ok(definitions.includes(new PgDialect().sqlToQuery(hook).sql));
-  assert.equal(migrations.length, 9);
+  assert.equal(migrations.length, 10);
 });
 
 test("migrating twice does not reapply SQL or duplicate the migration history", async () => {
@@ -87,7 +87,7 @@ test("restoring hooks preserves existing data and fixes first publication after 
       (error: unknown) => typeof error === "object" && error !== null && "constraint" in error && error.constraint === "products_published_required");
     const snapshots = new Map<string, Record<string, unknown>[]>();
     for (const table of ["products", "vehicles", "files", "product_images", "colors"]) {
-      snapshots.set(table, (await db.query(`SELECT * FROM ${table} ORDER BY 1`)).rows);
+      snapshots.set(table, (await db.query<Record<string, unknown>>(`SELECT * FROM ${table} ORDER BY 1`)).rows);
     }
     await migrate(orm, migrationConfig);
     for (const [table, rows] of snapshots) assert.deepEqual((await db.query(`SELECT * FROM ${table} ORDER BY 1`)).rows,
@@ -137,6 +137,29 @@ test("gallery key migration backfills existing rows without losing items", async
     await db.close();
     await rm(folder, { recursive: true, force: true });
   }
+});
+
+test("home group string migration preserves metadata, existing strings and image usage", async () => {
+  const db = await testDatabase();
+  try {
+    const file = (await db.query<{ id: string }>("INSERT INTO files (file_path,original_name) VALUES ('group/migration','image.jpg') RETURNING id")).rows[0]!;
+    await db.query(`INSERT INTO home_product_group (title,filters,image_id,is_active,sort_order)
+      VALUES ('Legacy', '{"engine_max":2000,"mileage_min":0,"fuel":"electric","price_min":"100"}', $1, false, 4),
+      ('Strings', '{"engine_max":"3000"}', NULL, true, 0), ('Empty', '{}', NULL, true, 0)`, [file.id]);
+    const before = (await db.query<Record<string, unknown>>("SELECT * FROM home_product_group ORDER BY title")).rows;
+    const usage = (await db.query("SELECT usage FROM files WHERE id=$1", [file.id])).rows;
+    const sql = await readFile(new URL("../migrations/0009_home_product_group_string_filters.sql", import.meta.url), "utf8");
+    await db.exec(sql);
+    const after = (await db.query<Record<string, unknown>>("SELECT * FROM home_product_group ORDER BY title")).rows;
+    for (let i = 0; i < before.length; i++) {
+      const old = before[i]!; const current = after[i]!;
+      assert.deepEqual(current, old.title === "Legacy" ? { ...old, updated_at: current.updated_at,
+        filters: { engine_max: "2000", mileage_min: "0", fuel: "electric", price_min: "100" } } : old);
+    }
+    assert.deepEqual((await db.query("SELECT usage FROM files WHERE id=$1", [file.id])).rows, usage);
+    await db.exec(sql);
+    assert.deepEqual((await db.query("SELECT * FROM home_product_group ORDER BY title")).rows, after);
+  } finally { await db.close(); }
 });
 
 test("failed SQL rolls back DDL and does not mark the migration applied", async () => {

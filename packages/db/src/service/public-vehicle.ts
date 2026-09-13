@@ -1,6 +1,6 @@
 import { defineInject, INJECT, TOKEN, Token } from "@napp/di";
 import { NappError } from "@napp/error";
-import { vehicleFilterFields, vehicleQueryNumber, validateVehicleRanges } from "@bigmotors/core";
+import { parsedVehicleFilters, vehicleQueryNumber, type VehicleSearchParams } from "@bigmotors/core";
 import { and, asc, count, desc, eq, gte, lte, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
@@ -11,8 +11,12 @@ import { files } from "../schema/files.js";
 import { colors, vehicleBrands, vehicleModels, vehicleVariants, vehicleBodyTypes } from "../schema/references.js";
 
 export const HOME_VEHICLE_PAGE_SIZE = 12;
-export const publicVehicleQuery = vehicleFilterFields.extend({ page: vehicleQueryNumber(1, 3).default(1) }).superRefine(validateVehicleRanges);
-export type PublicVehicleQuery = z.input<typeof publicVehicleQuery>;
+export const publicVehicleQuery = z.preprocess((input) => {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+  const { page, ...filters } = input as Record<string, unknown>;
+  return { page, filters };
+}, z.object({ page: vehicleQueryNumber(1, 3).default(1), filters: parsedVehicleFilters }).transform(({ page, filters }) => ({ ...filters, page })));
+export type PublicVehicleQuery = VehicleSearchParams & { page?: number | string };
 export class PublicVehicleQueryError extends NappError {
   constructor() { super("Invalid vehicle search.", { code: "INVALID_VEHICLE_SEARCH", status: 400 }); }
 }

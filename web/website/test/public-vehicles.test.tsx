@@ -25,6 +25,12 @@ test("public response uses one query presenter and never exposes file metadata",
   assert.equal(response.headers.get("cache-control"), "no-store");
   assert.deepEqual(await response.json(), data);
   assert.equal((await publicVehicleResponse(new Request("http://local/api/vehicles?page=1&page=2"), service)).status, 400);
+  for (const query of ["engine_min=100&engine_max=20", "fuel=invalid", "unknown=", "fuel=electric&fuel=gasoline"]) {
+    assert.equal((await publicVehicleResponse(new Request(`http://local/api/vehicles?${query}`), { async list() { assert.fail("Invalid filters must not reach the service"); } })).status, 400);
+  }
+  await publicVehicleResponse(new Request("http://local/api/vehicles?engine_max=2000&mileage_min=0&page=2"), {
+    async list(query) { assert.deepEqual(query, { engine_max: "2000", mileage_min: "0", page: "2" }); return { ...result, items: [] }; },
+  });
   assert.equal((await publicVehicleResponse(new Request("http://local/api/vehicles"), { async list() { throw new PublicVehicleQueryError(); } })).status, 400);
   const failed = await publicVehicleResponse(new Request("http://local/api/vehicles"), { async list() { throw new Error("SECRET DATABASE URL"); } });
   assert.equal(failed.status, 500); assert.doesNotMatch(await failed.text(), /SECRET/);
