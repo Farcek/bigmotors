@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { SiteHeader } from "../components/header";
+import { SiteFooter } from "../components/footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,9 +27,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <main id="main-content" className="min-w-0 flex-1">
             {children}
           </main>
-          <footer className="border-t border-zinc-200 px-4 py-5 text-sm text-zinc-600 sm:px-6 lg:px-8">
-            BigMotors LLC
-          </footer>
+          <SiteFooter />
         </div>
       </body>
     </html>

@@ -21,15 +21,7 @@ export class PublicVehicleQueryError extends NappError {
   constructor() { super("Invalid vehicle search.", { code: "INVALID_VEHICLE_SEARCH", status: 400 }); }
 }
 
-export class PublicVehicleService {
-  static [TOKEN] = Token.create<PublicVehicleService>("PublicVehicleService");
-  static [INJECT] = defineInject(PublicVehicleService, [TKN_DB] as const);
-  constructor(private readonly db: BigMotorsDb) {}
-
-  async list(input: PublicVehicleQuery = {}) {
-    const parsed = publicVehicleQuery.safeParse(input);
-    if (!parsed.success) throw new PublicVehicleQueryError();
-    const query = parsed.data;
+function publicVehicleWhere(query: z.output<typeof publicVehicleQuery>) {
     const filters: SQL[] = [eq(products.productType, "vehicle"), eq(products.publicationStatus, "published"), eq(vehicles.saleStatus, "available")];
     const refs = { brand: vehicles.brandId, model: vehicles.modelId, variant: vehicles.variantId, category: vehicles.bodyTypeId, color: vehicles.exteriorColorId };
     for (const key of Object.keys(refs) as (keyof typeof refs)[]) if (query[key]) filters.push(eq(refs[key], query[key]!));
@@ -46,7 +38,36 @@ export class PublicVehicleService {
     }
     // Hidden prices must neither be returned nor influence price-filter results.
     if (query.price_min !== undefined || query.price_max !== undefined) filters.push(eq(products.priceDisplayMode, "show_price"));
-    const where = and(...filters);
+    return and(...filters)!;
+}
+
+export class PublicVehicleService {
+  static [TOKEN] = Token.create<PublicVehicleService>("PublicVehicleService");
+  static [INJECT] = defineInject(PublicVehicleService, [TKN_DB] as const);
+  constructor(private readonly db: BigMotorsDb) {}
+
+  async countGroups(inputs: VehicleSearchParams[]): Promise<number[]> {
+    const conditions = inputs.map((input) => {
+      const filters = parsedVehicleFilters.safeParse(input);
+      if (!filters.success) throw new PublicVehicleQueryError();
+      return publicVehicleWhere({ ...filters.data, page: 1 });
+    });
+    const totals: number[] = [];
+    // Count groups together without fetching cards or issuing one query per group.
+    for (let offset = 0; offset < conditions.length; offset += 100) {
+      const batch = conditions.slice(offset, offset + 100);
+      const selection = Object.fromEntries(batch.map((where, i) => [`group_${i}`, sql<number>`count(*) filter (where ${where})`.mapWith(Number)]));
+      const [row] = await this.db.select(selection).from(products).innerJoin(vehicles, eq(vehicles.productId, products.id));
+      totals.push(...batch.map((_, i) => row?.[`group_${i}`] ?? 0));
+    }
+    return totals;
+  }
+
+  async list(input: PublicVehicleQuery = {}) {
+    const parsed = publicVehicleQuery.safeParse(input);
+    if (!parsed.success) throw new PublicVehicleQueryError();
+    const query = parsed.data;
+    const where = publicVehicleWhere(query);
     const main = alias(files, "main_file"); const item = alias(files, "item_file");
     return this.db.transaction(async (tx) => {
       const [row] = await tx.select({ total: count() }).from(products).innerJoin(vehicles, eq(vehicles.productId, products.id)).where(where);

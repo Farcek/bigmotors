@@ -43,6 +43,13 @@ test("public vehicle queries enforce visibility, privacy, bounds, filters and ac
     assert.equal((await service.list({ price_min: "0" })).total, 44);
     assert.equal((await service.list({ mileage_min: "0", mileage_max: "0" })).total, 1);
     assert.equal((await service.list({ engine_min: "2000", engine_max: "2000" })).total, 44);
+    const groupFilters = [{}, { price_min: "0" }, { fuel: "electric" }, { engine_min: "2000", engine_max: "2000" }, { brand: randomUUID() }];
+    const groupCounts = await service.countGroups(groupFilters);
+    assert.deepEqual(groupCounts, [45, 44, 1, 44, 0]);
+    for (let i = 0; i < groupFilters.length; i++) assert.equal(groupCounts[i], (await service.list(groupFilters[i])).total);
+    assert.deepEqual(await service.countGroups([]), []);
+    assert.equal((await service.countGroups(Array.from({ length: 101 }, () => ({ fuel: "electric" })))).length, 101);
+    await assert.rejects(service.countGroups([{ page: "1" }] as never), PublicVehicleQueryError);
     assert.equal((await service.list({ brand: brand!.id, model: model!.id, variant: variant!.id, category: body!.id, color: color!.id, condition: "used", drivetrain: "awd", steering: "left", transmission: "automatic", year_min: "2020", year_max: "2020" })).total, 22);
     const empty = await service.list({ brand: randomUUID(), page: 3 });
     assert.deepEqual([empty.total, empty.pageCount, empty.page, empty.items.length], [0, 0, 1, 0]);

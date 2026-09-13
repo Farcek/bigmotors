@@ -72,6 +72,15 @@
 - Loading үед өмнөх card-ууд бүдгэрч inert болно. Алдаа үед буруу үр дүн мэт хуучин card харуулахгүй, retry өгнө. Хоосон үр дүнд шүүлт цэвэрлэж дахин хайх товч гарна.
 - Шинэ хүсэлт өмнөхөө abort хийнэ; sequence хамгаалалт хуучин хариугаар шинэ үр дүнг дарахгүй. Unmount дээр abort; 30 секундийн timeout. Нэмэлт cache сан байхгүй.
 
+## Нүүрний бүтээгдэхүүний бүлэг
+
+- `src/components/home.product.groups/index.tsx`: зээлийн тооцоолуурын дараах цагаан section, "Төрлөөр нь үзэх" гарчигтай.
+- `home_product_group`-ийн зөвхөн идэвхтэй бүлгүүдийг `sort_order ASC, id ASC` дарааллаар SSR render хийнэ. Mobile нэг, `sm` хоёр, `lg` дөрвөн багана. Нэмэлт client fetch/cache байхгүй.
+- Card дээр зураг, гарчиг, бодит машины тоо, сум байна. Зураг нь `/files/:id/:originalName`; зураггүй бүлэгт placeholder icon. Гарчиг plain text байна.
+- Машины тоо нь `PublicVehicleService.list`-тэй нэг шүүлтийн дүрэмтэй: published + available, inquiry үнэ range-д орохгүй. Олон бүлгийг нэг aggregate query-д (100 хүртэл багцаар) тоолно; card мэдээлэл татахгүй. 0 үр дүнтэй бүлгийг мөн харуулна.
+- Бүлгийн холбоос нь shared `getVehicleSearchHref(filters)` ашиглаж `/vehicles?...` рүү нөхцөлийг дамжуулна. "Бүгдийг харах" нь нөхцөлгүй `/vehicles` рүү очно. Тус хуудасны хайлтын UI хараахан холбогдоогүй.
+- Идэвхтэй бүлэг байхгүй бол section харагдахгүй. DB алдааг хоосон бүлэг/0 машин гэж нуухгүй, одоогийн page error boundary-д дамжуулна.
+
 ## Алдааны дэлгэц
 
 - `src/app/error.tsx` нь page болон nested route-ийн runtime алдааг барьж, header/footer дотор ерөнхий алдааны дэлгэц харуулна. Тусдаа `/error` URL биш.

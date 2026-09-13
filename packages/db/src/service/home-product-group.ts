@@ -5,6 +5,7 @@ import { and, asc, eq, ilike } from "drizzle-orm";
 import { z } from "zod";
 import { TKN_DB, type BigMotorsDb } from "../db.js";
 import { homeProductGroup } from "../schema/home-product-group.js";
+import { files } from "../schema/files.js";
 import { colors, vehicleBodyTypes, vehicleBrands, vehicleModels, vehicleVariants } from "../schema/references.js";
 
 const fields = z.object({
@@ -63,6 +64,13 @@ export class HomeProductGroupService {
   static [TOKEN] = Token.create<HomeProductGroupService>("HomeProductGroupService");
   static [INJECT] = defineInject(HomeProductGroupService, [TKN_DB] as const);
   constructor(private readonly db: BigMotorsDb) {}
+  async listPublic() {
+    return storage(() => this.db.select({
+      id: homeProductGroup.id, title: homeProductGroup.title, filters: homeProductGroup.filters,
+      imageId: files.id, imageName: files.originalName,
+    }).from(homeProductGroup).leftJoin(files, eq(files.id, homeProductGroup.imageId))
+      .where(eq(homeProductGroup.isActive, true)).orderBy(asc(homeProductGroup.sortOrder), asc(homeProductGroup.id)));
+  }
   async list(params: ListHomeProductGroupInput = {}) {
     const input = parse(listFields, params);
     const pattern = input.search?.replace(/[\\%_]/g, "\\$&");

@@ -5,6 +5,8 @@ import { HomeFinancingCalculator } from "../components/home.financing.calculator
 import { getGalleryByKey } from "../server/galleries";
 import { toHomeSlides } from "../server/home-slides";
 import { getHomeVehicleData } from "../server/public-vehicles";
+import HomeProductGroups from "../components/home.product.groups";
+import { getHomeProductGroups } from "../server/home-product-groups";
 
 export default async function HomePage() {
   const gallery = await getGalleryByKey("home");
@@ -16,6 +18,7 @@ export default async function HomePage() {
   }
 
   const vehicleData = await getHomeVehicleData();
+  const productGroups = await getHomeProductGroups();
 
   return (
     <div>
@@ -27,6 +30,7 @@ export default async function HomePage() {
         </BodyContainer>
       </SectionDark>
       <HomeFinancingCalculator imageUrl={vehicleData.initialResult.items.find((item) => item.imageUrl)?.imageUrl} />
+      <HomeProductGroups items={productGroups} />
     </div>
   );
 }
