@@ -6,9 +6,11 @@ import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { TKN_DB, type BigMotorsDb } from "../db.js";
 import { products, productImages } from "../schema/products.js";
-import { vehicles } from "../schema/vehicles.js";
+import { vehicles, vehicleFeatureLinks } from "../schema/vehicles.js";
 import { files } from "../schema/files.js";
-import { colors, vehicleBrands, vehicleModels, vehicleVariants, vehicleBodyTypes } from "../schema/references.js";
+import { colors, vehicleBrands, vehicleModels, vehicleVariants, vehicleBodyTypes, vehicleFeatures } from "../schema/references.js";
+import { branches } from "../schema/branches.js";
+import { locations } from "../schema/locations.js";
 
 export const HOME_VEHICLE_PAGE_SIZE = 12;
 export const publicVehicleQuery = z.preprocess((input) => {
@@ -45,6 +47,45 @@ export class PublicVehicleService {
   static [TOKEN] = Token.create<PublicVehicleService>("PublicVehicleService");
   static [INJECT] = defineInject(PublicVehicleService, [TKN_DB] as const);
   constructor(private readonly db: BigMotorsDb) {}
+
+  async detail(id: string) {
+    if (!z.string().uuid().safeParse(id).success) return null;
+    const exterior = alias(colors, "exterior_color");
+    const interior = alias(colors, "interior_color");
+    return this.db.transaction(async (tx) => {
+      const [item] = await tx.select({
+        id: products.id, title: products.title, description: products.description, content: products.content,
+        mainImageId: files.id, mainImageName: files.originalName,
+        price: sql<number | null>`case when ${products.priceDisplayMode} = 'show_price' then ${products.price} else null end`.mapWith((value) => value === null ? null : Number(value)),
+        currency: products.currency, priceDisplayMode: products.priceDisplayMode,
+        brandId: vehicles.brandId, bodyTypeId: vehicles.bodyTypeId,
+        brandName: vehicleBrands.name, modelName: vehicleModels.name, variantName: vehicleVariants.name, bodyTypeName: vehicleBodyTypes.name,
+        manufactureYear: vehicles.manufactureYear, importYear: vehicles.importYear, mileageKm: vehicles.mileageKm,
+        fuelType: vehicles.fuelType, engineCapacityCc: vehicles.engineCapacityCc, transmission: vehicles.transmission,
+        drivetrain: vehicles.drivetrain, steeringPosition: vehicles.steeringPosition, seatCount: vehicles.seatCount,
+        exteriorColorName: exterior.name, interiorColorName: interior.name,
+        condition: vehicles.condition, conditionDescription: vehicles.conditionDescription, arrivalStatus: vehicles.arrivalStatus,
+        financingAvailable: vehicles.financingAvailable, youtubeUrl: vehicles.youtubeUrl,
+        branchName: branches.name, locationName: locations.name,
+      }).from(products).innerJoin(vehicles, eq(vehicles.productId, products.id))
+        .leftJoin(files, eq(files.id, products.mainImageId))
+        .leftJoin(vehicleBrands, eq(vehicleBrands.id, vehicles.brandId))
+        .leftJoin(vehicleModels, eq(vehicleModels.id, vehicles.modelId))
+        .leftJoin(vehicleVariants, eq(vehicleVariants.id, vehicles.variantId))
+        .leftJoin(vehicleBodyTypes, eq(vehicleBodyTypes.id, vehicles.bodyTypeId))
+        .leftJoin(exterior, eq(exterior.id, vehicles.exteriorColorId)).leftJoin(interior, eq(interior.id, vehicles.interiorColorId))
+        .leftJoin(branches, eq(branches.id, vehicles.branchId)).leftJoin(locations, eq(locations.id, vehicles.locationId))
+        .where(and(publicVehicleWhere({ page: 1 }), eq(products.id, id))).limit(1);
+      if (!item) return null;
+      const photos = await tx.select({ id: files.id, originalName: files.originalName })
+        .from(productImages).innerJoin(files, eq(files.id, productImages.fileId))
+        .where(eq(productImages.productId, id)).orderBy(asc(productImages.sortOrder), asc(productImages.id));
+      const features = await tx.select({ name: vehicleFeatures.name })
+        .from(vehicleFeatureLinks).innerJoin(vehicleFeatures, eq(vehicleFeatures.id, vehicleFeatureLinks.featureId))
+        .where(eq(vehicleFeatureLinks.productId, id)).orderBy(asc(vehicleFeatures.sortOrder), asc(vehicleFeatures.name), asc(vehicleFeatures.id));
+      return { ...item, photos, features: features.map((feature) => feature.name) };
+    }, { isolationLevel: "repeatable read", accessMode: "read only" });
+  }
 
   async countGroups(inputs: VehicleSearchParams[]): Promise<number[]> {
     const conditions = inputs.map((input) => {

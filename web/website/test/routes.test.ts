@@ -100,7 +100,36 @@ test("catalog endpoint accepts bounded page sizes, sorting, filters, and rejects
   assert.equal((await fetch(new URL("/api/vehicles/search", baseUrl), { method: "POST" })).status, 405);
 });
 
-for (const path of [`/vehicles/${id}`, "/parts", `/parts/${id}`, "/tires", `/tires/${id}`]) {
+test("vehicle detail renders the same public data as its API without demo fallbacks", async () => {
+  const listing = await (await fetch(new URL("/api/vehicles", baseUrl))).json();
+  assert.ok(listing.items.length);
+  const vehicle = listing.items[0];
+  const response = await fetch(new URL(`/api/vehicles/${vehicle.id}`, baseUrl));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  const { item, related } = await response.json();
+  assert.equal(item.id, vehicle.id);
+  assert.ok(related.length <= 4);
+  assert.ok(related.every((other: { id: string }) => other.id !== vehicle.id));
+  assert.doesNotMatch(JSON.stringify({ item, related }), /"vin"|"internalNote"|"filePath"|"usage"|"publicationStatus"|"content"/);
+  assert.equal(new Set(item.photos.map((photo: { src: string }) => photo.src)).size, item.photos.length);
+  const page = await fetch(new URL(`/vehicles/${vehicle.id}`, baseUrl));
+  assert.equal(page.status, 200);
+  const html = await page.text();
+  assert.ok(html.includes(item.title));
+  assert.match(html, /Техникийн үзүүлэлт/);
+  assert.doesNotMatch(html, /\/demo\/vehicles\/|demo-4runner/);
+  for (const photo of item.photos) assert.ok(html.includes(photo.src));
+  assert.equal((await fetch(new URL(`/api/vehicles/${vehicle.id}`, baseUrl), { method: "POST" })).status, 405);
+  for (const missing of [id, "demo-4runner", "invalid"]) {
+    assert.equal((await fetch(new URL(`/vehicles/${missing}`, baseUrl))).status, 404);
+    const missingApi = await fetch(new URL(`/api/vehicles/${missing}`, baseUrl));
+    assert.equal(missingApi.status, 404);
+    assert.equal((await missingApi.json()).code, "VEHICLE_NOT_FOUND");
+  }
+});
+
+for (const path of ["/parts", `/parts/${id}`, "/tires", `/tires/${id}`]) {
   test(`empty route ${path} retains layout without rendering data`, async () => {
     const response = await fetch(new URL(path, baseUrl));
     assert.equal(response.status, 200);

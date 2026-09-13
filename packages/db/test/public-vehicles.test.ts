@@ -78,6 +78,36 @@ test("public vehicle queries enforce visibility, privacy, bounds, filters and ac
     assert.equal(filteredCatalog.total, 0); assert.equal(filteredCatalog.page, 1); assert.equal(filteredCatalog.pageCount, 0);
     assert.equal(filteredCatalog.brandCounts?.[brand!.id], 44);
     assert.doesNotMatch(JSON.stringify(descending), /PRIVATE|private\/disk|filePath|internalNote|"vin"|"content"|"usage"/);
+    const [secondFile] = await orm.insert(s.files).values({ filePath: "private/second", originalName: "second.jpg", usage: [] }).returning();
+    const [thirdFile] = await orm.insert(s.files).values({ filePath: "private/third", originalName: "third.jpg", usage: [] }).returning();
+    await orm.insert(s.productImages).values([
+      { productId: ids[0]!, fileId: secondFile!.id, sortOrder: 2 },
+      { productId: ids[0]!, fileId: thirdFile!.id, sortOrder: 1 },
+    ]);
+    const [feature] = await orm.insert(s.vehicleFeatures).values({ name: "Camera" }).returning();
+    await orm.insert(s.vehicleFeatureLinks).values({ productId: ids[0]!, featureId: feature!.id });
+    const [branch] = await orm.insert(s.branches).values({ name: "Showroom" }).returning();
+    const [location] = await orm.insert(s.locations).values({ name: "Ulaanbaatar" }).returning();
+    await orm.update(s.vehicles).set({ branchId: branch!.id, locationId: location!.id, interiorColorId: color!.id }).where(eq(s.vehicles.productId, ids[0]!));
+    await orm.update(s.products).set({ content: "<p>Public detail content</p>" }).where(eq(s.products.id, ids[0]!));
+    const detail = await service.detail(ids[0]!);
+    assert.ok(detail);
+    assert.equal(detail.price, null);
+    assert.equal(detail.mileageKm, 0);
+    assert.deepEqual([detail.brandName, detail.modelName, detail.variantName, detail.bodyTypeName], ["Brand", "Model", "Variant", "Body"]);
+    assert.deepEqual([detail.branchName, detail.locationName, detail.exteriorColorName, detail.interiorColorName], ["Showroom", "Ulaanbaatar", "Color", "Color"]);
+    assert.deepEqual(detail.photos.map((photo) => photo.id), [file!.id, thirdFile!.id, secondFile!.id]);
+    assert.deepEqual(detail.features, ["Camera"]);
+    assert.equal(detail.content, "<p>Public detail content</p>");
+    assert.doesNotMatch(JSON.stringify(detail), /PRIVATE|private\/|filePath|internalNote|"vin"|"usage"|publicationStatus/);
+    assert.equal((await service.detail(ids[1]!))!.price, 10_000_001);
+    for (const hiddenId of [...ids.slice(45), randomUUID(), "demo-4runner", "invalid"]) assert.equal(await service.detail(hiddenId), null);
+    const partId = await orm.transaction(async (tx) => {
+      const [part] = await tx.insert(s.products).values({ productType: "part", title: "Not a vehicle" }).returning();
+      await tx.insert(s.parts).values({ productId: part!.id });
+      return part!.id;
+    });
+    assert.equal(await service.detail(partId), null);
     for (const bad of [{ page: 1 }, { page: "0" }, { page: "1000000" }, { page_size: "1000" }, { page_size: 24 }, { sort: "evil" }, { columns: "5" }, { price_min: "20", price_max: "10" }, { publicationStatus: "draft" }]) await assert.rejects(service.search(bad as never), PublicVehicleQueryError);
     const lookups = await service.lookups();
     assert.equal(lookups.models[0]!.brandId, brand!.id); assert.equal(lookups.variants[0]!.modelId, model!.id);
@@ -85,5 +115,6 @@ test("public vehicle queries enforce visibility, privacy, bounds, filters and ac
     const inactive = await service.lookups();
     assert.equal(inactive.brands.length + inactive.models.length + inactive.variants.length, 0);
     assert.equal((await service.list()).total, 45);
+    assert.equal((await service.detail(ids[0]!))!.brandName, "Brand");
   } finally { di.destroy(); await db.close(); }
 });

@@ -1,13 +1,13 @@
 # Website URL routing
 
-2026-09-14: Next.js App Router. Нүүр хуудас өөрийн агуулгатай; зөвхөн slug route Page module-той холбогдсон. Автомашины каталог бодит хайлттай; бусад каталог болон бүтээгдэхүүний дэлгэрэнгүй route-ууд хоосон хэвээр.
+2026-09-14: Next.js App Router. Нүүр хуудас өөрийн агуулгатай; зөвхөн slug route Page module-той холбогдсон. Автомашины каталог болон дэлгэрэнгүй нь бодит өгөгдөлтэй; сэлбэг/дугуйн route-ууд хоосон хэвээр.
 
 | URL | Одоогийн төлөв |
 | --- | --- |
 | / | Өөрийн нүүр хуудас (`src/app/page.tsx`), `key="home"` Gallery-ийн HomeCarousel |
 | /:slug | Нийтэлсэн Page-ийг slug-аар олох; байхгүй/нийтлэгдээгүй бол 404 |
 | /vehicles | SSR + client API хайлт, URL шүүлтүүр/эрэмбэ/хуудаслалттай автомашины каталог |
-| /vehicles/:id | Хоосон автомашины дэлгэрэнгүй |
+| /vehicles/:id | SSR public автомашины дэлгэрэнгүй; байхгүй/нийтэд харагдахгүй бол 404 |
 | /parts | Хоосон сэлбэгийн жагсаалт |
 | /parts/:id | Хоосон сэлбэгийн дэлгэрэнгүй |
 | /tires | Хоосон дугуйн жагсаалт |
@@ -16,14 +16,16 @@
 | /api/vehicles | Public хайлт GET; 12 машин/хуудас, нүүрийн хамгийн ихдээ 3 хуудас |
 | /api/vehicles/search | Каталогийн public GET; page_size=12/18/24/36, нийт үр дүнгээр хуудаслана, үнийн эрэмбэ болон маркын тоо |
 | /api/vehicles/lookups | Public идэвхтэй лавлахууд GET |
+| /api/vehicles/:id | Public дэлгэрэнгүй GET/HEAD, `{ item, related }`, no-store; байхгүй бол 404 |
 
 ## Хүрээ
 
 - Header, footer, max-width 1440px хэвээр. `/:slug` дээр Page-ийн content JSONB-г JSON.stringify(content, null, 2) хэлбэрээр pre дотор render хийнэ. React текстийг escape хийнэ; HTML болон script ажиллуулахгүй.
-- `/vehicles`-ээс бусад каталогийн route-ууд null агуулгатай. Түр noindex/nofollow metadata хэвээр; SEO/meta render тусдаа ажил.
+- Сэлбэг/дугуйн route-ууд null агуулгатай. Автомашины дэлгэрэнгүй бодит өгөгдөлтэй. Түр noindex/nofollow metadata хэвээр; SEO/meta render тусдаа ажил.
 - Static каталог route нь /:slug-ээс тусдаа. /api, /files, /_next нэрийг Page route болгож харуулахгүй.
 - Route-д таарахгүй олон segment-тэй URL нь нийтлэг 404 хуудас харуулна.
-- /:slug нь PageService.findPublishedBySlug ашиглана. Буруу формат, байхгүй, draft/archived Page нь 404. Бүтээгдэхүүний id route-ууд л одоогоор дурын id-д хоосон 200 буцаана.
+- /:slug нь PageService.findPublishedBySlug ашиглана. Буруу формат, байхгүй, draft/archived Page нь 404. Автомашины id route UUID шалгаж, published + available машиныг л харуулна. Бусад төлөв, үл мэдэгдэх болон хуучин demo ID нь 404. Сэлбэг/дугуйн id route хоосон 200 буцаана.
+- Дэлгэрэнгүй SSR болон API нь `PublicVehicleService.detail` / `readVehicleDetail` ашиглана. Server өөрийн HTTP API-г давхар дуудахгүй. Уншилт request бүрд хийгдэх бөгөөд машин, зураг, тоноглол нь read-only repeatable-read transaction-д байна. API response-д VIN, internalNote, publicationStatus, filePath, usage оруулахгүй; inquire үнэ SQL түвшинд null болно. Агуулгыг зөвхөн цэвэрлэсэн `contentHtml` хэлбэрээр өгнө. Хадгалалтын алдаа API-д нууцгүй 500, хуудсанд error boundary; DB schema/migration өөрчлөлтгүй.
 - `/` нь settings/Page lookup хийхгүй. `homepage` тохиргоо, Page нийтлэх/засах/устгах нь нүүр хуудсыг өөрчлөхгүй. `GalleryService.findByKey("home")` ашиглан яг тэнцүү key-ээр Gallery олно; бүх item-ийг `sort_order ASC, id ASC` дарааллаар HomeCarousel-д харуулна. Gallery байхгүй эсвэл item-гүй үед нүүр хуудасны одоогийн алдааны дэлгэц гарна; DB алдааг мөн нуухгүй.
 - Нүүр хуудасны Gallery уншилт server-only, request бүрд хийгдэнэ. Server дээр HTML цэвэрлээд зөвхөн carousel-д хэрэгтэй талбаруудыг client component-д өгнө. Шинэ public Gallery API эсвэл Page renderer нэмээгүй.
 - `/:slug`-ийн DB уншилт нь server-only module-д, request бүрд хийгдэнэ. React cache нь зөвхөн нэг render request дотор давхардлыг багасгана; хүсэлт хооронд агуулгыг cache хийхгүй. DB алдааг 404 гэж нуухгүй.
