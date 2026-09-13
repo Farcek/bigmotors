@@ -6,3 +6,4 @@ export * from "./settings.js";
 export * from "./gallery.js";
 export * from "./youtube.js";
 export * from "./vehicle-search.js";
+export * from "./vehicle-listing.js";

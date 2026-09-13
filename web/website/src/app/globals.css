@@ -24,6 +24,14 @@
     --color-section-dark-bg: #1B1B1B;
     --color-section-dark-text: #FFFFFF;
     --color-menu-overlay: #000000eb;
+    --color-catalog-surface: #f7f8fa;
+    --color-catalog-border: #d1d5db;
+    --color-catalog-muted: #59636e;
     /* --color-primary-hover: #2bc99a;
     --color-on-primary: #18181b; */
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: #1b1b1b;
 }

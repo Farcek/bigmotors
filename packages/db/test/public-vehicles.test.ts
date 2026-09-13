@@ -55,6 +55,30 @@ test("public vehicle queries enforce visibility, privacy, bounds, filters and ac
     assert.deepEqual([empty.total, empty.pageCount, empty.page, empty.items.length], [0, 0, 1, 0]);
     assert.equal((await service.list({ fuel: "electric", page: 3 })).page, 1);
     for (const bad of [{ page: 4 }, { price_min: "-1" }, { mileage_min: 100, mileage_max: 1 }, { brand: "bad" }, { publicationStatus: "draft" }, { limit: 1000 }, { fuel: "invalid" }]) await assert.rejects(service.list(bad as never), PublicVehicleQueryError);
+    for (const pageSize of ["12", "18", "24", "36"] as const) {
+      const catalog = await service.search({ page_size: pageSize });
+      assert.equal(catalog.total, 45);
+      assert.equal(catalog.pageSize, Number(pageSize));
+      assert.equal(catalog.items.length, Number(pageSize));
+      assert.equal(catalog.pageCount, Math.ceil(45 / Number(pageSize)));
+      assert.equal(catalog.brandCounts?.[brand!.id], 45);
+    }
+    const fourth = await service.search({ page: "4", page_size: "12" });
+    assert.equal(fourth.page, 4); assert.equal(fourth.items.length, 9);
+    const beyond = await service.search({ page: "999999", page_size: "12" });
+    assert.equal(beyond.page, 4);
+    const ascending = await service.search({ sort: "price_asc", page_size: "12" });
+    assert.deepEqual(ascending.items.map((item) => item.id), ids.slice(1, 13));
+    const descending = await service.search({ sort: "price_desc", page_size: "12" });
+    assert.deepEqual(descending.items.map((item) => item.id), ids.slice(33, 45).reverse());
+    const lastByPrice = await service.search({ sort: "price_desc", page: "4", page_size: "12" });
+    assert.equal(lastByPrice.items.at(-1)!.id, ids[0]);
+    assert.equal(lastByPrice.items.at(-1)!.price, null);
+    const filteredCatalog = await service.search({ brand: randomUUID(), fuel: "gasoline", page: "4" });
+    assert.equal(filteredCatalog.total, 0); assert.equal(filteredCatalog.page, 1); assert.equal(filteredCatalog.pageCount, 0);
+    assert.equal(filteredCatalog.brandCounts?.[brand!.id], 44);
+    assert.doesNotMatch(JSON.stringify(descending), /PRIVATE|private\/disk|filePath|internalNote|"vin"|"content"|"usage"/);
+    for (const bad of [{ page: 1 }, { page: "0" }, { page: "1000000" }, { page_size: "1000" }, { page_size: 24 }, { sort: "evil" }, { columns: "5" }, { price_min: "20", price_max: "10" }, { publicationStatus: "draft" }]) await assert.rejects(service.search(bad as never), PublicVehicleQueryError);
     const lookups = await service.lookups();
     assert.equal(lookups.models[0]!.brandId, brand!.id); assert.equal(lookups.variants[0]!.modelId, model!.id);
     await orm.update(s.vehicleBrands).set({ isActive: false }).where(eq(s.vehicleBrands.id, brand!.id));

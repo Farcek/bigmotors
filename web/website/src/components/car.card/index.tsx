@@ -8,6 +8,7 @@ import { formatCarPrice, fuelLabels, resolveCarCard, transmissionLabels, type Ca
 export type { CarCardData } from "./model";
 export type CarCardItemProps = {
   item: CarCardData;
+  className?: string;
   compactPrice?: boolean;
   favorite?: { selected: boolean; onToggle: () => void; disabled?: boolean };
   maxSpecCount?: number;
@@ -29,7 +30,7 @@ function CardImage({ src, title }: { src: string | null; title: string }) {
     : <div role="img" aria-label={`${title}: зураг байхгүй`} className="flex h-full w-full items-center justify-center bg-card-subtle text-search-muted"><IconPhotoOff size={40} stroke={1.5} aria-hidden="true" /></div>;
 }
 
-export default function CarCardItem({ item, compactPrice = false, favorite, maxSpecCount, showBadges = true }: CarCardItemProps) {
+export default function CarCardItem({ item, className = "", compactPrice = false, favorite, maxSpecCount, showBadges = true }: CarCardItemProps) {
   const { title, description, imageUrl, href } = resolveCarCard(item);
   const youtubeUrl = getYouTubeVideoUrl(item.youtubeUrl);
   const fuel = item.fuelType ? fuelLabels[item.fuelType] : null;
@@ -42,7 +43,7 @@ export default function CarCardItem({ item, compactPrice = false, favorite, maxS
     { label: "Хөдөлгүүр", value: item.fuelType !== "electric" && item.engineCapacityCc != null ? `${number.format(item.engineCapacityCc)} cc` : null, Icon: IconEngine },
   ].filter((spec) => spec.value !== null).slice(0, maxSpecCount === undefined ? undefined : Math.max(0, Math.floor(maxSpecCount)));
 
-  return <article className="flex h-full min-w-0 flex-col overflow-hidden rounded-lg bg-search-surface text-search-text">
+  return <article className={`flex h-full min-w-0 flex-col overflow-hidden rounded-lg bg-search-surface text-search-text ${className}`}>
     <div className="relative aspect-[4/3] shrink-0">
       <a href={href} aria-label={`${title}: дэлгэрэнгүй`} className={`absolute inset-0 block ${focusClass}`}>
         <CardImage key={imageUrl} src={imageUrl} title={title} />

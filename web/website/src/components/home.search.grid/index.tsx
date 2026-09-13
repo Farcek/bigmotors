@@ -1,10 +1,11 @@
 "use client";
 
-import { IconArrowRight, IconSquare, IconSquareFilled } from "@tabler/icons-react";
+import { IconArrowRight } from "@tabler/icons-react";
+import { GridColumnControl } from "../grid-columns";
 import { getVehicleSearchHref, homePageCount, type GridColumns, type HomeSearchFilters, type VehicleConditionFilter } from "../home.searcher/model";
 
 const focusClass = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
-const columnClasses = { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4", 6: "grid-cols-6" } as const;
+
 
 export default function HomeSearchGrid({ filters, page, pageCount, columns, onConditionChange, onPageChange, onColumnsChange }: {
   filters: HomeSearchFilters;
@@ -36,16 +37,7 @@ export default function HomeSearchGrid({ filters, page, pageCount, columns, onCo
     </nav>
 
     <div className="flex min-w-0 items-center justify-between gap-3 sm:col-span-2 sm:justify-end lg:col-span-1">
-      <div role="group" aria-label="Grid баганын тоо" className="hidden items-center gap-1 lg:flex">
-        {([2, 3, 4, 6] as const).map((value) => {
-          const Square = columns === value ? IconSquareFilled : IconSquare;
-          return <button key={value} type="button" aria-label={`${value} багана`} title={`${value} багана`} aria-pressed={columns === value} onClick={() => onColumnsChange(value)} className={`flex h-11 min-w-11 items-center justify-center rounded px-2 hover:text-section-dark-text ${focusClass} ${columns === value ? "text-section-dark-text" : "text-section-dark-text/30"}`}>
-            <span aria-hidden="true" className={`grid gap-0.5 ${columnClasses[value]}`}>
-              {Array.from({ length: value * 2 }, (_, index) => <Square key={index} size={7} stroke={1.5} />)}
-            </span>
-          </button>;
-        })}
-      </div>
+      <GridColumnControl columns={columns} onChange={onColumnsChange} />
       <a href={getVehicleSearchHref(filters)} className={`flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-section-dark-text/20 px-4 text-sm transition-colors hover:border-primary hover:text-primary sm:w-auto ${focusClass}`}>
         Бүгдийг харах<IconArrowRight size={18} aria-hidden="true" />
       </a>

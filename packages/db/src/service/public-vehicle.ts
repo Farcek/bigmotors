@@ -1,6 +1,6 @@
 import { defineInject, INJECT, TOKEN, Token } from "@napp/di";
 import { NappError } from "@napp/error";
-import { parsedVehicleFilters, vehicleQueryNumber, type VehicleSearchParams } from "@bigmotors/core";
+import { parsedVehicleFilters, vehicleQueryNumber, vehicleListingQuery, type VehicleListingInput, type VehicleListingQuery, type VehicleSearchParams } from "@bigmotors/core";
 import { and, asc, count, desc, eq, gte, lte, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
@@ -66,14 +66,28 @@ export class PublicVehicleService {
   async list(input: PublicVehicleQuery = {}) {
     const parsed = publicVehicleQuery.safeParse(input);
     if (!parsed.success) throw new PublicVehicleQueryError();
-    const query = parsed.data;
+    return this.readList(parsed.data, HOME_VEHICLE_PAGE_SIZE, 3, "newest", false);
+  }
+
+  async search(input: VehicleListingInput = {}) {
+    const parsed = vehicleListingQuery.safeParse(input);
+    if (!parsed.success) throw new PublicVehicleQueryError();
+    const { page, page_size, sort, columns: _columns, ...filters } = parsed.data;
+    const query = { ...parsedVehicleFilters.parse(filters), page: Number(page) };
+    return this.readList(query, Number(page_size), Infinity, sort, true);
+  }
+
+  private async readList(query: z.output<typeof publicVehicleQuery>, pageSize: number, maxPages: number, sort: VehicleListingQuery["sort"], includeBrandCounts: boolean) {
     const where = publicVehicleWhere(query);
     const main = alias(files, "main_file"); const item = alias(files, "item_file");
     return this.db.transaction(async (tx) => {
       const [row] = await tx.select({ total: count() }).from(products).innerJoin(vehicles, eq(vehicles.productId, products.id)).where(where);
       const total = row?.total ?? 0;
-      const pageCount = Math.min(3, Math.ceil(total / HOME_VEHICLE_PAGE_SIZE));
+      const pageCount = Math.min(maxPages, Math.ceil(total / pageSize));
       const page = Math.min(query.page, Math.max(1, pageCount));
+      // Price-inquiry listings sort last; their private price must not affect ordering.
+      const visiblePrice = sql`case when ${products.priceDisplayMode} = 'show_price' then ${products.price} else null end`;
+      const order = sort === "price_asc" ? sql`${visiblePrice} asc nulls last` : sort === "price_desc" ? sql`${visiblePrice} desc nulls last` : desc(products.firstPublishedAt);
       const items = await tx.select({
         id: products.id, title: products.title, itemTitle: products.itemTitle, description: products.description, itemDesc: products.itemDesc,
         mainImageId: main.id, mainImageName: main.originalName, itemImageId: item.id, itemImageName: item.originalName,
@@ -84,8 +98,14 @@ export class PublicVehicleService {
         imageCount: sql<number>`(select count(*) from ${productImages} where ${productImages.productId} = ${products.id})`.mapWith(Number),
       }).from(products).innerJoin(vehicles, eq(vehicles.productId, products.id))
         .leftJoin(main, eq(main.id, products.mainImageId)).leftJoin(item, eq(item.id, products.itemImageId)).where(where)
-        .orderBy(desc(products.firstPublishedAt), asc(products.id)).limit(HOME_VEHICLE_PAGE_SIZE).offset((page - 1) * HOME_VEHICLE_PAGE_SIZE);
-      return { items, total, page, pageCount, pageSize: HOME_VEHICLE_PAGE_SIZE };
+        .orderBy(order, asc(products.id)).limit(pageSize).offset((page - 1) * pageSize);
+      const brandCounts: Record<string, number> = {};
+      if (includeBrandCounts) {
+        const facetWhere = publicVehicleWhere({ ...query, brand: undefined, model: undefined, variant: undefined });
+        const counts = await tx.select({ id: vehicles.brandId, total: count() }).from(products).innerJoin(vehicles, eq(vehicles.productId, products.id)).where(facetWhere).groupBy(vehicles.brandId);
+        for (const row of counts) if (row.id) brandCounts[row.id] = row.total;
+      }
+      return { items, total, page, pageCount, pageSize, ...(includeBrandCounts ? { brandCounts } : {}) };
     }, { isolationLevel: "repeatable read", accessMode: "read only" });
   }
 

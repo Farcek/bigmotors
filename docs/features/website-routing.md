@@ -1,12 +1,12 @@
 # Website URL routing
 
-2026-09-13: Next.js App Router. Нүүр хуудас өөрийн агуулгатай; зөвхөн slug route Page module-той холбогдсон. Каталогийн route-ууд хоосон хэвээр.
+2026-09-14: Next.js App Router. Нүүр хуудас өөрийн агуулгатай; зөвхөн slug route Page module-той холбогдсон. Автомашины каталог бодит хайлттай; бусад каталог болон бүтээгдэхүүний дэлгэрэнгүй route-ууд хоосон хэвээр.
 
 | URL | Одоогийн төлөв |
 | --- | --- |
 | / | Өөрийн нүүр хуудас (`src/app/page.tsx`), `key="home"` Gallery-ийн HomeCarousel |
 | /:slug | Нийтэлсэн Page-ийг slug-аар олох; байхгүй/нийтлэгдээгүй бол 404 |
-| /vehicles | Хоосон автомашины жагсаалт |
+| /vehicles | SSR + client API хайлт, URL шүүлтүүр/эрэмбэ/хуудаслалттай автомашины каталог |
 | /vehicles/:id | Хоосон автомашины дэлгэрэнгүй |
 | /parts | Хоосон сэлбэгийн жагсаалт |
 | /parts/:id | Хоосон сэлбэгийн дэлгэрэнгүй |
@@ -14,11 +14,13 @@
 | /tires/:id | Хоосон дугуйн дэлгэрэнгүй |
 | /files/:id/:originalName | Public GET/HEAD; ID-аар DB lookup, FILES_ROOT-оос эх byte stream; Cache-Control: no-store |
 | /api/vehicles | Public хайлт GET; 12 машин/хуудас, нүүрийн хамгийн ихдээ 3 хуудас |
+| /api/vehicles/search | Каталогийн public GET; page_size=12/18/24/36, нийт үр дүнгээр хуудаслана, үнийн эрэмбэ болон маркын тоо |
+| /api/vehicles/lookups | Public идэвхтэй лавлахууд GET |
 
 ## Хүрээ
 
 - Header, footer, max-width 1440px хэвээр. `/:slug` дээр Page-ийн content JSONB-г JSON.stringify(content, null, 2) хэлбэрээр pre дотор render хийнэ. React текстийг escape хийнэ; HTML болон script ажиллуулахгүй.
-- Каталогийн route-ууд null агуулгатай, түр noindex/nofollow metadata-тай. /:slug мөн түр noindex хэвээр; SEO/meta render энэ шатанд хийгдээгүй.
+- `/vehicles`-ээс бусад каталогийн route-ууд null агуулгатай. Түр noindex/nofollow metadata хэвээр; SEO/meta render тусдаа ажил.
 - Static каталог route нь /:slug-ээс тусдаа. /api, /files, /_next нэрийг Page route болгож харуулахгүй.
 - Route-д таарахгүй олон segment-тэй URL нь нийтлэг 404 хуудас харуулна.
 - /:slug нь PageService.findPublishedBySlug ашиглана. Буруу формат, байхгүй, draft/archived Page нь 404. Бүтээгдэхүүний id route-ууд л одоогоор дурын id-д хоосон 200 буцаана.
@@ -58,7 +60,7 @@
 - `src/components/home.search.grid/index.tsx`: Хуучин / Шинэ / Бүгд шүүлт, хуудасны indicator, desktop 2/3/4/6 баганын сонголт, Бүгдийг харах холбоос. Машины card-уудыг гаднах `HomeSearch` нь `CarCardItem compactPrice`-аар render хийнэ.
 - Нэг хуудас 12 машин, хамгийн ихдээ 3 хуудас. Бодит үр дүнгээс 0–3 indicator гарна. Баганын тоо зөвхөн layout сольж, fetch хийхгүй; mobile нэг, sm хоёр багана.
 - `HomeSearch` form/grid-ийн нийтлэг төлөвийг эзэмшинэ. Toolbar-ийн Шинэ/Хуучин/Бүгд болон Хайх нь 1-р хуудаснаас API хайлт хийнэ. Хуудаслалт нь хэрэглэсэн query-гаар явна; form өөрчлөгдсөн бол шинэ шүүлтээр 1-р хуудаснаас эхэлнэ.
-- Бүгдийг харах нь `/vehicles` рүү одоогийн form-ийн утгуудыг URL query-гаар дамжуулна. Хоосон утга, нүүрийн page болон баганын тоог дамжуулахгүй. `/vehicles` талын form/үр дүн эдгээрийг унших ажиллагаа дараагийн шатанд хийгдэнэ.
+- Бүгдийг харах нь `/vehicles` рүү одоогийн form-ийн утгуудыг URL query-гаар дамжуулна. Хоосон утга, нүүрийн page болон баганын тоог дамжуулахгүй. Каталог эдгээр шүүлтүүрийг уншиж бодит үр дүн харуулна.
 - Query нэрүүд: brand, model, mileage_min/max, engine_min/max, year_min/max, price_min/max, variant, category, condition, fuel, transmission, drivetrain, steering, color.
 - `@bigmotors/core`-ийн `VehicleSearchParams` нь website form, URL, [нүүрний бүтээгдэхүүний бүлэг](admin-home-product-groups.md)-ийн admin/DTI/JSONB-д shared байна. Filter утгууд string; хоосныг орхиж `"0"`-г хадгална. URL болон form хөрвүүлэлтийг core helper-уудаар хийнэ; SQL query-д л тоон утгад хөрвүүлнэ. `page` filter object-д орохгүй.
 - Mobile дээр баганын сонголт нуугдаж, үлдсэн удирдлагууд мөрлөж байрлана.
@@ -71,6 +73,14 @@
 - API нь дээрх filter-ууд болон page=1..3 л авна. UUID, enum, тоон хязгаар/эхлэх-дуусах утгыг шалгана; давхар query key, танихгүй параметр болон буруу утгад 400. DB алдаа нууц мэдээлэлгүй 500. Cache-Control: no-store; GET/HEAD, бусад өөрчлөх method 405.
 - Loading үед өмнөх card-ууд бүдгэрч inert болно. Алдаа үед буруу үр дүн мэт хуучин card харуулахгүй, retry өгнө. Хоосон үр дүнд шүүлт цэвэрлэж дахин хайх товч гарна.
 - Шинэ хүсэлт өмнөхөө abort хийнэ; sequence хамгаалалт хуучин хариугаар шинэ үр дүнг дарахгүй. Unmount дээр abort; 30 секундийн timeout. Нэмэлт cache сан байхгүй.
+
+## Автомашины каталогийн хайлт
+
+- `GET /api/vehicles/search` нь shared `vehicleListingQuery` contract хэрэглэнэ: `VehicleSearchParams` + string `page`, `page_size`, `sort`, `columns`. Page=1..999999, page_size=12/18/24/36; 3 хуудасны хязгаар байхгүй. Буруу/давхардсан/танихгүй параметр 400, хадгалалтын алдаа нууц мэдээлэлгүй 500; no-store.
+- `PublicVehicleService.search` нь нүүр хуудасны list-тэй ижил visibility, filter, projection болон read-only transaction ашиглана. `newest`, `price_asc`, `price_desc` сонголттой; ижил утгад ID-аар эрэмбэлнэ. Нууц үнэ эрэмбэд нөлөөлөхгүй, inquire мөрүүд үнийн эрэмбийн сүүлд орно.
+- Response: `items`, `total`, `page`, `pageCount`, `pageSize`, `brandCounts`. Маркын тоог одоогийн бусад шүүлтүүрээр тооцохдоо brand/model/variant-ийг хасна. DB schema/migration өөрчлөхгүй.
+- Server эхний үр дүн, идэвхтэй лавлахуудыг өгнө. Дараа нь сонголт шууд, тоон input 400ms debounce-тай API хүсэлт явуулна. Desktop 2/3/4/6 баганад 12/18/24/36 машин; mobile 24. Шүүлтүүр, эрэмбэ эсвэл page size солигдвол 1-р хуудас руу буцна.
+- URL, Refresh, Back/Forward, abort/хуучин хариуны хамгаалалт, 30 секундийн timeout, retry/empty төлөвтэй. Нэмэлт cache сан ашиглахгүй. [UI дүрэм](../ui/website-layout.md#vehicles-catalog).
 
 ## Нүүрний бүтээгдэхүүний бүлэг
 
