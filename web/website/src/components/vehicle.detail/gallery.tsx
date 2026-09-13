@@ -58,7 +58,7 @@ export function VehicleGallery({ photos, title }: { photos: VehicleDetailData["p
     <div className={`grid gap-3 ${photos.length > 1 ? "lg:grid-cols-[minmax(0,1fr)_88px] xl:grid-cols-[minmax(0,1fr)_104px]" : ""}`}>
     <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-card-subtle">
       <button ref={trigger} type="button" aria-label="Зураг томруулах" title="Зураг томруулах" onClick={() => { dialog.current?.showModal(); setOpened(true); }} className="absolute inset-0 block h-full w-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-card-accent">
-        <Photo key={photo.src} {...photo} enlarged />
+        <Photo key={photo.src} {...photo} />
         <span aria-hidden="true" className="absolute right-4 bottom-4 flex size-11 items-center justify-center rounded-full bg-search-surface text-search-text"><IconArrowsMaximize size={20} /></span>
       </button>
       <span aria-live="polite" className="pointer-events-none absolute bottom-4 left-4 flex min-h-9 items-center gap-2 rounded bg-card-overlay px-3 text-xs text-section-dark-text"><IconPhoto size={16} aria-hidden="true" />{selected + 1} / {photos.length}</span>

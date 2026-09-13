@@ -55,6 +55,8 @@ test("gallery hides meaningless controls for one image and provides accessible m
   const one = renderToStaticMarkup(<VehicleGallery title="Car" photos={[photo]} />);
   assert.match(one, /Зураг томруулах/);
   assert.match(one, /aspect-\[4\/3\]/);
+  assert.match(one, /<img[^>]*class="h-full w-full object-cover"/);
+  assert.match(one.slice(one.indexOf("<dialog")), /object-contain/);
   assert.doesNotMatch(one, /aspect-\[3\/2\]|lg:grid-cols/);
   assert.match(renderToStaticMarkup(<VehicleGallery title="Car" photos={[]} />), /aspect-\[4\/3\]/);
   assert.doesNotMatch(one, /Өмнөх зураг|Дараах зураг|aria-pressed/);
