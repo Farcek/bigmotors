@@ -65,10 +65,17 @@ test("missing files are API 404s, not admin SPA fallbacks", async () => {
   }
 });
 
-test("production upload remains fail-closed through the proxy", async () => {
-  const response = await request(admin, "/api/files/upload", { method: "POST" });
-  assert.equal(response.status, 503);
-  assert.equal((await response.json()).error.code, "AUTH_ACL_UNAVAILABLE");
+test("anonymous production upload is readable through both services", async () => {
+  const data = new FormData();
+  data.append("file", new Blob(["docker-upload-check"]), "check.txt");
+  const response = await request(admin, "/api/files/upload", { method: "POST", body: data });
+  assert.equal(response.status, 201);
+  const file = await response.json();
+  for (const origin of [admin, website]) {
+    const read = await request(origin, `/files/${file.id}/check.txt`);
+    assert.equal(read.status, 200);
+    assert.equal(await read.text(), "docker-upload-check");
+  }
 });
 
 test("Node runtimes are non-root and Website can only read shared files", () => {

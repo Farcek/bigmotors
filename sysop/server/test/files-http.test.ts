@@ -22,7 +22,7 @@ test("file upload HTTP route writes original bytes and metadata through producti
   const folder = await mkdtemp(path.join(tmpdir(), "bm-files-http-"));
   const db = new PGlite();
   const orm = drizzle(db, { schema });
-  const env = { FILES_ROOT: folder, FILES_UPLOADS: path.join(folder, "uploads") };
+  const env = { NODE_ENV: "production", FILES_ROOT: folder, FILES_UPLOADS: path.join(folder, "uploads") };
   const root = createContainer({ env });
   const di = root.child("files-http").asValue(TKN_DB, orm as unknown as BigMotorsDb);
   const server = createServer(createApp(di));
@@ -220,9 +220,7 @@ test("file upload HTTP route writes original bytes and metadata through producti
       assert.ok(events.includes("file_upload_commit_uncertain"));
     } finally { persistence.mock.restore(); logger.mock.restore(); }
   });
-  await t.test("production fails closed until Userly upload authorization is integrated", async () => {
-    Object.assign(env, { NODE_ENV: "production" });
-    try { await failure(form(), 503, "AUTH_ACL_UNAVAILABLE"); }
-    finally { Reflect.deleteProperty(env, "NODE_ENV"); }
+  await t.test("anonymous production upload is enabled while admin auth is deferred", async () => {
+    assert.equal((await upload(form())).status, 201);
   });
 });

@@ -78,7 +78,7 @@ SSL verification-г унтраахгүй. Энэ нь зөвхөн тухайн 
 | `PATCH /api/branches/:id` | `200` | Өгсөн талбаруудыг засаж entity буцаана |
 | `DELETE /api/branches/:id` | `200` | Устгасан entity буцаана; бүтээгдэхүүнд ашиглагдаж байвал `409 BRANCH_IN_USE` |
 | `/api/vehicles` болон `/:id` action-ууд | `200` | Доорх автомашины API; DTI response |
-| `POST /api/files/upload` | `201` | Multipart file upload; production auth холбогдох хүртэл 503 |
+| `POST /api/files/upload` | `201` | Multipart file upload; одоогоор бүх орчинд нэвтрэлтгүй |
 | `GET /files/:id/:originalName` | `200` | Public file read; ACL шалгахгүй |
 | Бусад route | `404`, `NOT_FOUND` | JSON алдаа |
 

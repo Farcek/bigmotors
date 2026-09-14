@@ -34,7 +34,7 @@ FILES_UPLOADS=E:/bigmotors-data/uploads
 FILE_UPLOAD_MAX_BYTES=20971520
 ```
 
-Жишээ тохиргоог [.env.example](../../sysop/server/.env.example)-д нэмсэн; хэрэглэгчийн `.env`-ийг өөрчлөөгүй. Backend хэрэглэгч storage-д бичих эрхтэй байна. Userly integration хүртэл `NODE_ENV=production` үед upload 503 буцаана; development bypass-тай серверийг нийтэд нээхгүй.
+Жишээ тохиргоог [.env.example](../../sysop/server/.env.example)-д нэмсэн; хэрэглэгчийн `.env`-ийг өөрчлөөгүй. Backend хэрэглэгч storage-д бичих эрхтэй байна. Хэрэглэгчийн зөвшөөрлөөр upload нь production орчинд ч token шаардахгүй; орчны хоригийг авсан. Нийтэд нээлттэй бол хэн ч upload хийх боломжтой. Admin auth хэрэгжих үед upload/import эрхийг хамтад нь шийднэ.
 
 Хэмжээний environment утга хоосон, 0/сөрөг, бутархай, тоо биш эсвэл safe integer-ээс их бол ConfigFiles алдаа өгнө; чимээгүй default авахгүй. Key огт байхгүй үед л default хэрэглэнэ. Тохиргоо сольсны дараа backend-ийг дахин асаана. DTI contract нь орчноос хамаарах maxBytes утга агуулахгүй; backend runtime-ийн ConfigFiles нь үндсэн эх сурвалж.
 
@@ -61,7 +61,7 @@ Website-ийн `FILES_ROOT` нь sysop upload хийдэг ижил storage-г �
 
 Sysop серверийн origin дээр `/files/...`-аар шууд уншина. Admin dev Vite `/files` proxy нь `http://127.0.0.1:64402` рүү дамжуулна; proxy тохиргоо ачаалагдаагүй бол dev app-ийг дахин асаана. Production reverse proxy мөн `/files`-ийг backend рүү дамжуулах шаардлагатай; Vite dev proxy нь production тохиргоо биш. FILES_ROOT доторх файлуудыг унших OS permission шаардлагатай, FILES_UPLOADS-тай дахин нийлүүлэхгүй.
 
-Read-ийн HTTP тестүүд production DI, PGlite болон түр disk ашиглаж anonymous GET/HEAD, нэр үл тоох, upload → read byte хадгалалт, хоосон файл, 400/404/500, junction/traversal хамгаалалт болон upload gate хэвээр үлдсэнийг шалгасан. Sysop-server-ийн нийт 80 тест тэнцсэн; live DB/storage-д хүрээгүй.
+Read-ийн HTTP тестүүд production DI, PGlite болон түр disk ашиглаж anonymous GET/HEAD, нэр үл тоох, upload → read byte хадгалалт, хоосон файл, 400/404/500, junction/traversal хамгаалалтыг шалгана. Upload-ийн production хоригийг авсны дараа anonymous upload болон content-type/metadata/хэмжээний validation-ийг production environment-д шалгана; live DB/storage-д хүрэхгүй.
 
 Хоёр app ижил файлуудыг уншихын тулд ижил files бүртгэл болон тэдгээрийн file_path-д харгалзах storage-д хандана. Container доторх FILES_ROOT замууд өөр байж болох ч relative path нь ижил агуулгыг заана. Request-ийн originalName-г disk замд ашиглахгүй; root containment хамгаалалт хэвээр.
 

@@ -1,5 +1,5 @@
 import type { Container } from "@napp/di";
-import { ConfigFiles, TKN_ENV } from "@bigmotors/core";
+import { ConfigFiles } from "@bigmotors/core";
 import { FilePersistenceError, FileService } from "@bigmotors/db";
 import { Files } from "@bigmotors/sysop-dti";
 import { NappError } from "@napp/error";
@@ -43,10 +43,6 @@ export function buildFilesApi(di: Container): Router {
     let storage: UploadStorage | undefined;
     let preserve = false;
     try {
-      // Until Userly is wired, mirror the temporary local bypass but fail closed in production.
-      if (di.resolve(TKN_ENV).NODE_ENV === "production") {
-        throw new NappError("Admin API is not initialized.", { code: "AUTH_ACL_UNAVAILABLE", status: 503 });
-      }
       if (!req.is("multipart/form-data")) {
         throw new NappError("Expected multipart/form-data.", { code: "FILE_UPLOAD_UNSUPPORTED_MEDIA_TYPE", status: 415 });
       }
@@ -80,11 +76,10 @@ export function buildFilesApi(di: Container): Router {
       }
       if (!res.destroyed && !res.headersSent) {
         const known = error instanceof NappError;
-        const status = known && error.status && error.status >= 400 && error.status <= 503 ? error.status : 500;
+        const status = known && error.status && error.status >= 400 && error.status < 500 ? error.status : 500;
         res.status(status).json({ error: {
           code: known ? error.code : "FILE_UPLOAD_STORAGE_ERROR",
-          message: known && error.code === "AUTH_ACL_UNAVAILABLE" ? "Admin API is not initialized."
-            : status >= 500 ? "File storage operation failed." : (error as NappError).message,
+          message: status >= 500 ? "File storage operation failed." : (error as NappError).message,
         } });
       }
     }

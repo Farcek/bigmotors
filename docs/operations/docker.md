@@ -50,9 +50,8 @@ App тус бүрийн `.env`, `.env.local` image-д орохгүй, Compose а
 - `DATABASE_URL`: Website/API холболт; default нь Compose DB.
 - `MIGRATION_DATABASE_URL`: тусдаа migration credential; байхгүй бол DATABASE_URL.
   Password тусгай тэмдэгттэй бол бүрэн URL-ийг percent-encode хийж хоёр URL-д өгнө.
-- `SYSOP_NODE_ENV`: default `production`. Одоогийн хамгаалалтын дагуу upload **503**
-  буцаана. Зөвхөн итгэлтэй локал туршилтад `development` өгч болно.
-  Бусад admin CRUD нэвтрэлтгүй хэвээр тул production утга нь API-г хамгаалахгүй.
+- `SYSOP_NODE_ENV`: default `production`. Upload болон бусад admin CRUD нь одоогоор
+  нэвтрэлтгүй; production утга нь API-г хамгаалахгүй. Demo import-д зориулж environment солихгүй.
 - `FILE_UPLOAD_MAX_BYTES`: default 20 MiB; Admin proxy нийт request-ийг 21 MiB-аар
   хязгаарлана. Нэмэгдүүлэх бол `sysop/app/nginx.conf`-ийн limit-ийг мөн шинэчилж build хийнэ.
 
@@ -104,8 +103,8 @@ docker compose -p bigmotors-docker-check -f infra/docker-compose.yml -f infra/te
 
 Сүүлийн команд **зөвхөн энэ test project-ийн** DB/files volume-ийг устгана.
 Test project-д бодит өгөгдөл хэзээ ч холбохгүй. Smoke test нь health, SPA deep link,
-bundled assets, API proxy, migration-ийн дараах DB read, file 404, production upload
-хамгаалалтыг шалгана; production auth/load/backup шалгалт биш.
+bundled assets, API proxy, migration-ийн дараах DB read, file 404, anonymous production upload
+болон хоёр service-ээс файл уншихыг шалгана; production auth/load/backup шалгалт биш.
 Node process-ийн UID 1000, shared storage read болон Website-ийн write хоригийг мөн шалгана.
 
 2026-09-14: дөрвөн image build амжилттай. DB-ийн 99 тест, Website health-ийн нэг
@@ -117,6 +116,9 @@ Dockerfile-ийн PGlite тестийг хамгийн ихдээ хоёр proce
 `build sysop-app`, `build website` гэсэн дарааллаар build хийж болно.
 
 ## Эх Сурвалж
+
+Гараар ажиллуулах `demo-import` profile болон Railway job-ийн тохиргоо:
+[Demo автомашин import](demo-vehicles.md). Ердийн `up` нь demo өгөгдөл нэмэхгүй.
 
 - [Compose startup дараалал](https://docs.docker.com/compose/how-tos/startup-order/)
 - [Nginx proxy module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)

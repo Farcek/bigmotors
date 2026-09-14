@@ -20,7 +20,7 @@
 
 ## Upload-ийн Дараалал
 
-1. Backend request-ийн upload эрх, тохируулсан storage зам болон metadata-ийн утгыг шалгана. Upload permission mapping хараахан тогтоогүй; одоогийн түр ACL bypass-ийг production зөвшөөрөл гэж үзэхгүй. Файл унших public дүрэм нь upload эрхэд хамаарахгүй.
+1. Backend тохируулсан storage зам болон metadata-ийн утгыг шалгана. Upload permission mapping, auth хараахан холбогдоогүй; хэрэглэгчийн шийдвэрээр upload нь бүх орчинд нэвтрэлтгүй. Admin auth нэмэх үед upload болон import job-ийн эрхийг хамтад нь шийднэ.
 2. Backend file ID болон давхцахгүй хадгалалтын нэр үүсгэнэ. Client file ID, file_path, usage болон timestamps оноохгүй; original_name нь зөвхөн эх нэрийн metadata.
 3. `FILES_UPLOADS` доторх системийн замд эх byte-уудыг stream-ээр бичиж, нэг файлын хэмжээний хязгаарыг хүлээн авах явцад хянана. Байгаа файлыг дарж бичихгүй.
 4. Бичилт бүрэн дуусах хүртэл файл сонгох ID/URL буцаахгүй. Файлын нэрээр формат шалгах, decode/resize/convert хийхгүй.
@@ -89,7 +89,7 @@ Frontend `FormData` ашиглаж, Content-Type/boundary-г browser-оор үү
 | 415 | `FILE_UPLOAD_UNSUPPORTED_MEDIA_TYPE` | Request нь multipart/form-data биш; энэ нь файлын MIME/форматын шалгалт биш |
 | 500 | `FILE_UPLOAD_STORAGE_ERROR` | Disk бичилт эсвэл DB бүртгэлийн алдаа |
 
-Userly нэвтрэлт/эрхийн шалгалт хараахан холбогдоогүй тул `NODE_ENV=production` үед upload нь 503 `AUTH_ACL_UNAVAILABLE` буцаана. Бусад орчинд өмнөх түр bypass хэрэглэнэ; public production upload биш. Цаашид Userly 401/403 урсгалаар солино. Request тасарсан үед response хүрэхгүй байж болох ч upload цэвэрлэгээний дүрэм хэвээр.
+Userly нэвтрэлт/эрхийн шалгалт хараахан холбогдоогүй. Хэрэглэгчийн зөвшөөрлөөр `NODE_ENV=production` upload хоригийг авсан; одоогоор бүх орчинд anonymous upload зөвшөөрнө. Орчны flag/token шинээр нэмэхгүй. API нийтэд нээлттэй бол хэн ч upload хийх боломжтойг тооцно. Цаашид Admin auth-ийн 401/403 урсгалд import job-ийг хамтад нь холбоно. Request тасарсан үед response хүрэхгүй байж болох ч upload цэвэрлэгээний дүрэм хэвээр.
 
 Хэрэгжүүлэлтийн нарийвчлал: 0 byte файл зөвшөөрнө; UUID нэртэй, extension-гүй эх файл нь request бүрийн шинэ private дэд хавтаст хадгалагдана. Анхны UTF-8 нэр originalName-д үлдэнэ. Өдрөөр ангилах/форматаар шүүхгүй. Нэг request-д file 1, text field 2; metadata part бүрийн byte limit 4096, field нэрийн limit 32, nested field зөвшөөрөхгүй. Энэ нь текстийн 255/512 тэмдэгтийн шалгалтыг орлохгүй.
 
@@ -111,7 +111,7 @@ Userly нэвтрэлт/эрхийн шалгалт хараахан холбо�
 - GET нь эх byte-уудыг stream-ээр буцаана; HEAD нь ижил header-тай, body-гүй. UUID биш ID 400 `FILE_INVALID_ID`; байхгүй мөр, дискний файл эсвэл directory нь 404 `FILE_NOT_FOUND`. Дотоод алдаа 500, storage зам задруулахгүй.
 - Одоогийн хэрэгжүүлэлт DB дахь original_name-ийн jpg/jpeg, png, gif, webp, avif, bmp, ico өргөтгөлд харгалзах image Content-Type өгч inline харуулна. Бусад формат, HTML/SVG нь `application/octet-stream` болон `Content-Disposition: attachment`-тай; татах нэрийг DB metadata-аас авна. Энэ нь byte/MIME validation биш, ямар ч файлыг форматаар хориглохгүй.
 - Request-ийн originalName нь header болон disk path-д нөлөөлөхгүй. `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, `Content-Security-Policy: sandbox; default-src 'none'` хэрэглэнэ. Одоогоор Range болон Last-Modified/conditional cache идэвхжүүлэхгүй.
-- Read-д production upload gate үйлчлэхгүй. Production deployment дээр `/files`-ийг admin authorization middleware-ээс гадуур холбоно; upload API-ийн эрхийг сулруулахгүй.
+- Read нь public хэвээр. Admin auth хэрэгжих үед `/files`-ийг authorization middleware-ээс гадуур байлгаж, upload API болон import job-ийн эрхийг тусад нь холбоно.
 
 ## Form Дээр Ашиглах
 

@@ -1,6 +1,21 @@
 name: bigmotors
 
 services:
+  demo-import:
+    profiles: ["demo"]
+    build:
+      context: ..
+      dockerfile: sysop/server/Dockerfile.demo
+      target: runner
+    environment:
+      DEMO_API_BASE_URL: http://sysop-server:4000
+      FILE_UPLOAD_MAX_BYTES: ${FILE_UPLOAD_MAX_BYTES:-20971520}
+    depends_on:
+      sysop-server:
+        condition: service_healthy
+    init: true
+    restart: "no"
+
   bigmotors-db:
     image: postgres:18-alpine
     environment:

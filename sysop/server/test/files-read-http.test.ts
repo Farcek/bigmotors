@@ -126,7 +126,7 @@ test("public file read through HTTP and DI", async (t) => {
     }
   });
 
-  await t.test("database failures are safe 500; upload production gate remains", async (context) => {
+  await t.test("database failures are safe 500; production upload still validates content type", async (context) => {
     const lookup = context.mock.method(FileService.prototype, "findById", async () => { throw new Error(`DB ${folder}`); });
     try {
       const res = await fetch(readUrl(image.id));
@@ -134,7 +134,7 @@ test("public file read through HTTP and DI", async (t) => {
       assert.ok(!(await res.text()).includes(folder));
     } finally { lookup.mock.restore(); }
     const res = await fetch(`${origin}/api/files/upload`, { method: "POST" });
-    assert.equal(res.status, 503);
-    assert.deepEqual(await res.json(), { error: { code: "AUTH_ACL_UNAVAILABLE", message: "Admin API is not initialized." } });
+    assert.equal(res.status, 415);
+    assert.deepEqual(await res.json(), { error: { code: "FILE_UPLOAD_UNSUPPORTED_MEDIA_TYPE", message: "Expected multipart/form-data." } });
   });
 });
