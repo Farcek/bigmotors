@@ -1,0 +1,35 @@
+# Use only with: -p bigmotors-docker-check -f infra/docker-compose.yml -f infra/test/compose.yml
+name: bigmotors-docker-check
+services:
+  bigmotors-db:
+    environment:
+      POSTGRES_DB: bigmotors
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker-check-only
+    ports: !reset []
+    volumes: !override
+      - check-db:/var/lib/postgresql
+  bigmotors-migration:
+    environment:
+      DATABASE_URL: postgresql://postgres:docker-check-only@bigmotors-db:5432/bigmotors
+  sysop-server:
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:docker-check-only@bigmotors-db:5432/bigmotors
+    ports: !override
+      - "127.0.0.1:65402:4000"
+    volumes: !override
+      - check-files:/files
+  sysop-app:
+    ports: !override
+      - "127.0.0.1:65403:8080"
+  website:
+    environment:
+      DATABASE_URL: postgresql://postgres:docker-check-only@bigmotors-db:5432/bigmotors
+    ports: !override
+      - "127.0.0.1:65400:3000"
+    volumes: !override
+      - check-files:/files:ro
+volumes:
+  check-db:
+  check-files:

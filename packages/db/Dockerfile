@@ -12,7 +12,8 @@ COPY packages/core/ ./packages/core/
 COPY packages/db/ ./packages/db/
 RUN pnpm build:db
 RUN pnpm typecheck:db
-RUN pnpm test:db
+# Keep isolated PGlite instances within container memory limits.
+RUN pnpm --filter @bigmotors/db exec node --import=tsx --test --test-concurrency=2 test/*.test.ts
 FROM node:24-bookworm-slim AS prod-deps
 
 WORKDIR /workspace
@@ -31,6 +32,7 @@ COPY --from=prod-deps --chown=node:node /workspace/node_modules/ /app/node_modul
 COPY --from=prod-deps --chown=node:node /workspace/packages/db/node_modules/ ./node_modules/
 COPY --from=prod-deps --chown=node:node /workspace/packages/db/package.json ./package.json
 COPY --from=prod-deps --chown=node:node /workspace/packages/core/package.json /app/packages/core/package.json
+COPY --from=prod-deps --chown=node:node /workspace/packages/core/node_modules/ /app/packages/core/node_modules/
 COPY --from=build --chown=node:node /workspace/packages/core/dist/ /app/packages/core/dist/
 COPY --from=build --chown=node:node /workspace/packages/db/dist/ ./dist/
 COPY --from=build --chown=node:node /workspace/packages/db/migrations/ ./migrations/

@@ -67,6 +67,9 @@ Read-ийн HTTP тестүүд production DI, PGlite болон түр disk а�
 
 ## Production-д Шийдэх Зүйл
 
+Локал Docker Compose-д API read/write, Website read-only shared bind mount нэмсэн.
+Зам, Linux permission болон production-ийн хязгаарлалтыг [Docker заавраас](docker.md) харна.
+
 - Persistent volume болон олон instance-ийн ижил файлд хандах арга.
 - DB metadata ба дискний файлыг хамтад нь backup/restore хийх төлөвлөгөө.
 - Upload болон өөрчлөх/устгах эрхийн холболт; read нь public. Serve domain, response header болон cache тохиргоо.

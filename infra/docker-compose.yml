@@ -4,18 +4,19 @@ services:
   bigmotors-db:
     image: postgres:18-alpine
     environment:
-      POSTGRES_DB: bigmotors
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-bigmotors}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "64401:5432"
+      - "127.0.0.1:${DB_PORT:-64401}:5432"
     volumes:
-      - ./.docker/bigmotors_pgdata:/var/lib/postgresql
+      - ${PGDATA_PATH:-./.docker/bigmotors_pgdata}:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d bigmotors"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   bigmotors-migration:
     build:
@@ -23,60 +24,65 @@ services:
       dockerfile: packages/db/Dockerfile
       target: runner
     environment:
-      # Local default only; inject a dedicated migration credential in production.
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@bigmotors-db:5432/bigmotors}
+      DATABASE_URL: ${MIGRATION_DATABASE_URL:-${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@bigmotors-db:5432/${POSTGRES_DB:-bigmotors}}}
     depends_on:
       bigmotors-db:
         condition: service_healthy
     restart: "no"
 
-  # sysop-server:
-  #   build:
-  #     context: ..
-  #     dockerfile: sysop/server/Dockerfile
-  #     target: runner
-  #   environment:
-  #     NODE_ENV: production
-  #     PORT: 4000
-  #     DATABASE_URL: postgres://postgres:postgres@bigmotors-db:5432/bigmotors
-  #     USERLY_ISSUER_URL: ${USERLY_ISSUER_URL:-}
-  #     USERLY_CLIENT_ID: ${USERLY_CLIENT_ID:-}
-  #     USERLY_CLIENT_SECRET: ${USERLY_CLIENT_SECRET:-}
-  #     USERLY_ACL_AUDIENCE: ${USERLY_ACL_AUDIENCE:-}
-  #     LOG_LEVEL: ${LOG_LEVEL:-info}
-  #     LOG_OPTIONS: ${LOG_OPTIONS:-}
-  #     LOG_FILE_PATH: ${LOG_FILE_PATH:-}
-  #   ports:
-  #     - "4000:4000"
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   healthcheck:
-  #     test:
-  #       [
-  #         "CMD",
-  #         "node",
-  #         "-e",
-  #         "fetch('http://127.0.0.1:4000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-  #       ]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
+  sysop-server:
+    build:
+      context: ..
+      dockerfile: sysop/server/Dockerfile
+      target: runner
+    environment:
+      NODE_ENV: ${SYSOP_NODE_ENV:-production}
+      HOST: 0.0.0.0
+      PORT: 4000
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@bigmotors-db:5432/${POSTGRES_DB:-bigmotors}}
+      FILES_ROOT: /files
+      FILES_UPLOADS: /files/uploads
+      FILE_UPLOAD_MAX_BYTES: ${FILE_UPLOAD_MAX_BYTES:-20971520}
+    ports:
+      - "127.0.0.1:${SYSOP_SERVER_PORT:-64402}:4000"
+    volumes:
+      - ${FILES_DATA_PATH:-./.docker/files}:/files
+    depends_on:
+      bigmotors-migration:
+        condition: service_completed_successfully
+    init: true
+    stop_grace_period: 15s
+    restart: unless-stopped
 
-  # website:
-  #   build:
-  #     context: ..
-  #     dockerfile: web/website/Dockerfile
-  #     target: runner
-  #     args:
-  #       VITE_API_BASE_URL: /api
-  #   ports:
-  #     - "5173:80"
-  #   depends_on:
-  #     sysop-server:
-  #       condition: service_healthy
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/health >/dev/null 2>&1 || exit 1"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
+  sysop-app:
+    build:
+      context: ..
+      dockerfile: sysop/app/Dockerfile
+      target: runner
+    ports:
+      - "127.0.0.1:${SYSOP_APP_PORT:-64403}:8080"
+    depends_on:
+      sysop-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  website:
+    build:
+      context: ..
+      dockerfile: web/website/Dockerfile
+      target: runner
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@bigmotors-db:5432/${POSTGRES_DB:-bigmotors}}
+      FILES_ROOT: /files
+    ports:
+      - "127.0.0.1:${WEBSITE_PORT:-64400}:3000"
+    volumes:
+      - ${FILES_DATA_PATH:-./.docker/files}:/files:ro
+    depends_on:
+      bigmotors-migration:
+        condition: service_completed_successfully
+    init: true
+    restart: unless-stopped

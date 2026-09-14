@@ -23,6 +23,10 @@ pnpm build:app
 
 Build output: `sysop/app/dist`. `pnpm preview:app` нь local build шалгах зориулалттай, production server биш.
 
+Dockerfile нь static build-ийг root эрхгүй Nginx-ээр үйлчилж, `/api`, `/files`-ийг
+Sysop server рүү proxy хийнэ. [Docker/Compose заавар](docker.md)-аас ажиллуулах
+алхам болон production auth-ийн хязгаарлалтыг харна.
+
 ## Routing
 
 [ADR 0026](../adr/0026-use-react-router-data-mode.md)-ийн дагуу React Router Data Mode ашиглана.

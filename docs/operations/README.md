@@ -24,6 +24,8 @@ Shared library сонголтыг [ADR 0009](../adr/0009-use-tsdown-for-shared-l
 
 ## Агуулга
 
+- [Docker орчин](docker.md): Website, Sysop server/app, migration image, Compose, storage болон тусгаарласан smoke test.
+
 - [Development-ийн 20 автомашин](demo-vehicles.md): зурагтай ноорог жишээ өгөгдөл, лиценз/эх сурвалж, `dev:seed:vehicles` болон давтан run-ийн дүрэм.
 
 - [Файлын хадгалалтын тохиргоо](file-storage.md): FILES_ROOT-оос зам тооцох, FILES_UPLOADS-д бичих, хэмжээний хязгаар, disk алдаа болон persistence/backup-ийн зааг.
