@@ -1,4 +1,4 @@
-export const FILE_IMAGE_WIDTHS = [240, 480, 800, 1280, 1920] as const;
+export const FILE_IMAGE_WIDTHS = [120, 240, 480, 800, 1280, 1920] as const;
 export type FileImageWidth = typeof FILE_IMAGE_WIDTHS[number];
 
 export class FileImageError extends Error {
@@ -10,7 +10,7 @@ export function parseFileImageWidth(params: URLSearchParams): FileImageWidth | u
   if (!values.length) return undefined;
   const width = FILE_IMAGE_WIDTHS.find((value) => String(value) === values[0]);
   if (values.length !== 1 || !width) {
-    throw new FileImageError("FILE_IMAGE_INVALID_WIDTH", 400, "Image width must be 240, 480, 800, 1280 or 1920.");
+    throw new FileImageError("FILE_IMAGE_INVALID_WIDTH", 400, "Image width must be 120, 240, 480, 800, 1280 or 1920.");
   }
   return width;
 }

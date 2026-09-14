@@ -46,6 +46,15 @@ test("image variants preserve sources, reuse disk cache and bound processing", a
     assert.equal((await stat(result)).mtimeMs, previous.mtimeMs);
   });
 
+  await t.test("admin thumbnails produce a cached 120x90 WebP", async () => {
+    const result = await resizeStoredImage(source, cache, 120);
+    const metadata = await sharp(result).metadata();
+    assert.equal(metadata.format, "webp");
+    assert.equal(metadata.width, 120); assert.equal(metadata.height, 90);
+    assert.deepEqual(await readFile(source), bytes);
+    assert.equal(await resizeStoredImage(source, cache, 120), result);
+  });
+
   await t.test("small images are not enlarged and EXIF orientation is applied", async () => {
     const small = path.join(folder, "small");
     await sharp({ create: { width: 120, height: 80, channels: 3, background: "blue" } }).jpeg().withMetadata({ orientation: 6 }).toFile(small);

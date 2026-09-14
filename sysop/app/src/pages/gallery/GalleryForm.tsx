@@ -62,7 +62,7 @@ export function GalleryForm({ row, itemMode, onSave, onCancel, onBusy }: {
           <TextInput label="Нэр" required maxLength={255} disabled={busy} {...form.getInputProps("name")} />
         </>}
         {itemMode && <>
-          {GalleryItems.createBody.shape.imageId.safeParse(form.values.imageId).success && <Image src={fileUrl({ id: form.values.imageId, originalName: "image" })} h={180} fit="contain" alt={galleryPlainText(form.values.title) || "Gallery зураг"} />}
+          {GalleryItems.createBody.shape.imageId.safeParse(form.values.imageId).success && <Image src={fileUrl({ id: form.values.imageId, originalName: "image" }, 1280)} w="100%" maw={400} h="auto" style={{ aspectRatio: "4 / 3" }} fit="cover" alt={galleryPlainText(form.values.title) || "Gallery зураг"} />}
           {!item && <Group justify="flex-end"><Button variant="light" leftSection={<IconUpload size={18} />} disabled={busy} aria-describedby={form.errors.imageId ? "gallery-image-error" : undefined} onClick={() => setUploadOpen(true)}>Зураг upload</Button></Group>}
           {form.errors.imageId && <Text id="gallery-image-error" size="sm" c="red" role="alert">{form.errors.imageId}</Text>}
           <HtmlEditor label="Label" value={form.values.label} onChange={(html) => form.setFieldValue("label", html)} disabled={busy} error={form.errors.label} />

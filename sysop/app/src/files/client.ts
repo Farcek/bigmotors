@@ -1,9 +1,11 @@
+import type { FileImageWidth } from "@bigmotors/core";
 import { Files } from "@bigmotors/sysop-dti";
 import { API_BASE_URL } from "../api/client";
 
-export function fileUrl(file: Pick<Files.UploadResult, "id" | "originalName">) {
+export function fileUrl(file: Pick<Files.UploadResult, "id" | "originalName">, width?: FileImageWidth) {
   const origin = import.meta.env?.VITE_FILES_BASE_URL ?? (/^https?:\/\//i.test(API_BASE_URL) ? new URL(API_BASE_URL).origin : "");
-  return `${origin.replace(/\/$/, "")}/files/${file.id}/${encodeURIComponent(file.originalName)}`;
+  const query = width === undefined ? "" : `?${new URLSearchParams({ w: String(width) })}`;
+  return `${origin.replace(/\/$/, "")}/files/${file.id}/${encodeURIComponent(file.originalName)}${query}`;
 }
 export async function uploadFile(file: File, title: string, description: string, signal: AbortSignal) {
   const body = new FormData(); body.append("file", file); body.append("title", title); body.append("description", description);

@@ -83,7 +83,7 @@ export function VehicleForm({ row, lookups, back, tab, onTabChange: setTab, onSa
     const file = files.find((entry) => entry.id === form.values[field]);
     return <Stack gap="sm">
       <Group align="flex-end"><Select flex={1} miw={180} label={labels[field]} searchable clearable data={fileOptions} {...form.getInputProps(field)} /><Button variant="light" leftSection={<IconPhotoPlus size={18} />} onClick={() => setUploadTarget(field)}>Upload</Button></Group>
-      {file && <Image src={fileUrl(file)} w="100%" maw={400} h={240} fit="contain" alt={file.title || labels[field]} />}
+      {file && <Image src={fileUrl(file, 1280)} w="100%" maw={400} h="auto" style={{ aspectRatio: "4 / 3" }} fit="cover" alt={file.title || labels[field]} />}
     </Stack>;
   }
   return <Stack>
@@ -133,7 +133,7 @@ export function VehicleForm({ row, lookups, back, tab, onTabChange: setTab, onSa
               {form.errors.images && <Text c="red" size="sm">{form.errors.images}</Text>}
               {!form.values.images.length && <Text c="dimmed" py="lg" ta="center">Зураг байхгүй</Text>}
               {form.values.images.map((image, index) => { const file = files.find((file) => file.id === image.fileId); return <Group key={image.fileId} wrap="nowrap" py="sm" align="flex-start">
-                {file && <Image src={fileUrl(file)} w={64} h={64} fit="contain" alt={file.title || file.originalName} />}
+                {file && <Image src={fileUrl(file, 1280)} w={64} miw={64} h={48} fit="cover" alt={file.title || file.originalName} />}
                 <Box flex={1} miw={0}><Text size="sm" fw={500} style={{ overflowWrap: "anywhere" }}>{file?.title || file?.originalName || image.fileId}</Text><Text size="xs" c="dimmed" style={{ overflowWrap: "anywhere" }}>{file?.description}</Text></Box>
                 <Group gap={4} wrap="nowrap">{([-1, 1] as const).map((direction) => <Tooltip key={direction} label={direction < 0 ? "Дээш" : "Доош"}><ActionIcon variant="default" aria-label={direction < 0 ? "Дээш" : "Доош"} disabled={direction < 0 ? index === 0 : index === form.values.images.length - 1} onClick={() => reorder(index, direction)}>{direction < 0 ? <IconArrowUp size={16} /> : <IconArrowDown size={16} />}</ActionIcon></Tooltip>)}<Tooltip label="Галерейгаас хасах"><ActionIcon variant="subtle" color="red" aria-label="Галерейгаас хасах" onClick={() => form.setFieldValue("images", form.values.images.filter((_, i) => i !== index).map((entry, sortOrder) => ({ ...entry, sortOrder })))}><IconTrash size={16} /></ActionIcon></Tooltip></Group>
               </Group>; })}

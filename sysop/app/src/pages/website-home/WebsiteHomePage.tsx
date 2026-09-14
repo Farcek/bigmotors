@@ -59,7 +59,7 @@ function ProductGroups() {
       {loading ? <Group justify="center" mih={200}><Loader size="sm" /></Group> : !error && <Table.ScrollContainer minWidth={700}><Table verticalSpacing="md" highlightOnHover aria-label="Нүүр хуудасны бүлгүүд">
         <Table.Thead><Table.Tr><Table.Th>Зураг</Table.Th><Table.Th>Гарчиг</Table.Th><Table.Th>Нөхцөл</Table.Th><Table.Th>Дараалал</Table.Th><Table.Th>Төлөв</Table.Th><Table.Th ta="right">Үйлдэл</Table.Th></Table.Tr></Table.Thead>
         <Table.Tbody>{visible.map((row) => <Table.Tr key={row.id}>
-          <Table.Td w={110}>{row.imageId ? <Image src={fileUrl({ id: row.imageId, originalName: "image" })} w={90} h={60} fit="contain" alt={row.title} /> : <Text c="dimmed" size="sm">Зураггүй</Text>}</Table.Td>
+          <Table.Td w={110}>{row.imageId ? <Image src={fileUrl({ id: row.imageId, originalName: "image" }, 120)} w={96} h={72} fit="cover" alt={row.title} /> : <Text c="dimmed" size="sm">Зураггүй</Text>}</Table.Td>
           <Table.Td maw={300}><Text fw={500} lineClamp={2}>{row.title}</Text><Text size="xs" c="dimmed" lineClamp={2}>{row.description}</Text></Table.Td>
           <Table.Td>{Object.keys(row.filters).length ? `${Object.keys(row.filters).length} нөхцөл` : "Бүх автомашин"}</Table.Td>
           <Table.Td>{row.sortOrder}</Table.Td><Table.Td><Badge color={row.isActive ? "teal" : "gray"}>{row.isActive ? "Идэвхтэй" : "Идэвхгүй"}</Badge></Table.Td>

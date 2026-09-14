@@ -35,6 +35,9 @@ test("editing an item shows its image without upload or editable image ID", () =
   const html = renderToStaticMarkup(<MantineProvider env="test"><GalleryForm row={{ ...row, linkUrl: "/vehicles", linkLabel: "Catalog" }} itemMode onBusy={() => {}} onSave={async () => {}} onCancel={() => {}} /></MantineProvider>);
   assert.match(html, /value="\/vehicles"/); assert.match(html, /value="Catalog"/);
   assert.match(html, /<img/);
+  assert.match(html, /\/image\?w=1280/);
+  assert.match(html, /aspect-ratio:4 \/ 3/);
+  assert.match(html, /--image-object-fit:cover/);
   assert.doesNotMatch(html, /Зураг upload|Зургийн ID|<textarea/);
 });
 

@@ -34,7 +34,7 @@ export function PageForm({ row, initialTab = "main", onSave, onCancel }: {
               <TextInput label="Slug" required maxLength={255} disabled={busy} {...form.getInputProps("slug")} />
               <Textarea label="Товч тайлбар" maxLength={512} rows={3} disabled={busy} {...form.getInputProps("description")} />
               <Select label="Төлөв" required allowDeselect={false} data={statusOptions} disabled={busy} {...form.getInputProps("status")} />
-              {form.values.mainImageId && <Image src={fileUrl({ id: form.values.mainImageId, originalName: "image" })} h={180} fit="contain" alt={form.values.title || "Үндсэн зураг"} />}
+              {form.values.mainImageId && <Image src={fileUrl({ id: form.values.mainImageId, originalName: "image" }, 1280)} w="100%" maw={400} h="auto" style={{ aspectRatio: "4 / 3" }} fit="cover" alt={form.values.title || "Үндсэн зураг"} />}
               <Group>
                 <Button variant="light" leftSection={<IconUpload size={18} />} disabled={busy} onClick={() => setUploadOpen(true)}>{form.values.mainImageId ? "Зураг солих" : "Үндсэн зураг нэмэх"}</Button>
                 {form.values.mainImageId && <Tooltip label="Зураг хасах"><ActionIcon variant="subtle" color="red" aria-label="Зураг хасах" disabled={busy} onClick={() => form.setFieldValue("mainImageId", null)}><IconTrash size={18} /></ActionIcon></Tooltip>}

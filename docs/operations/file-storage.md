@@ -106,7 +106,7 @@ Railway-ийн бодит permission/network/volume persistence шалгалты
 ## Зургийн Resize Ба Cache
 
 2026-09-14: `GET`/`HEAD /files/:id/:originalName?w=480` нь эх зургийг өөрчлөхгүйгээр WebP хувилбар буцаана.
-`w` байхгүй бол эх byte болон өмнөх download/header дүрэм хэвээр. Width нь зөвхөн `240`, `480`, `800`, `1280`, `1920`;
+`w` байхгүй бол эх byte болон өмнөх download/header дүрэм хэвээр. Width нь зөвхөн `120`, `240`, `480`, `800`, `1280`, `1920`;
 хоосон, давхардсан эсвэл бусад утга `400 FILE_IMAGE_INVALID_WIDTH`. Бусад query-г үл тооно.
 
 Railway Sysop Variables:
@@ -138,7 +138,7 @@ FILES_CACHE=/data/cache
 - Бэлэн cache-ийг дараагийн request/process ашиглана. HTTP cache нэг цаг; stale cache/тасарсан process-ийн tmp файлыг
   автоматаар цэвэрлэх job нэмээгүй. Зөвхөн cache хавтсыг цэвэрлэвэл дараагийн хүсэлтээр дахин үүснэ; эх uploads-д хүрэхгүй.
 - Website card/group 800px, carousel/дэлгэрэнгүй 1280px, thumbnail 240px, lightbox нээхэд 1920px хувилбар хэрэглэнэ.
-  Admin-ийн URL нь мөн `w` дэмжинэ; admin preview UI-ийн хэмжээг энэ өөрчлөлтөөр солиогүй.
+  Admin-ийн автомашин, gallery болон нүүр хуудасны бүтээгдэхүүний бүлгийн жагсаалтын thumbnail нь `w=120`, form-ийн preview нь `w=1280` ашиглана. Зургуудыг 4:3 хүрээнд `cover`-оор харуулна; эх файлын харьцаа өөрчлөгдөхгүй.
 
 Шалгалт:
 

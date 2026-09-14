@@ -90,6 +90,14 @@ test("lifecycle actions have no hard delete and errors do not leak server data",
   assert.match(vehicleError(new DTIError("Required for publication: mainImageId, modelId.", { code: "VEHICLE_PUBLICATION_INVALID" })), /Үндсэн зураг, Загвар/);
   assert.doesNotMatch(vehicleError(new DTIError("private secret", { code: "UNKNOWN_ERROR" })), /private|secret/);
 });
+test("list thumbnail URLs request 120px while original previews remain unchanged", () => {
+  const file = { id, originalName: "photo #?.jpg" };
+  assert.equal(fileUrl(file), `/files/${id}/photo%20%23%3F.jpg`);
+  assert.equal(fileUrl(file, 120), `/files/${id}/photo%20%23%3F.jpg?w=120`);
+  assert.equal(fileUrl(file, 1280), `/files/${id}/photo%20%23%3F.jpg?w=1280`);
+  assert.equal(fileUrl({ id, originalName: "image" }, 120), `/files/${id}/image?w=120`);
+});
+
 test("file URL encodes original name; upload sends metadata and any file format", async (t) => {
   const data = { id, originalName: "test #?.raw", title: "Title", description: "Description", createdAt: timestamp, updatedAt: timestamp };
   assert.equal(fileUrl(data), `/files/${id}/test%20%23%3F.raw`);

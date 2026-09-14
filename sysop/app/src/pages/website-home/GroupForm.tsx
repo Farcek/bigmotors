@@ -51,7 +51,7 @@ export function GroupForm({ row, onSave, onCancel, onBusy }: {
         {error && <Alert color="red" role="alert">{error}</Alert>}
         <TextInput label="Гарчиг" required maxLength={255} disabled={busy} {...form.getInputProps("title")} />
         <Textarea label="Тайлбар" maxLength={512} rows={2} disabled={busy} {...form.getInputProps("description")} />
-        {form.values.imageId && <Image src={fileUrl({ id: form.values.imageId, originalName: "image" })} h={150} fit="contain" alt={form.values.title || "Бүлгийн зураг"} />}
+        {form.values.imageId && <Image src={fileUrl({ id: form.values.imageId, originalName: "image" }, 1280)} w="100%" maw={400} h="auto" style={{ aspectRatio: "4 / 3" }} fit="cover" alt={form.values.title || "Бүлгийн зураг"} />}
         <Group><Button variant="light" leftSection={<IconUpload size={17} />} disabled={busy} onClick={() => setUploadOpen(true)}>{form.values.imageId ? "Зураг солих" : "Зураг нэмэх"}</Button>
           {form.values.imageId && <Button variant="subtle" color="red" leftSection={<IconTrash size={17} />} disabled={busy} onClick={() => form.setFieldValue("imageId", null)}>Зураг хасах</Button>}
         </Group>
