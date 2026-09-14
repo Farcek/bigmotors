@@ -14,9 +14,10 @@ test("production Next file route proxies without a Website DB or volume", {
   const id = "7593bf0b-4d2b-4d93-abfe-cc6a42e761b9";
   const bytes = Buffer.from([0, 255, 128, 42]);
   const upstream = createServer((req, res) => {
-    assert.equal(req.url, `/files/${id}/file`);
+    const resized = req.url === `/files/${id}/file?w=480`;
+    assert.ok(req.url === `/files/${id}/file` || resized);
     assert.equal(req.headers.cookie, undefined);
-    res.writeHead(200, { "Content-Type": "image/jpeg", "Content-Length": bytes.length });
+    res.writeHead(200, { "Content-Type": resized ? "image/webp" : "image/jpeg", "Content-Length": bytes.length });
     res.end(req.method === "HEAD" ? undefined : bytes);
   });
   t.after(() => { upstream.closeAllConnections(); upstream.close(); });
@@ -62,4 +63,12 @@ test("production Next file route proxies without a Website DB or volume", {
   const invalid = await fetch(`${baseUrl}/files/invalid/file`);
   assert.equal(invalid.status, 400);
   assert.equal((await invalid.json()).error.code, "FILE_INVALID_ID");
+  for (const method of ["GET", "HEAD"]) {
+    const response = await fetch(`${baseUrl}/files/${id}/wrong.html?w=480&target=private`, { method });
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("content-type"), "image/webp");
+    assert.equal(response.headers.get("cache-control"), "public, max-age=3600");
+    assert.deepEqual(Buffer.from(await response.arrayBuffer()), method === "HEAD" ? Buffer.alloc(0) : bytes);
+  }
+  assert.equal((await fetch(`${baseUrl}/files/${id}/file?w=481`)).status, 400);
 });

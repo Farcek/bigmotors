@@ -5,6 +5,27 @@ import path from "node:path";
 import { test } from "node:test";
 import { readFileResponse } from "../src/server/file-response.ts";
 
+test("local image variants use the configured cache for GET/HEAD and reject invalid widths", async (t) => {
+  const root = await mkdtemp(path.join(tmpdir(), "bm-web-resize-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAE0lEQVQImWP4z8DwnwGM/zMwAAAf7gP9qS/A4gAAAABJRU5ErkJggg==", "base64");
+  await writeFile(path.join(root, "image"), png);
+  const reader = { getRoot: () => root, getCache: () => path.join(root, "custom-cache"), findById: async () => ({ filePath: "image", originalName: "photo.png" }) };
+  let length = 0;
+  for (const method of ["GET", "HEAD"]) {
+    const response = await readFileResponse(new Request("http://website/files/id/file?w=480", { method }), "id", reader);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("content-type"), "image/webp");
+    assert.equal(response.headers.get("cache-control"), "public, max-age=3600");
+    const bytes = Buffer.from(await response.arrayBuffer());
+    if (method === "GET") { length = bytes.length; assert.equal(bytes.toString("ascii", 8, 12), "WEBP"); }
+    else { assert.equal(bytes.length, 0); assert.equal(response.headers.get("content-length"), String(length)); }
+  }
+  const invalid = await readFileResponse(new Request("http://website/files/id/file?w=17"), "id", reader);
+  assert.equal(invalid.status, 400);
+  assert.equal((await invalid.json() as { error: { code: string } }).error.code, "FILE_IMAGE_INVALID_WIDTH");
+});
+
 test("public file GET/HEAD preserve original bytes and ignore URL filename and authorization", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "bigmotors-web-files-"));
   try {

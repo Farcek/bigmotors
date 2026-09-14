@@ -57,6 +57,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@bigmotors-db:5432/${POSTGRES_DB:-bigmotors}}
       FILES_ROOT: /files
       FILES_UPLOADS: /files/uploads
+      FILES_CACHE: /files/cache
       FILE_UPLOAD_MAX_BYTES: ${FILE_UPLOAD_MAX_BYTES:-20971520}
     ports:
       - "127.0.0.1:${SYSOP_SERVER_PORT:-64402}:4000"
@@ -94,6 +95,7 @@ services:
       PORT: 3000
       DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@bigmotors-db:5432/${POSTGRES_DB:-bigmotors}}
       FILES_ROOT: /files
+      FILES_API_BASE_URL: http://sysop-server:4000
     ports:
       - "127.0.0.1:${WEBSITE_PORT:-64400}:3000"
     volumes:

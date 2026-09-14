@@ -1,14 +1,16 @@
 import { createHash } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
-import { Colors, Files, VehicleBodyTypes, VehicleBrands, VehicleModels, Vehicles } from "@bigmotors/sysop-dti";
+import { Colors, Files, HomeProductGroups, VehicleBodyTypes, VehicleBrands, VehicleModels, Vehicles } from "@bigmotors/sysop-dti";
 import { z } from "zod";
 import { readDemoImportConfig } from "./import-config.js";
 import { demoMarker, demoVehicleBody, demoVehicles } from "./vehicle-data.js";
+import { importDemoProductGroups, indexDemoProductGroups, planDemoProductGroups } from "./product-group-data.js";
 
 async function main() {
   const { origin, maxBytes } = readDemoImportConfig(process.env);
   console.log(`Demo import API: ${origin}`);
   const summary = { created: 0, resumed: 0, skipped: 0, failed: 0 };
+  const groupSummary = { created: 0, skipped: 0 };
   try {
     const envelope = z.object({ success: z.literal(true), data: z.unknown() });
     async function api(path: string, body?: unknown, method = "POST") {
@@ -46,6 +48,9 @@ async function main() {
         exteriorColorId: named(colors, car.key % 2 ? "Мөнгөлөг" : "Цагаан").id,
       })) };
     });
+    const plannedGroups = planDemoProductGroups(planned);
+    const existingGroups = indexDemoProductGroups(await references("/home-product-groups", HomeProductGroups.entity));
+    const imageIds = new Map<number, string>();
     const existing = new Map<string, Vehicles.Entity>();
     for (let offset = 0; ; offset += 100) {
       const page = Vehicles.listResult.parse(await api(`/vehicles?limit=100&offset=${offset}`));
@@ -62,6 +67,7 @@ async function main() {
     for (const { car, body } of planned) {
       let row = existing.get(demoMarker(car.key));
       if (row?.mainImageId) {
+        imageIds.set(car.key, row.mainImageId);
         summary.skipped++;
         console.log(`EXISTS ${row.id} ${row.title}`);
         continue;
@@ -115,15 +121,23 @@ async function main() {
         throw new Error(`Image ${car.key} failed original-byte verification.`);
       }
       console.log(`CREATED ${row.id} ${row.title} (${size} bytes, original verified)`);
+      imageIds.set(car.key, file.id);
       if (resumed) summary.resumed++;
       else summary.created++;
     }
     console.log(`${demoVehicles.length} demo vehicles ready. No records were published; existing vehicles were not overwritten.`);
+    await importDemoProductGroups({
+      planned: plannedGroups, existing: existingGroups, imageIds, summary: groupSummary,
+      create: (body) => api("/home-product-groups", body),
+    });
+    console.log(`${plannedGroups.length} demo product groups ready. Existing groups were not overwritten.`);
   } catch (error) {
     summary.failed++;
     throw error;
   } finally {
     console.table(summary);
+    console.log("Product groups:");
+    console.table(groupSummary);
   }
 }
 

@@ -7,13 +7,14 @@
   "types": "./dist/index.d.mts",
   "exports": {
     ".": { "types": "./dist/index.d.mts", "import": "./dist/index.mjs", "default": "./dist/index.mjs" },
-    "./file-storage": { "types": "./dist/file-storage.d.mts", "import": "./dist/file-storage.mjs" }
+    "./file-storage": { "types": "./dist/file-storage.d.mts", "import": "./dist/file-storage.mjs" },
+    "./image-cache": { "types": "./dist/image-cache.d.mts", "import": "./dist/image-cache.mjs" }
   },
   "files": ["dist"],
   "sideEffects": false,
-  "scripts": { "build": "tsdown", "dev": "tsdown --watch", "typecheck": "tsc --noEmit" },
-  "dependencies": { "@napp/di": "1.0.10", "zod": "4.4.3" },
-  "devDependencies": { "@types/node": "24.13.3", "tsdown": "0.23.0", "typescript": "6.0.3" },
+  "scripts": { "build": "tsdown", "dev": "tsdown --watch", "typecheck": "tsc --noEmit", "test": "node --import=tsx --test test/*.test.ts" },
+  "dependencies": { "@napp/di": "1.0.10", "sharp": "0.35.4", "zod": "4.4.3" },
+  "devDependencies": { "@types/node": "24.13.3", "tsdown": "0.23.0", "tsx": "4.23.13", "typescript": "6.0.3" },
   "engines": {
     "node": ">=24.11.0 <25"
   }

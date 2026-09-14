@@ -59,8 +59,9 @@ Admin-ийн `/api`, `/files` нь Nginx-ээр runtime `SYSOP_API_BASE_URL` ori
 Compose default нь `http://sysop-server:4000`. DNS нь container-ийн `/etc/resolv.conf`-оос
 авна. [Railway тохиргоо](sysop-app.md#railway-deploy)-д private origin өгөх жишээ бий.
 SPA deep link нь `index.html` fallback-тай; API/file алдааг HTML болгон орлуулахгүй.
-Compose-ийн default-д Website PostgreSQL болон shared files-оос шууд уншина.
-Railway-д file read-ийг `FILES_API_BASE_URL`-аар Sysop руу proxy хийх боломжтой;
+Compose-ийн default-д Website PostgreSQL-оос каталог уншиж, `FILES_API_BASE_URL=http://sysop-server:4000`-аар
+файлыг Sysop руу proxy хийнэ. Resize/cache-ийг Sysop-ийн `FILES_CACHE=/files/cache` эзэмшинэ.
+Railway-д мөн file read-ийг `FILES_API_BASE_URL`-аар Sysop руу proxy хийнэ;
 [тохиргоо](file-storage.md#website-proxy). Каталогийн DB read өөрчлөгдөхгүй.
 
 ## Өгөгдөл Ба Файл

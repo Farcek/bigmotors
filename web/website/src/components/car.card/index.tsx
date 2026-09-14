@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { IconAutomaticGearbox, IconBrandYoutube, IconCalendar, IconEngine, IconGauge, IconHeart, IconHeartFilled, IconPhoto, IconPhotoOff } from "@tabler/icons-react";
-import { getYouTubeVideoUrl } from "@bigmotors/core";
+import { getFileImageUrl, getYouTubeVideoUrl } from "@bigmotors/core";
 import { formatCarPrice, fuelLabels, resolveCarCard, transmissionLabels, type CarCardData } from "./model";
 
 export type { CarCardData } from "./model";
@@ -26,7 +26,7 @@ function CardImage({ src, title }: { src: string | null; title: string }) {
     if (image.current?.complete && image.current.naturalWidth === 0) setFailed(true);
   }, [src]);
   return src && !failed
-    ? <img ref={image} src={src} alt={title} loading="lazy" decoding="async" className="h-full w-full object-cover" onError={() => setFailed(true)} />
+    ? <img ref={image} src={getFileImageUrl(src, 800)} alt={title} loading="lazy" decoding="async" className="h-full w-full object-cover" onError={() => setFailed(true)} />
     : <div role="img" aria-label={`${title}: зураг байхгүй`} className="flex h-full w-full items-center justify-center bg-card-subtle text-search-muted"><IconPhotoOff size={40} stroke={1.5} aria-hidden="true" /></div>;
 }
 

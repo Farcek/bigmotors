@@ -9,6 +9,28 @@ const request = (method = "GET") => new Request(`http://website/files/${id}/anyt
   method, headers: { Cookie: "private=cookie", Authorization: "Bearer secret", Range: "bytes=0-1" },
 });
 
+test("proxy forwards only validated width and preserves variant cache headers", async () => {
+  for (const method of ["GET", "HEAD"]) {
+    const response = await proxyFileResponse(new Request(`http://website/files/${id}/image?w=480&target=private`, { method }), id, "http://server", async (url) => {
+      assert.equal(String(url), `http://server/files/${id}/file?w=480`);
+      return new Response(method === "HEAD" ? null : "webp", { headers: { "Content-Type": "image/webp", "Content-Length": "4" } });
+    });
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("cache-control"), "public, max-age=3600");
+    assert.equal(await response.text(), method === "HEAD" ? "" : "webp");
+  }
+  for (const query of ["w=123", "w=480&w=800", "w="]) {
+    const response = await proxyFileResponse(new Request(`http://website/files/${id}/image?${query}`), id, "http://server", async () => { throw new Error("Should not fetch"); });
+    assert.equal(response.status, 400);
+    assert.equal((await response.json() as { error: { code: string } }).error.code, "FILE_IMAGE_INVALID_WIDTH");
+  }
+  for (const status of [413, 415, 503]) {
+    const response = await proxyFileResponse(new Request(`http://website/files/${id}/image?w=480`), id, "http://server", async () => new Response("private", { status }));
+    assert.equal(response.status, status);
+    assert.doesNotMatch(await response.text(), /private/);
+  }
+});
+
 test("file proxy GET/HEAD preserve bytes and safe headers without forwarding user credentials", async (t) => {
   const bytes = Buffer.from([0, 255, 128, 3, 42]);
   const server = createServer((req, res) => {

@@ -56,7 +56,7 @@ test("gallery hides meaningless controls for one image and provides accessible m
   assert.match(one, /Зураг томруулах/);
   assert.match(one, /aspect-\[4\/3\]/);
   assert.match(one, /<img[^>]*class="h-full w-full object-cover"/);
-  assert.match(one.slice(one.indexOf("<dialog")), /object-contain/);
+  assert.doesNotMatch(one.slice(one.indexOf("<dialog")), /<img/);
   assert.doesNotMatch(one, /aspect-\[3\/2\]|lg:grid-cols/);
   assert.match(renderToStaticMarkup(<VehicleGallery title="Car" photos={[]} />), /aspect-\[4\/3\]/);
   assert.doesNotMatch(one, /Өмнөх зураг|Дараах зураг|aria-pressed/);
@@ -67,6 +67,14 @@ test("gallery hides meaningless controls for one image and provides accessible m
   assert.match(many, /aria-modal="true"/);
   assert.match(many, /lg:grid-cols-\[minmax\(0,1fr\)_88px\]/);
   assert.match(many, /lg:overflow-y-auto/);
+});
+
+test("gallery requests detail and thumbnail variants without eagerly loading the lightbox", () => {
+  const photos = [1, 2].map((value) => ({ src: `/files/abc-${value}/photo.jpg`, alt: `Photo ${value}` }));
+  const html = renderToStaticMarkup(<VehicleGallery title="Car" photos={photos} />);
+  assert.match(html, /photo.jpg\?w=1280/);
+  assert.match(html, /photo.jpg\?w=240/);
+  assert.doesNotMatch(html, /w=1920/);
 });
 
 test("detail only offers a video when the URL is a valid YouTube link", () => {

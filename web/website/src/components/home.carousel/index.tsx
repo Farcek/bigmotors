@@ -3,6 +3,7 @@
 import { IconArrowLeft, IconArrowRight, IconPhotoOff } from "@tabler/icons-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { useEffect, useId, useState } from "react";
+import { getFileImageUrl } from "@bigmotors/core";
 import type { HomeSlide } from "./types";
 
 const richText = "[overflow-wrap:anywhere] [&_a]:underline [&_a]:underline-offset-4 [&_a]:decoration-primary [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-primary [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p+p]:mt-3";
@@ -12,7 +13,7 @@ function SlideImage({ src, alt, first }: { src: string; alt: string; first: bool
   const [failed, setFailed] = useState(false);
   return failed
     ? <div className="absolute inset-0 flex items-center justify-center bg-section-dark-text/5 text-section-dark-text/50" role="img" aria-label={`${alt}: зураг ачаалсангүй`}><IconPhotoOff size={64} stroke={1} aria-hidden="true" /></div>
-    : <img src={src} alt={alt} loading={first ? "eager" : "lazy"} fetchPriority={first ? "high" : "auto"} decoding="async" draggable={false} onError={() => setFailed(true)} className="absolute inset-0 h-full w-full object-cover object-center" />;
+    : <img src={getFileImageUrl(src, 1280)} alt={alt} loading={first ? "eager" : "lazy"} fetchPriority={first ? "high" : "auto"} decoding="async" draggable={false} onError={() => setFailed(true)} className="absolute inset-0 h-full w-full object-cover object-center" />;
 }
 
 export default function HomeCarousel({ slides }: { slides: readonly HomeSlide[] }) {

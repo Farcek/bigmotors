@@ -1,3 +1,5 @@
+import { FileImageError, parseFileImageWidth } from "@bigmotors/core";
+
 function fileError(request: Request, status: number, code: string, message: string): Response {
   return new Response(request.method === "HEAD" ? null : JSON.stringify({ error: { code, message } }), {
     status,
@@ -26,8 +28,9 @@ export async function proxyFileResponse(
   }
   const timeout = AbortSignal.timeout(120_000);
   try {
+    const width = parseFileImageWidth(new URL(request.url).searchParams);
     // The public contract ignores the URL filename. A fixed name prevents path traversal.
-    const upstream = await fetcher(`${origin}/files/${id}/file`, {
+    const upstream = await fetcher(`${origin}/files/${id}/file${width ? `?w=${width}` : ""}`, {
       method: request.method === "HEAD" ? "HEAD" : "GET",
       headers: { "Accept-Encoding": "identity" },
       cache: "no-store",
@@ -38,11 +41,14 @@ export async function proxyFileResponse(
       await upstream.body?.cancel();
       if (upstream.status === 400) return fileError(request, 400, "FILE_INVALID_ID", "Invalid file ID.");
       if (upstream.status === 404) return fileError(request, 404, "FILE_NOT_FOUND", "File not found.");
+      if (upstream.status === 413) return fileError(request, 413, "FILE_IMAGE_TOO_LARGE", "Image is too large to resize.");
+      if (upstream.status === 415) return fileError(request, 415, "FILE_IMAGE_UNSUPPORTED", "Image cannot be resized. Use the original file.");
+      if (upstream.status === 503 && width) return fileError(request, 503, "FILE_IMAGE_BUSY", "Image service is busy. Try again shortly.");
       return fileError(request, 502, "FILE_PROXY_ERROR", "File service is unavailable.");
     }
     const headers = new Headers({
       "Content-Type": upstream.headers.get("content-type") ?? "application/octet-stream",
-      "Cache-Control": "no-store",
+      "Cache-Control": width && upstream.headers.get("content-type") === "image/webp" ? "public, max-age=3600" : "no-store",
       "X-Content-Type-Options": "nosniff",
       "Content-Security-Policy": "sandbox; default-src 'none'",
     });
@@ -58,7 +64,8 @@ export async function proxyFileResponse(
     }
     // Stream directly; cancellation propagates to the upstream body without buffering files.
     return new Response(upstream.body, { headers });
-  } catch {
+  } catch (error) {
+    if (error instanceof FileImageError) return fileError(request, error.status, error.code, error.message);
     return timeout.aborted
       ? fileError(request, 504, "FILE_PROXY_TIMEOUT", "File service timed out.")
       : fileError(request, 502, "FILE_PROXY_ERROR", "File service is unavailable.");

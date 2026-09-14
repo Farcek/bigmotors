@@ -1,5 +1,6 @@
 import { IconArrowRight, IconPhoto } from "@tabler/icons-react";
 import { BodyContainer } from "../helper";
+import { getFileImageUrl } from "@bigmotors/core";
 
 export type HomeProductGroupItem = {
   id: string;
@@ -26,7 +27,7 @@ export default function HomeProductGroups({ items }: { items: HomeProductGroupIt
           <a href={item.href} className="group flex h-full flex-col overflow-hidden rounded-md border border-search-border p-1 transition-colors hover:border-card-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-card-accent">
             <div className="flex aspect-[2.15/1] shrink-0 items-center justify-center overflow-hidden rounded bg-card-subtle">
               {item.imageUrl
-                ? <img src={item.imageUrl} alt="" loading="lazy" className="h-full w-full object-contain" />
+                ? <img src={getFileImageUrl(item.imageUrl, 800)} alt="" loading="lazy" className="h-full w-full object-contain" />
                 : <IconPhoto size={32} className="text-search-muted" aria-hidden="true" />}
             </div>
             <div className="flex flex-1 flex-col p-2.5">

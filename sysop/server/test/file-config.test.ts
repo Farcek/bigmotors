@@ -8,6 +8,12 @@ test("file upload size defaults to 20 MB without changing path defaults", () => 
   assert.equal(config.FILE_UPLOAD_MAX_BYTES, 20_971_520);
   assert.equal(config.FILES_ROOT, "/files");
   assert.equal(config.FILES_UPLOADS, "/files/uploads");
+  assert.equal(config.FILES_CACHE, "/files/cache");
+});
+test("image cache defaults to the file root but supports an independent folder", () => {
+  assert.equal(new ConfigFiles({ FILES_ROOT: "/data/" }).FILES_CACHE, "/data/cache");
+  assert.equal(new ConfigFiles({ FILES_ROOT: "/data", FILES_CACHE: "/cache/images" }).FILES_CACHE, "/cache/images");
+  assert.equal(new ConfigFiles({ FILES_CACHE: "" }).FILES_CACHE, "");
 });
 test("ConfigFiles resolves the upload size from the injected environment", () => {
   const di = createContainer({ env: { FILE_UPLOAD_MAX_BYTES: " 1024 " } });

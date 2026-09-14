@@ -12,6 +12,9 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { createApp } from "../src/app.js";
 import { createContainer } from "../src/di.js";
+import { seedReferences } from "../../../packages/db/src/seeds/run.js";
+import { demoVehicles, demoVehicleBody } from "../src/dev/vehicle-data.js";
+import { planDemoProductGroups, indexDemoProductGroups, importDemoProductGroups } from "../src/dev/product-group-data.js";
 
 test("home product group HTTP CRUD uses DI, filter contracts and file usage", async (t) => {
   const db = new PGlite(); const root = createContainer({ env: {} }); const orm = drizzle(db, { schema });
@@ -48,4 +51,31 @@ test("home product group HTTP CRUD uses DI, filter contracts and file usage", as
   await request("DELETE", `/${row.id}`);
   await request("GET", `/${row.id}`, undefined, 404);
   assert.deepEqual((await db.query("SELECT usage FROM files WHERE id=$1", [imageId])).rows, [{ usage: [] }]);
+
+  await seedReferences(orm as unknown as BigMotorsDb);
+  const brands = await orm.select().from(schema.vehicleBrands);
+  const models = await orm.select().from(schema.vehicleModels);
+  const bodies = await orm.select().from(schema.vehicleBodyTypes);
+  const planned = planDemoProductGroups(demoVehicles.map((car) => {
+    const brandId = brands.find((row) => row.name === car.brand)!.id;
+    return { car, body: demoVehicleBody(car, { brandId,
+      modelId: models.find((row) => row.brandId === brandId && row.name === car.model)!.id,
+      bodyTypeId: bodies.find((row) => row.name === car.bodyType)!.id, exteriorColorId: randomUUID() }) };
+  }));
+  const images = new Map(demoVehicles.map((car) => [car.key, imageId]));
+  const summary = { created: 0, skipped: 0 };
+  await importDemoProductGroups({ planned, existing: new Map(), imageIds: images, summary,
+    create: (body) => request("POST", "", body) });
+  assert.deepEqual(summary, { created: 10, skipped: 0 });
+  const all = HomeProductGroups.listResult.parse(await request("GET", "?limit=100"));
+  assert.equal(all.length, 10);
+  assert.equal(HomeProductGroups.listResult.parse(await request("GET", "?isActive=true")).length, 8);
+  assert.equal(HomeProductGroups.listResult.parse(await request("GET", "?isActive=false")).length, 2);
+  const rerun = { created: 0, skipped: 0 };
+  await importDemoProductGroups({ planned, existing: indexDemoProductGroups(all), imageIds: images, summary: rerun,
+    create: () => { throw new Error("Rerun should not POST"); } });
+  assert.deepEqual(rerun, { created: 0, skipped: 10 });
+  const [storedFile] = (await db.query<{ usage: string[] }>("SELECT usage FROM files WHERE id=$1", [imageId])).rows;
+  assert.ok(storedFile);
+  assert.deepEqual(new Set(storedFile.usage), new Set(all.map((row) => row.id)));
 });

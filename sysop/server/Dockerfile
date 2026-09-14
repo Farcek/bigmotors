@@ -28,7 +28,7 @@ COPY --from=build --chown=node:node /workspace/packages/core/dist/ /app/packages
 COPY --from=build --chown=node:node /workspace/packages/db/dist/ /app/packages/db/dist/
 COPY --from=build --chown=node:node /workspace/sysop/dti/dist/ /app/sysop/dti/dist/
 COPY --from=build --chown=node:node /workspace/sysop/server/dist/ ./dist/
-RUN mkdir -p /files/uploads && chown -R node:node /files
+RUN mkdir -p /files/uploads /files/cache && chown -R node:node /files
 USER node
 EXPOSE 4000
 HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=5 CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"

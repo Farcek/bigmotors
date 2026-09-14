@@ -70,6 +70,7 @@ Service Variables:
 ```dotenv
 FILES_ROOT=/data
 FILES_UPLOADS=/data/uploads
+FILES_CACHE=/data/cache
 FILE_UPLOAD_MAX_BYTES=20971520
 ```
 

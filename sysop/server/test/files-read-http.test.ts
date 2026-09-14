@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { PGlite } from "@electric-sql/pglite";
 import { FileService, TKN_DB, type BigMotorsDb } from "@bigmotors/db";
+import { FileImageError } from "@bigmotors/core";
 import * as schema from "@bigmotors/db/schema";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -48,6 +49,33 @@ test("public file read through HTTP and DI", async (t) => {
   }
   const image = await file("зураг.JPG");
   const readUrl = (id: string, name = "different.html") => `${origin}/files/${id}/${encodeURIComponent(name)}`;
+
+  await t.test("resize GET/HEAD uses the same cached WebP, while plain reads preserve bytes", async () => {
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAE0lEQVQImWP4z8DwnwGM/zMwAAAf7gP9qS/A4gAAAABJRU5ErkJggg==", "base64");
+    const record = await file("small.png", png);
+    const url = `${readUrl(record.id)}?w=480`;
+    const res = await fetch(url);
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get("content-type"), "image/webp");
+    assert.equal(res.headers.get("cache-control"), "public, max-age=3600");
+    const webp = Buffer.from(await res.arrayBuffer());
+    assert.equal(webp.toString("ascii", 8, 12), "WEBP");
+    const head = await fetch(url, { method: "HEAD" });
+    assert.equal(head.status, 200);
+    assert.equal(head.headers.get("content-length"), String(webp.length));
+    assert.equal((await head.arrayBuffer()).byteLength, 0);
+    assert.deepEqual(Buffer.from(await (await fetch(url)).arrayBuffer()), webp);
+    assert.deepEqual(Buffer.from(await (await fetch(readUrl(record.id))).arrayBuffer()), png);
+    for (const query of ["w=481", "w=", "w=480&w=800"]) {
+      const invalid = await fetch(`${readUrl(record.id)}?${query}`);
+      assert.equal(invalid.status, 400);
+      assert.equal((await invalid.json() as { error: { code: string } }).error.code, "FILE_IMAGE_INVALID_WIDTH");
+    }
+    const invalid = await fetch(`${readUrl(image.id)}?w=480`);
+    assert.equal(invalid.status, 415);
+    await rm(path.join(rootPath, record.id));
+    assert.equal((await fetch(url)).status, 404);
+  });
 
   await t.test("anonymous production read ignores URL name, usage and authorization headers", async () => {
     for (const name of [image.originalName, "different.html", "../../private.txt", "bad\r\nname", "folder\\file"]) {
@@ -136,5 +164,17 @@ test("public file read through HTTP and DI", async (t) => {
     const res = await fetch(`${origin}/api/files/upload`, { method: "POST" });
     assert.equal(res.status, 415);
     assert.deepEqual(await res.json(), { error: { code: "FILE_UPLOAD_UNSUPPORTED_MEDIA_TYPE", message: "Expected multipart/form-data." } });
+  });
+
+  await t.test("image overload returns retryable 503 instead of a generic 500", async (context) => {
+    const lookup = context.mock.method(FileService.prototype, "findById", async () => {
+      throw new FileImageError("FILE_IMAGE_BUSY", 503, "Image service is busy. Try again shortly.");
+    });
+    try {
+      const res = await fetch(`${readUrl(image.id)}?w=480`);
+      assert.equal(res.status, 503);
+      assert.equal(res.headers.get("cache-control"), "no-store");
+      assert.equal(res.headers.get("retry-after"), "1");
+    } finally { lookup.mock.restore(); }
   });
 });

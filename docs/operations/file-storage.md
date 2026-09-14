@@ -22,6 +22,7 @@
 | --- | --- | --- |
 | `FILES_ROOT` | `/files` | DB file_path-ийн суурь disk зам |
 | `FILES_UPLOADS` | `/files/uploads` | Upload бичих disk хавтас |
+| `FILES_CACHE` | `FILES_ROOT/cache` | Жижигрүүлсэн зураг хадгалах absolute, бичих эрхтэй хавтас; root-оос тусдаа байж болно |
 | `FILE_UPLOAD_MAX_BYTES` | `20971520` | Нэг файлын byte хязгаар; ConfigFiles-аас DI-ээр авна, эерэг safe integer |
 
 ConfigFiles constructor хоёр default-ийг тус тусад нь оноодог хэвээр. Зөвхөн FILES_ROOT солиход FILES_UPLOADS дагаж өөрчлөгдөхгүй; хоёуланг нь нийцүүлж өгнө. Absolute/containment болон symlink/junction-ийн хүрээг UploadStorage upload хийхээс өмнө шалгана. Constructor/import нь disk хавтас эсвэл DB холболт үүсгэхгүй.
@@ -31,6 +32,7 @@ ConfigFiles constructor хоёр default-ийг тус тусад нь оноо�
 ```dotenv
 FILES_ROOT=E:/bigmotors-data
 FILES_UPLOADS=E:/bigmotors-data/uploads
+FILES_CACHE=E:/bigmotors-data/cache
 FILE_UPLOAD_MAX_BYTES=20971520
 ```
 
@@ -57,7 +59,7 @@ Upload тасрах болон DB бүртгэл бүтэлгүйтэхэд ду
 
 Sysop болон website-ийн нийтлэг URL нь `GET /files/:id/:originalName`; зөвхөн ID-аар DB бүртгэлийг олно. Нэр болон access шалгахгүй. Үндсэн contract, header болон үр дагавар нь [File Read Route](../features/file-management.md#file-read-route), шийдвэр нь [ADR 0032](../adr/0032-public-file-read-route.md)-д байна. Хоёр app-ийн GET/HEAD хэрэгжсэн; shared Node-only `@bigmotors/core/file-storage` нь path containment болон header дүрмийг эзэмшинэ.
 
-Website-ийн `FILES_API_BASE_URL` тохируулаагүй үед `FILES_ROOT` нь sysop upload хийдэг ижил storage-г заана. Container-уудын зам өөр байж болно; файлын volume ижил байх ёстой. Энэ local/shared-volume горимд Website read-only mount, өөрийн DBConfig/DI болон FileService-ээр уншина. `FILES_UPLOADS` нь website read-д ашиглагдахгүй. Railway шиг shared mount-гүй орчинд доорх proxy горимыг хэрэглэнэ.
+Website-ийн `FILES_API_BASE_URL` тохируулаагүй үед `FILES_ROOT` нь sysop upload хийдэг ижил storage-г заана. Container-уудын зам өөр байж болно; файлын volume ижил байх ёстой. Энэ local/shared-volume горимд Website өөрийн DBConfig/DI болон FileService-ээр уншина. Root нь read-only бол `FILES_CACHE`-ийг тусдаа writable хавтас руу заана; Website Docker image-ийн default `/app/file-cache`. `FILES_UPLOADS` нь website read-д ашиглагдахгүй. Railway шиг shared mount-гүй орчинд доорх proxy горимыг хэрэглэнэ.
 
 Sysop серверийн origin дээр `/files/...`-аар шууд уншина. Admin dev Vite `/files` proxy нь `http://127.0.0.1:64402` рүү дамжуулна; proxy тохиргоо ачаалагдаагүй бол dev app-ийг дахин асаана. Production reverse proxy мөн `/files`-ийг backend рүү дамжуулах шаардлагатай; Vite dev proxy нь production тохиргоо биш. FILES_ROOT доторх файлуудыг унших OS permission шаардлагатай, FILES_UPLOADS-тай дахин нийлүүлэхгүй.
 
@@ -78,13 +80,13 @@ FILES_API_BASE_URL=http://sysop-server.railway.internal:4000
 - HTTP(S) origin л авна; `/api`, `/files`, credentials, query, fragment өгөхгүй.
 - Variable байхгүй үед local disk горим. Илэрхий хоосон/буруу URL бол 500; proxy алдаанд disk рүү буцахгүй.
 - URL дахь нэрийг өмнөх contract-ын дагуу үл тооно. Upstream-ийн DB metadata filename/content-type-ийг шийднэ.
-- Browser-ийн cookie, Authorization, query, Range дамжуулахгүй; redirect дагахгүй. Энэ нь дурын URL proxy биш.
-- Файлыг RAM-д бүхэлд нь ачаалахгүй. GET body stream, HEAD metadata, download disposition, no-store/nosniff/sandbox хамгаалалт хадгалагдана.
+- Browser-ийн cookie, Authorization, Range дамжуулахгүй; query-ээс зөвхөн шалгасан `w` дамжуулна. Redirect дагахгүй. Энэ нь дурын URL proxy биш.
+- Proxy файлыг RAM-д бүхэлд нь ачаалахгүй. GET body stream, HEAD metadata, download disposition, nosniff/sandbox хамгаалалт хадгалагдана. Эх файл `no-store`, WebP хувилбар `public, max-age=3600` байна.
 - Upstream 400/404 нь цэвэрлэсэн 400/404; бусад алдаа/redirect/network failure нь 502. 120 секундийн timeout нь response эхлэхээс өмнө 504, stream эхэлсний дараа тасарсан stream болно.
 - Proxy горимд Website-ийн file route DB болон disk-д хандахгүй; бусад каталог/page хүсэлтэд Website DB шаардлагатай хэвээр.
 
 Sysop-ийн `/data` volume болон Website Variables-ийн бүрэн жишээ [Sysop server](sysop-server.md#railway-file-volume)-д байна.
-Local Docker Compose-ийн shared-volume default-ийг өөрчлөөгүй. Railway-д volume зөвхөн Sysop эзэмшинэ.
+Local Docker Compose-ийн Website мөн Sysop руу proxy хийнэ; хуучин read-only mount нь local disk горимд шилжихэд ашиглах боломжтой хэвээр. Railway-д volume зөвхөн Sysop эзэмшинэ.
 Node runtime non-root тул шинэ mount-ийн бичих эрх, upload/read болон redeploy-ийн дараах хадгалалтыг шалгана.
 
 Шалгах командууд (repository root, PowerShell):
@@ -100,6 +102,51 @@ Remove-Item Env:WEBSITE_TEST_FILE_PROXY
 Production тест нь тусдаа ephemeral порт дээр Next болон mock Sysop сервер асааж,
 Website-ийн DB/storage ашиглахгүй GET/HEAD bytes дамжихыг шалгаад процессуудаа хаана.
 Railway-ийн бодит permission/network/volume persistence шалгалтыг орлохгүй.
+
+## Зургийн Resize Ба Cache
+
+2026-09-14: `GET`/`HEAD /files/:id/:originalName?w=480` нь эх зургийг өөрчлөхгүйгээр WebP хувилбар буцаана.
+`w` байхгүй бол эх byte болон өмнөх download/header дүрэм хэвээр. Width нь зөвхөн `240`, `480`, `800`, `1280`, `1920`;
+хоосон, давхардсан эсвэл бусад утга `400 FILE_IMAGE_INVALID_WIDTH`. Бусад query-г үл тооно.
+
+Railway Sysop Variables:
+
+```dotenv
+FILES_ROOT=/data
+FILES_UPLOADS=/data/uploads
+FILES_CACHE=/data/cache
+```
+
+- `FILES_CACHE` нь absolute path, байхгүй бол автоматаар үүсгэнэ. Процесс бичих эрхтэй байх ёстой.
+  Тохируулаагүй бол `FILES_ROOT/cache`; explicit хоосон/relative замыг resize үед 500 алдаагаар няцаана.
+  `/data` volume дээр байвал redeploy-ийн дараа cache хадгалагдана. Website proxy горимд энэ variable/volume хэрэггүй.
+- Node-only `@bigmotors/core/image-cache` нь Sysop, Website local read хоёрт ижил хэрэгжүүлэлт өгнө.
+  `sharp` 0.35.4 (Apache-2.0), Node 24 болон Windows/Linux prebuilt binary дэмжинэ;
+  [installation](https://sharp.pixelplumbing.com/install/), [resize](https://sharp.pixelplumbing.com/api-resize/).
+  Төслийн lockfile-д байсан хувилбарыг ашигласан; client bundle-д native сан оруулахгүй.
+- JPEG, PNG, WebP, AVIF болон single-frame GIF дэмжинэ. SVG, animation, эвдэрсэн/дэмжигдээгүй зураг 415;
+  эх файл `w`-гүй URL-аар боломжтой хэвээр. Website URL helper нь GIF/SVG/static/remote зурагт `w` нэмэхгүй.
+- Өргөн нь хүссэн хэмжээнээс, өндөр нь 1920px-ээс хэтрэхгүй; харьцааг хадгална, crop/upscale хийхгүй.
+  EXIF чиглэлийг зөв болгож, metadata-г хасна. WebP quality 80. UI-ийн 4:3/object-cover дүрэм өөрчлөгдөхгүй.
+- Cache нь `FILES_CACHE/image-v1/<hash>.webp`; hash нь эх disk зам, size, mtime/ctime болон width агуулна.
+  URL filename-г disk замд ашиглахгүй. Cache hit ч DB мөр/эх файл/storage containment-ийг шалгана.
+- Нэг process дотор ижил хувилбарын зэрэгцээ хүсэлтийг нэгтгэнэ. Хоёр resize зэрэг ажиллаж, 32 хүртэл хүлээнэ;
+  дүүрвэл 503. Эх зураг 64 MiB-ээс их бол 413, 40 сая pixel-ээс их бол 415. Боловсруулалт 20 секундийн хязгаартай.
+  Resize хийх хоёр ажил л эх зургийг RAM-д уншина; upload болон энгийн read өмнөх stream хэвээр.
+- Түр файлд бичээд atomic rename хийнэ; failed write-ийн түр файлыг цэвэрлэнэ. Cache namespace/file symlink-ээр
+  гадна зам руу гарахыг хориглоно. OS түвшний зэрэгцээ гаднын өөрчлөлтөөс хамгаалах тусдаа sandbox биш.
+- Бэлэн cache-ийг дараагийн request/process ашиглана. HTTP cache нэг цаг; stale cache/тасарсан process-ийн tmp файлыг
+  автоматаар цэвэрлэх job нэмээгүй. Зөвхөн cache хавтсыг цэвэрлэвэл дараагийн хүсэлтээр дахин үүснэ; эх uploads-д хүрэхгүй.
+- Website card/group 800px, carousel/дэлгэрэнгүй 1280px, thumbnail 240px, lightbox нээхэд 1920px хувилбар хэрэглэнэ.
+  Admin-ийн URL нь мөн `w` дэмжинэ; admin preview UI-ийн хэмжээг энэ өөрчлөлтөөр солиогүй.
+
+Шалгалт:
+
+```powershell
+pnpm --filter @bigmotors/core test
+pnpm --filter @bigmotors/sysop-server exec node --import=tsx --test test/files-read-http.test.ts test/file-config.test.ts
+pnpm --filter @bigmotors/website exec node --import=tsx --test test/file-response.test.ts test/file-proxy-response.test.ts
+```
 
 ## Production-д Шийдэх Зүйл
 

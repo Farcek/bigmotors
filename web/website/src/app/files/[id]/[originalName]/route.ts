@@ -14,6 +14,7 @@ export async function GET(request: Request, context: RouteContext<"/files/[id]/[
   return readFileResponse(request, id, {
     findById: (fileId) => getWebsiteContainer().resolve(FileService).findById(fileId),
     getRoot: () => getWebsiteContainer().resolve(ConfigFiles).FILES_ROOT,
+    getCache: () => getWebsiteContainer().resolve(ConfigFiles).FILES_CACHE,
   });
 }
 
