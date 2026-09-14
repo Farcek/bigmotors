@@ -37,11 +37,12 @@ test("admin SPA deep links and bundled assets are served", async () => {
 });
 
 test("admin proxy reaches the migrated DB", async () => {
-  const response = await request(admin, "/api/vehicles");
+  const response = await request(admin, "/api/vehicles?limit=1&offset=0");
   assert.equal(response.status, 200);
   const body = await response.json();
   assert.equal(body.success, true);
   assert.deepEqual(body.data.items, []);
+  assert.equal(body.data.limit, 1);
 });
 
 test("website standalone reaches the migrated DB", async () => {
@@ -75,6 +76,50 @@ test("anonymous production upload is readable through both services", async () =
     const read = await request(origin, `/files/${file.id}/check.txt`);
     assert.equal(read.status, 200);
     assert.equal(await read.text(), "docker-upload-check");
+    const head = await request(origin, `/files/${file.id}/another-name.txt`, { method: "HEAD" });
+    assert.equal(head.status, 200);
+    assert.equal(head.headers.get("content-length"), String(Buffer.byteLength("docker-upload-check")));
+    assert.equal(await head.text(), "");
+  }
+});
+
+test("admin renders its runtime upstream and system DNS without root privileges", () => {
+  const args = ["compose", "-p", "bigmotors-docker-check", "-f", "infra/docker-compose.yml", "-f", "infra/test/compose.yml", "exec", "-T", "sysop-app"];
+  const run = (...command: string[]) => execFileSync("docker", [...args, ...command], { encoding: "utf8", timeout: 30_000 });
+  assert.equal(run("id", "-u").trim(), "101");
+  const config = run("cat", "/tmp/nginx.conf");
+  assert.match(config, /http:\/\/sysop-proxy-check:4000\//);
+  assert.match(config, /proxy_pass \$api\$request_uri;/);
+  assert.match(config, /proxy_ssl_verify on;/);
+  assert.doesNotMatch(config, /\$\{SYSOP_API_BASE_URL\}|\$\{NGINX_LOCAL_RESOLVERS\}|ipv6=off/);
+  const resolvers = run("cat", "/etc/resolv.conf").split("\n")
+    .filter((line) => line.startsWith("nameserver ")).map((line) => line.trim().split(/\s+/)[1]);
+  assert.ok(resolvers.length);
+  for (const resolver of resolvers) assert.ok(config.includes(resolver.includes(":") ? `[${resolver}]` : resolver));
+});
+
+test("invalid admin runtime origins return 502 without falling back to the default backend", async () => {
+  for (const origin of ["", "http://sysop-proxy-check:4000/api", "http://sysop-proxy-check:4000?query=1"]) {
+    const name = `bigmotors-admin-proxy-check-${crypto.randomUUID()}`;
+    try {
+      execFileSync("docker", ["run", "-d", "--rm", "--name", name,
+        "--network", "bigmotors-docker-check_default", "-p", "127.0.0.1::8080",
+        "-e", `SYSOP_API_BASE_URL=${origin}`, "bigmotors-docker-check-sysop-app"], { timeout: 30_000 });
+      const [container] = JSON.parse(execFileSync("docker", ["inspect", name], { encoding: "utf8", timeout: 30_000 }));
+      const base = `http://127.0.0.1:${container.NetworkSettings.Ports["8080/tcp"][0].HostPort}`;
+      let ready = false;
+      for (let attempt = 0; attempt < 40; attempt++) {
+        try { ready = (await request(base, "/health")).status === 200; } catch { /* Startup can precede listening. */ }
+        if (ready) break;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      assert.ok(ready, "Temporary admin container did not start");
+      for (const path of ["/api/vehicles", "/files/00000000-0000-4000-8000-000000000001/file"]) {
+        assert.equal((await request(base, path)).status, 502, origin);
+      }
+    } finally {
+      execFileSync("docker", ["rm", "-f", name], { timeout: 30_000, stdio: "ignore" });
+    }
   }
 });
 

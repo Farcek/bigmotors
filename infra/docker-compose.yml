@@ -74,6 +74,8 @@ services:
       context: ..
       dockerfile: sysop/app/Dockerfile
       target: runner
+    environment:
+      SYSOP_API_BASE_URL: ${SYSOP_API_BASE_URL:-http://sysop-server:4000}
     ports:
       - "127.0.0.1:${SYSOP_APP_PORT:-64403}:8080"
     depends_on:

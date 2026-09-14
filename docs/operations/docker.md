@@ -55,7 +55,9 @@ App тус бүрийн `.env`, `.env.local` image-д орохгүй, Compose а
 - `FILE_UPLOAD_MAX_BYTES`: default 20 MiB; Admin proxy нийт request-ийг 21 MiB-аар
   хязгаарлана. Нэмэгдүүлэх бол `sysop/app/nginx.conf`-ийн limit-ийг мөн шинэчилж build хийнэ.
 
-Admin-ийн `/api`, `/files` нь Nginx-ээр `sysop-server:4000` руу дамжина.
+Admin-ийн `/api`, `/files` нь Nginx-ээр runtime `SYSOP_API_BASE_URL` origin руу дамжина;
+Compose default нь `http://sysop-server:4000`. DNS нь container-ийн `/etc/resolv.conf`-оос
+авна. [Railway тохиргоо](sysop-app.md#railway-deploy)-д private origin өгөх жишээ бий.
 SPA deep link нь `index.html` fallback-тай; API/file алдааг HTML болгон орлуулахгүй.
 Compose-ийн default-д Website PostgreSQL болон shared files-оос шууд уншина.
 Railway-д file read-ийг `FILES_API_BASE_URL`-аар Sysop руу proxy хийх боломжтой;

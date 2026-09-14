@@ -13,10 +13,13 @@ ENV VITE_API_BASE_URL=/api VITE_FILES_BASE_URL=
 RUN pnpm build:app
 
 FROM nginx:stable-alpine AS runner
-COPY sysop/app/nginx.conf /etc/nginx/nginx.conf
+ENV SYSOP_API_BASE_URL=http://sysop-server:4000 \
+    NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
+    NGINX_ENVSUBST_OUTPUT_DIR=/tmp \
+    NGINX_ENVSUBST_FILTER="^(SYSOP_API_BASE_URL|NGINX_LOCAL_RESOLVERS)$"
+COPY sysop/app/nginx.conf /etc/nginx/templates/nginx.conf.template
 COPY --from=build /workspace/sysop/app/dist/ /usr/share/nginx/html/
 USER nginx
 EXPOSE 8080
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=5 CMD wget -qO- http://127.0.0.1:8080/health >/dev/null || exit 1
-ENTRYPOINT ["nginx"]
-CMD ["-g", "daemon off;"]
+CMD ["nginx", "-c", "/tmp/nginx.conf", "-g", "daemon off;"]

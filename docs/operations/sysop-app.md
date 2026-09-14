@@ -27,6 +27,50 @@ Dockerfile нь static build-ийг root эрхгүй Nginx-ээр үйлчил�
 Sysop server рүү proxy хийнэ. [Docker/Compose заавар](docker.md)-аас ажиллуулах
 алхам болон production auth-ийн хязгаарлалтыг харна.
 
+## Railway Deploy
+
+Repository root-оос [Dockerfile](../../sysop/app/Dockerfile)-ийг build хийнэ.
+
+| Тохиргоо | Утга |
+| --- | --- |
+| Root Directory | `/` буюу repository root |
+| `RAILWAY_DOCKERFILE_PATH` | `sysop/app/Dockerfile` |
+| Start Command | хоосон; image-ийн startup болон Nginx CMD ашиглана |
+| `PORT`, public domain target port | `8080` |
+| Healthcheck path | `/health` (Nginx liveness; backend readiness биш) |
+| Volume, DB credential | хэрэггүй |
+
+Sysop app service Variables:
+
+```dotenv
+SYSOP_API_BASE_URL=http://sysop-server.railway.internal:4000
+```
+
+Service нэр/порт бодит Sysop тохиргоотой таарна. Private origin ашиглах бол хоёр service
+ижил project/environment-д байна. Origin-д `/api`, `/files`, query, fragment, credential нэмэхгүй.
+Төгсгөлийн `/` байж болно. Хоосон/буруу origin үед API/files нь 502 буцаана; SPA хэвээр нээгдэж болно.
+
+- `/api/...` болон `/files/...` нь ижил path/query/body/method-оор backend рүү дамжина.
+- Runtime variable тул backend хаяг өөрчлөхөд frontend дахин build хийхгүй; container-ийг
+  шинэ Variables-тай дахин эхлүүлэх/deploy хийхэд хангалттай.
+- `VITE_API_BASE_URL=/api`, `VITE_FILES_BASE_URL=` нь Dockerfile-ийн build-time утга хэвээр.
+  Browser дотоод backend domain-ийг хэрэглэхгүй; same-origin Nginx proxy ашиглана.
+- Official Nginx entrypoint нь `nginx.conf` template-ийг `/tmp/nginx.conf` болгож үүсгэнэ.
+  `SYSOP_API_BASE_URL`, `NGINX_LOCAL_RESOLVERS` хоёроос бусад Nginx `$variable`-ийг envsubst солихгүй.
+- DNS-ийг container-ийн `/etc/resolv.conf`-оос авна; Docker-ийн `127.0.0.11` тогтмол биш.
+  IPv6 DNS lookup идэвхтэй. HTTPS upstream бол SNI болон CA certificate verification идэвхтэй.
+- Image `nginx` (UID 101) хэрэглэгчээр ажиллана; root болон persistent volume шаардахгүй.
+- Нэг upload 20 MiB; Nginx multipart request limit 21 MiB хэвээр. Admin/API auth шинээр нэмээгүй.
+
+Local Compose default `SYSOP_API_BASE_URL=http://sysop-server:4000`;
+`infra/.env.example`-ийн утгыг өөрчилж болно. Vite dev proxy-г энэ runtime variable өөрчлөхгүй.
+
+2026-09-14: Docker image build (TypeScript check + Vite build), Nginx config test,
+тусгаарласан Docker орчны 9 smoke тест тэнцсэн. Өөр DNS alias бүхий runtime origin,
+trailing slash, query, upload, GET/HEAD, системийн DNS, UID 101 болон буруу origin-ийн
+502 төлөвийг шалгасан. Бодит Railway deploy/private network болон HTTPS upstream-ийг
+энэ шалгалтаар туршаагүй. [Тест ажиллуулах заавар](docker.md#шинэчлэх-ба-шалгах).
+
 ## Routing
 
 [ADR 0026](../adr/0026-use-react-router-data-mode.md)-ийн дагуу React Router Data Mode ашиглана.
