@@ -57,7 +57,9 @@ App тус бүрийн `.env`, `.env.local` image-д орохгүй, Compose а
 
 Admin-ийн `/api`, `/files` нь Nginx-ээр `sysop-server:4000` руу дамжина.
 SPA deep link нь `index.html` fallback-тай; API/file алдааг HTML болгон орлуулахгүй.
-Website нь API proxy ашиглахгүй, PostgreSQL болон shared files-оос шууд уншина.
+Compose-ийн default-д Website PostgreSQL болон shared files-оос шууд уншина.
+Railway-д file read-ийг `FILES_API_BASE_URL`-аар Sysop руу proxy хийх боломжтой;
+[тохиргоо](file-storage.md#website-proxy). Каталогийн DB read өөрчлөгдөхгүй.
 
 ## Өгөгдөл Ба Файл
 

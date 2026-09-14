@@ -95,7 +95,7 @@ Userly нэвтрэлт/эрхийн шалгалт хараахан холбо�
 
 ## File Read Route
 
-2026-09-12-нд баталсан; [ADR 0032](../adr/0032-public-file-read-route.md). Sysop endpoint нь [read.ts](../../sysop/server/src/files/read.ts)-д хэрэгжсэн; `FileService.findById`-г DI-ээр ашиглана. `sysop/app`-ийн Vite `/files` proxy backend рүү дамжуулна. Website-ийн Next.js GET/HEAD route мөн өөрийн DI/FileService-ээр уншина. Хоёр app path/header дүрмээ `@bigmotors/core/file-storage`-оос авна.
+2026-09-12-нд баталсан; [ADR 0032](../adr/0032-public-file-read-route.md). Sysop endpoint нь [read.ts](../../sysop/server/src/files/read.ts)-д хэрэгжсэн; `FileService.findById`-г DI-ээр ашиглана. `sysop/app`-ийн Vite `/files` proxy backend рүү дамжуулна. Website-ийн Next.js GET/HEAD route default-д өөрийн DI/FileService-ээр уншина. `FILES_API_BASE_URL` тохируулсан үед Sysop руу stream proxy хийж, Website shared disk шаардлагагүй болно. Public URL/access дүрэм өөрчлөгдөхгүй. [Proxy тохиргоо](../operations/file-storage.md#website-proxy). Local болон Sysop read-ийн path/header дүрмийг `@bigmotors/core/file-storage` эзэмшинэ.
 
 - Sysop болон website ижил `GET /files/:id/:originalName` route ашиглана; `/api` prefix-гүй. Domain нь тухайн app-ийн domain байна.
 - `files` хүснэгтээс зөвхөн `id`-гаар бүртгэлийг олно.

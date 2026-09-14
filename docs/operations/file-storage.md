@@ -57,13 +57,49 @@ Upload тасрах болон DB бүртгэл бүтэлгүйтэхэд ду
 
 Sysop болон website-ийн нийтлэг URL нь `GET /files/:id/:originalName`; зөвхөн ID-аар DB бүртгэлийг олно. Нэр болон access шалгахгүй. Үндсэн contract, header болон үр дагавар нь [File Read Route](../features/file-management.md#file-read-route), шийдвэр нь [ADR 0032](../adr/0032-public-file-read-route.md)-д байна. Хоёр app-ийн GET/HEAD хэрэгжсэн; shared Node-only `@bigmotors/core/file-storage` нь path containment болон header дүрмийг эзэмшинэ.
 
-Website-ийн `FILES_ROOT` нь sysop upload хийдэг ижил storage-г заана. Container-уудын зам өөр байж болно; файлын volume ижил байх ёстой. Website тал read-only mount ашиглана. Website өөрийн DBConfig/DI болон FileService-ээр шууд уншина; sysop API proxy эсвэл access шалгалт нэмээгүй. `FILES_UPLOADS` нь website read-д ашиглагдахгүй.
+Website-ийн `FILES_API_BASE_URL` тохируулаагүй үед `FILES_ROOT` нь sysop upload хийдэг ижил storage-г заана. Container-уудын зам өөр байж болно; файлын volume ижил байх ёстой. Энэ local/shared-volume горимд Website read-only mount, өөрийн DBConfig/DI болон FileService-ээр уншина. `FILES_UPLOADS` нь website read-д ашиглагдахгүй. Railway шиг shared mount-гүй орчинд доорх proxy горимыг хэрэглэнэ.
 
 Sysop серверийн origin дээр `/files/...`-аар шууд уншина. Admin dev Vite `/files` proxy нь `http://127.0.0.1:64402` рүү дамжуулна; proxy тохиргоо ачаалагдаагүй бол dev app-ийг дахин асаана. Production reverse proxy мөн `/files`-ийг backend рүү дамжуулах шаардлагатай; Vite dev proxy нь production тохиргоо биш. FILES_ROOT доторх файлуудыг унших OS permission шаардлагатай, FILES_UPLOADS-тай дахин нийлүүлэхгүй.
 
 Read-ийн HTTP тестүүд production DI, PGlite болон түр disk ашиглаж anonymous GET/HEAD, нэр үл тоох, upload → read byte хадгалалт, хоосон файл, 400/404/500, junction/traversal хамгаалалтыг шалгана. Upload-ийн production хоригийг авсны дараа anonymous upload болон content-type/metadata/хэмжээний validation-ийг production environment-д шалгана; live DB/storage-д хүрэхгүй.
 
 Хоёр app ижил файлуудыг уншихын тулд ижил files бүртгэл болон тэдгээрийн file_path-д харгалзах storage-д хандана. Container доторх FILES_ROOT замууд өөр байж болох ч relative path нь ижил агуулгыг заана. Request-ийн originalName-г disk замд ашиглахгүй; root containment хамгаалалт хэвээр.
+
+## Website Proxy
+
+2026-09-14: Website-ийн server-only `FILES_API_BASE_URL`-д Sysop origin өгвөл `/files/:id/:originalName`
+GET/HEAD хүсэлтийг Sysop руу stream дамжуулна. Жишээ:
+
+```dotenv
+FILES_API_BASE_URL=http://sysop-server.railway.internal:4000
+```
+
+- Runtime тохиргоо; build argument эсвэл `NEXT_PUBLIC_` variable биш.
+- HTTP(S) origin л авна; `/api`, `/files`, credentials, query, fragment өгөхгүй.
+- Variable байхгүй үед local disk горим. Илэрхий хоосон/буруу URL бол 500; proxy алдаанд disk рүү буцахгүй.
+- URL дахь нэрийг өмнөх contract-ын дагуу үл тооно. Upstream-ийн DB metadata filename/content-type-ийг шийднэ.
+- Browser-ийн cookie, Authorization, query, Range дамжуулахгүй; redirect дагахгүй. Энэ нь дурын URL proxy биш.
+- Файлыг RAM-д бүхэлд нь ачаалахгүй. GET body stream, HEAD metadata, download disposition, no-store/nosniff/sandbox хамгаалалт хадгалагдана.
+- Upstream 400/404 нь цэвэрлэсэн 400/404; бусад алдаа/redirect/network failure нь 502. 120 секундийн timeout нь response эхлэхээс өмнө 504, stream эхэлсний дараа тасарсан stream болно.
+- Proxy горимд Website-ийн file route DB болон disk-д хандахгүй; бусад каталог/page хүсэлтэд Website DB шаардлагатай хэвээр.
+
+Sysop-ийн `/data` volume болон Website Variables-ийн бүрэн жишээ [Sysop server](sysop-server.md#railway-file-volume)-д байна.
+Local Docker Compose-ийн shared-volume default-ийг өөрчлөөгүй. Railway-д volume зөвхөн Sysop эзэмшинэ.
+Node runtime non-root тул шинэ mount-ийн бичих эрх, upload/read болон redeploy-ийн дараах хадгалалтыг шалгана.
+
+Шалгах командууд (repository root, PowerShell):
+
+```powershell
+pnpm --filter @bigmotors/website exec node --import=tsx --test test/file-response.test.ts test/file-proxy-response.test.ts
+pnpm --filter @bigmotors/website build
+$env:WEBSITE_TEST_FILE_PROXY = "1"
+pnpm --filter @bigmotors/website exec node --import=tsx --test test/file-proxy-production.test.ts
+Remove-Item Env:WEBSITE_TEST_FILE_PROXY
+```
+
+Production тест нь тусдаа ephemeral порт дээр Next болон mock Sysop сервер асааж,
+Website-ийн DB/storage ашиглахгүй GET/HEAD bytes дамжихыг шалгаад процессуудаа хаана.
+Railway-ийн бодит permission/network/volume persistence шалгалтыг орлохгүй.
 
 ## Production-д Шийдэх Зүйл
 

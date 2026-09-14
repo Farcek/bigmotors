@@ -62,6 +62,39 @@ pnpm install --frozen-lockfile
 
 SSL verification-г унтраахгүй. Энэ нь зөвхөн тухайн shell-ийн тохиргоо; repository эсвэл global npm тохиргоог өөрчлөхгүй.
 
+## Railway File Volume
+
+Sysop server service-д persistent volume холбоод mount path-ийг `/data` болгоно.
+Service Variables:
+
+```dotenv
+FILES_ROOT=/data
+FILES_UPLOADS=/data/uploads
+FILE_UPLOAD_MAX_BYTES=20971520
+```
+
+Dockerfile-ийн `/files` default-ийг дээрх Variables дарна. Runtime хэрэглэгч `/data` дотор
+бичих эрхтэй байна. Манай image `node` (UID 1000) хэрэглэгчтэй тул mount-ийн ownership-ийг
+шалгана; build үеийн `/files` ownership нь шинэ `/data` mount-д үйлчлэхгүй.
+Railway-ийн permission алдааны workaround `RAILWAY_RUN_UID=0` нь серверийг root эрхээр
+ажиллуулдаг тул зөвхөн энэ үр дагаврыг тооцож хэрэглэнэ.
+[Railway volume заавар](https://docs.railway.com/volumes/reference).
+
+Website-д энэ volume-ийг давхар холбохгүй. Website Variables дээр:
+
+```dotenv
+FILES_API_BASE_URL=http://sysop-server.railway.internal:4000
+```
+
+Service нэр/порт бодит Sysop тохиргоотой таарна; хоёр service ижил Railway environment-д
+байна. Энэ нь server-only runtime variable; `NEXT_PUBLIC_` prefix болон `/api` suffix хэрэггүй.
+Website-ийн файл уншилтад `FILES_ROOT`/volume шаардлагагүй болно. Каталогийн DB холболт хэвээр.
+Demo import-д volume хэрэггүй; зураг API-аар Sysop-ийн `/data/uploads` дотор хадгалагдана.
+Нарийвчилсан proxy/error дүрмийг [File Storage](file-storage.md#website-proxy)-оос харна.
+
+Өмнөх `/files` storage-д зурагтай бол эхлээд тэдгээрийг шинэ volume-д relative folder
+бүтцийг нь хадгалж шилжүүлнэ. Замын variable солих нь хуучин файлуудыг автоматаар зөөхгүй.
+
 ## Endpoint ба аюулгүй зааг
 
 Өнгө/салбараас гадна [6 энгийн лавлах](db-schema.md#flat-reference-services), [4 эцэгтэй лавлах](db-schema.md#parent-reference-services) CRUD endpoint-тэй. Тус бүр base path дээр GET/POST, `/:id` дээр PATCH/DELETE ашиглана; бүх амжилттай response `200`. `references-http.test.ts`, `parent-references-http.test.ts` нь CRUD, query, validation, FK болон error response-ийг шалгана. Эцэггүй/идэвхгүй лавлахаар шинээр үүсгэхийг хориглоно; category нь эцэггүй үндсэн ангилал байж болно. PATCH-аар эцэг солихгүй.

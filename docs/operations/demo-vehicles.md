@@ -54,8 +54,9 @@ Exit `0` бол амжилттай, exit `1` бол алдаатай. Логий
 Автоматаар дахин оролдохгүй, шалтгааныг засаад гараар дахин ажиллуулна.
 
 Зургийг job-ийн disk-д хадгалахгүй, API руу дамжуулна. Sysop-ийн volume persistent,
-бичих эрхтэй байх ёстой. Website-ийн зураг унших storage/proxy тохиргоог энэ job өөрчлөхгүй;
-Railway дээр тусдаа Website service тухайн файлуудад хүрэх холболтыг тусад нь тохируулна.
+бичих эрхтэй байх ёстой. Website service-д `FILES_API_BASE_URL` тохируулж
+[Sysop file proxy](file-storage.md#website-proxy)-г ашиглана; Website-д volume хэрэггүй.
+Энэ тохиргоог demo job өөрөө үүсгэхгүй.
 
 ## Docker Compose Job
 
