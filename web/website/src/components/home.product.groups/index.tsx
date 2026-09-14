@@ -25,9 +25,9 @@ export default function HomeProductGroups({ items }: { items: HomeProductGroupIt
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
         {items.map((item) => <li key={item.id} className="min-w-0">
           <a href={item.href} className="group flex h-full flex-col overflow-hidden rounded-md border border-search-border p-1 transition-colors hover:border-card-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-card-accent">
-            <div className="flex aspect-[2.15/1] shrink-0 items-center justify-center overflow-hidden rounded bg-card-subtle">
+            <div className="flex aspect-[4/3] shrink-0 items-center justify-center overflow-hidden rounded bg-card-subtle">
               {item.imageUrl
-                ? <img src={getFileImageUrl(item.imageUrl, 800)} alt="" loading="lazy" className="h-full w-full object-contain" />
+                ? <img src={getFileImageUrl(item.imageUrl, 800)} alt="" loading="lazy" className="h-full w-full object-cover" />
                 : <IconPhoto size={32} className="text-search-muted" aria-hidden="true" />}
             </div>
             <div className="flex flex-1 flex-col p-2.5">

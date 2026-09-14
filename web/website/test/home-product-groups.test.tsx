@@ -36,6 +36,10 @@ test("group grid renders accessible links, escaped titles, counts and optional i
   assert.match(html, /1,200 Автомашин/); assert.match(html, /0 Автомашин/);
   assert.equal((html.match(/<li /g) ?? []).length, 2);
   assert.equal((html.match(/<img /g) ?? []).length, 1);
+  assert.equal((html.match(/aspect-\[4\/3\]/g) ?? []).length, 2);
+  assert.match(html, /object-cover/);
+  assert.doesNotMatch(html, /object-contain/);
+  assert.doesNotMatch(html, /aspect-\[2\.15\/1\]/);
   assert.doesNotMatch(html, /<script>|<button/);
   assert.equal(renderToStaticMarkup(<HomeProductGroups items={[]} />), "");
 });
