@@ -64,7 +64,7 @@ test("production Next file route proxies without a Website DB or volume", {
   assert.equal(invalid.status, 400);
   assert.equal((await invalid.json()).error.code, "FILE_INVALID_ID");
   for (const method of ["GET", "HEAD"]) {
-    const response = await fetch(`${baseUrl}/files/${id}/wrong.html?w=480&target=private`, { method });
+    const response: Response = await fetch(`${baseUrl}/files/${id}/wrong.html?w=480&target=private`, { method });
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("content-type"), "image/webp");
     assert.equal(response.headers.get("cache-control"), "public, max-age=3600");
